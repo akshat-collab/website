@@ -1,0 +1,1 @@
+import{j as r}from"./vendor-ui-CN8WKm1l.js";import{A as t}from"./AstroType-DTyWrezA.js";import"./index-gDkUcazU.js";import"./vendor-react-Bte3Nn5F.js";import"./select-DoADUCMx.js";import"./arrow-left-Cpu3jsbt.js";function a(){return r.jsx("div",{className:"min-h-screen bg-[#0B0F14]",children:r.jsx(t,{})})}export{a as default};

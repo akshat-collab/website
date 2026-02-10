@@ -1,0 +1,1 @@
+function t(){return typeof window<"u"?window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"?"ws://localhost:3001/ws/duels":`${window.location.protocol==="https:"?"wss:":"ws:"}//${window.location.host}/ws/duels`:"ws://localhost:3001/ws/duels"}export{t as g};
