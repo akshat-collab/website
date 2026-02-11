@@ -31,6 +31,15 @@ const AstroTypePage = lazy(() => import("./pages/AstroTypePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const ChatBot = lazy(() => import("./components/ChatBot"));
 const ComingSoon = lazy(() => import("./pages/ComingSoon"));
+const About = lazy(() => import("./pages/About"));
+const Careers = lazy(() => import("./pages/Careers"));
+const Contact = lazy(() => import("./pages/Contact"));
+const PressKit = lazy(() => import("./pages/PressKit"));
+const Legal = lazy(() => import("./pages/Legal"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Security = lazy(() => import("./pages/Security"));
+const Cookies = lazy(() => import("./pages/Cookies"));
 
 // DSA Practice section
 const DsaLogin = lazy(() => import("./pages/dsa/DsaLogin"));
@@ -102,6 +111,15 @@ const App = () => (
               <Route path="/join-us" element={<JoinUs />} />
               <Route path="/typing-test" element={<TypingTest />} />
               <Route path="/astrotype" element={<AstroTypePage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/press-kit" element={<PressKit />} />
+              <Route path="/legal" element={<Legal />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/security" element={<Security />} />
+              <Route path="/cookies" element={<Cookies />} />
 
               {/* TypeForge */}
               <Route path="/typeforge" element={<TypeForgeLayout />}>

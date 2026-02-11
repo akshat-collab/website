@@ -25,7 +25,7 @@ const ContactForm = () => {
         },
         body: JSON.stringify({
           access_key: '1aa19b6d-ae8a-48c2-9512-4513edd3ff0c',
-          to: 'techmaster.hub@gmail.com',
+          to: 'support@techmasterai.in',
           subject: 'New TechMaster Pre-Registration',
           from_name: 'TechMaster Website',
           name: formData.name,

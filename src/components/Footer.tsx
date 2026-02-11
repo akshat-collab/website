@@ -1,15 +1,51 @@
-import { Mail, Linkedin, Twitter } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail } from 'lucide-react';
+import { FaInstagram, FaDiscord, FaWhatsapp } from 'react-icons/fa';
 import { memo } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+
+const communityLinks = [
+  {
+    name: 'Instagram',
+    href: 'https://www.instagram.com/officialtechmasterai?igsh=MWdoempsZmxvbThuZA==',
+    icon: FaInstagram,
+  },
+  {
+    name: 'Discord',
+    href: 'https://discord.gg/VuadJ44xEz',
+    icon: FaDiscord,
+  },
+  {
+    name: 'WhatsApp',
+    href: 'https://chat.whatsapp.com/LTgvgy87Xdj5x8AKtbaF1c',
+    icon: FaWhatsapp,
+  },
+];
 
 const Footer = memo(() => {
   const { theme } = useTheme();
 
   const footerLinks = {
-    Product: ['Features', 'Pricing', 'Roadmap', 'Changelog'],
-    Community: ['Discord', 'Twitter', 'GitHub', 'Blog'],
-    Company: ['About', 'Careers', 'Contact', 'Press Kit'],
-    Legal: ['Privacy', 'Terms', 'Security', 'Cookies'],
+    Product: [
+      { label: 'Features', href: '#' },
+      { label: 'Pricing', href: '#' },
+      { label: 'Roadmap', href: '#' },
+      { label: 'Changelog', href: '#' },
+    ],
+    Community: communityLinks,
+    Company: [
+      { label: 'About', href: '/about' },
+      { label: 'Careers', href: '/careers' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Press Kit', href: '/press-kit' },
+    ],
+    Legal: [
+      { label: 'Legal', href: '/legal' },
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms', href: '/terms' },
+      { label: 'Security', href: '/security' },
+      { label: 'Cookies', href: '/cookies' },
+    ],
   };
 
   return (
@@ -24,16 +60,36 @@ const Footer = memo(() => {
             <div key={category}>
               <h4 className="footer-heading font-heading font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">{category}</h4>
               <ul className="space-y-1.5 sm:space-y-2">
-                {links.map((link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="footer-link font-body text-xs sm:text-sm transition-colors hover:text-primary leading-tight"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
+                {category === 'Community'
+                  ? links.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <li key={link.name}>
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="footer-link font-body text-xs sm:text-sm transition-colors hover:text-primary leading-tight inline-flex items-center gap-2"
+                          >
+                            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                            {link.name}
+                          </a>
+                        </li>
+                      );
+                    })
+                  : links.map((link) => (
+                      <li key={link.label}>
+                        {link.href.startsWith('#') ? (
+                          <a href="#" className="footer-link font-body text-xs sm:text-sm transition-colors hover:text-primary leading-tight">
+                            {link.label}
+                          </a>
+                        ) : (
+                          <Link to={link.href} className="footer-link font-body text-xs sm:text-sm transition-colors hover:text-primary leading-tight">
+                            {link.label}
+                          </Link>
+                        )}
+                      </li>
+                    ))}
               </ul>
             </div>
           ))}
@@ -69,24 +125,25 @@ const Footer = memo(() => {
           </div>
 
           <div className="flex items-center gap-2">
+            {communityLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-icon-button w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:scale-110 touch-manipulation"
+                  aria-label={link.name}
+                >
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </a>
+              );
+            })}
             <a
-              href="#"
+              href="mailto:support@techmasterai.in"
               className="footer-icon-button w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:scale-110 touch-manipulation"
-              aria-label="Twitter"
-            >
-              <Twitter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </a>
-            <a
-              href="#"
-              className="footer-icon-button w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:scale-110 touch-manipulation"
-              aria-label="LinkedIn"
-            >
-              <Linkedin className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </a>
-            <a
-              href="mailto:techmaster.hub@gmail.com"
-              className="footer-icon-button w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:scale-110 touch-manipulation"
-              aria-label="Email"
+              aria-label="Support"
             >
               <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </a>

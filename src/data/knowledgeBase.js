@@ -14,7 +14,7 @@ export const TECHMASTERAI_KNOWLEDGE = {
     founded: "2024",
     headquarters: "India",
     website: "https://techmaster.ai",
-    email: "techmaster.hub@gmail.com"
+    email: "support@techmasterai.in"
   },
 
   // Platform Features
@@ -67,7 +67,7 @@ export const TECHMASTERAI_KNOWLEDGE = {
 
   // Contact Information
   contact: {
-    email: "techmaster.hub@gmail.com",
+    email: "support@techmasterai.in",
     phone: "+91-XXXX-XXXX-XX",
     address: "India",
     socialMedia: {

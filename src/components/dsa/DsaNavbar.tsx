@@ -2,9 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Code2, List, User, Menu, X, LogOut, Swords, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ThemeSelector } from "@/components/ThemeSelector";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -29,10 +27,8 @@ function MessageSquareIcon(props: any) {
 
 export function DsaNavbar() {
   const location = useLocation();
-  const { theme } = useTheme();
   const { user, logout } = useDsaAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isPastel = theme === "pastel";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-[#0B0F19]/80 backdrop-blur-xl">
@@ -89,7 +85,6 @@ export function DsaNavbar() {
             <Sparkles className="h-4 w-4" />
           </Button>
           
-          <ThemeSelector />
 
           {user ? (
             <DropdownMenu>

@@ -7,10 +7,8 @@ import { DsaFilterProvider } from "@/contexts/DsaFilterContext";
 import { ChevronLeft, Bell, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/contexts/ThemeContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
-import { ThemeSelector } from "@/components/ThemeSelector";
 import { getProfilePhoto } from "@/features/dsa/profile/dsaProfileStore";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
 
@@ -20,8 +18,6 @@ import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
 export function DsaLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme } = useTheme();
-  
   const { user: dsaUser, authUser, logout: dsaLogout } = useDsaAuth();
 
   useEffect(() => {
@@ -88,7 +84,7 @@ export function DsaLayout() {
     <DsaFilterProvider>
       <div className={cn(
         "min-h-screen max-h-screen flex flex-col overflow-hidden relative selection:bg-cyan-500/30 selection:text-cyan-200 transition-colors duration-300",
-        theme === 'pastel' ? "bg-[#FFF0F5]" : "bg-slate-50 dark:bg-[#0B0F19]"
+        "bg-slate-50 dark:bg-[#0B0F19]"
       )}>
         {/* Galaxy/Cyber Background - visible only in dark mode */}
         <div className="fixed inset-0 z-0 pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-300">
@@ -98,22 +94,11 @@ export function DsaLayout() {
           <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-cyan-500/10 blur-[120px]" />
         </div>
 
-        {/* Pastel Background Gradients using CSS for smoothness */}
-        {theme === 'pastel' && (
-           <div className="fixed inset-0 z-0 pointer-events-none">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-purple-50 to-blue-50 opacity-80" />
-              <div className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-pink-200/20 blur-[100px]" />
-              <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] rounded-full bg-purple-200/20 blur-[100px]" />
-           </div>
-        )}
-
         <div className="relative z-10 flex flex-col h-screen overflow-hidden">
           {/* New Top Header Matching Design */}
           <header className={cn(
             "h-16 flex items-center justify-between px-6 border-b shrink-0 transition-colors duration-300 backdrop-blur-sm",
-            theme === 'pastel' 
-                ? "bg-white/60 border-rose-100" 
-                : "border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0B0F19]"
+"border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0B0F19]"
           )}>
              <div className="flex items-center gap-4">
                 <Button 
@@ -122,21 +107,18 @@ export function DsaLayout() {
                     onClick={() => navigate(-1)}
                     className={cn(
                         "text-muted-foreground transition-colors",
-                         theme === 'pastel' ? "hover:bg-rose-100 hover:text-rose-900" : "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+                         "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
                     )}
                 >
                     <ChevronLeft className="h-6 w-6" />
                 </Button>
                 <h2 className={cn(
                     "text-xl font-semibold tracking-tight transition-colors",
-                    theme === 'pastel' ? "text-slate-800" : "text-slate-900 dark:text-white"
+                    "text-slate-900 dark:text-white"
                 )}>DSA Practice</h2>
              </div>
              
              <div className="flex items-center gap-4">
-                 {/* Theme Selector - Three options in a row */}
-                 <ThemeSelector />
-
                 {/* Notification Bell with Popover */}
                 <Popover>
                     <PopoverTrigger asChild>
@@ -145,14 +127,14 @@ export function DsaLayout() {
                             size="icon" 
                             className={cn(
                                 "text-muted-foreground relative transition-colors",
-                                theme === 'pastel' ? "hover:bg-rose-100 hover:text-rose-900" : "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+                                "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
                             )}
                         >
                             <Bell className="h-5 w-5" />
                             {unreadCount > 0 && (
                                 <span className={cn(
-                                    "absolute top-2 right-2 h-2 w-2 rounded-full border animate-pulse",
-                                    theme === 'pastel' ? "bg-rose-400 border-white" : "bg-red-500 border-white dark:border-[#0B0F19]"
+                                      "absolute top-2 right-2 h-2 w-2 rounded-full border animate-pulse",
+                                      "bg-red-500 border-white dark:border-[#0B0F19]"
                                 )} />
                             )}
                         </Button>
@@ -160,19 +142,17 @@ export function DsaLayout() {
                     <PopoverContent 
                         className={cn(
                             "w-80 p-0 mr-4",
-                            theme === 'pastel' 
-                                ? "bg-white border-rose-100" 
-                                : "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/10"
+                            "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/10"
                         )}
                         align="end"
                     >
                         <div className={cn(
                             "flex items-center justify-between p-4 border-b",
-                            theme === 'pastel' ? "border-rose-100" : "border-slate-200 dark:border-white/10"
+                            "border-slate-200 dark:border-white/10"
                         )}>
                             <h3 className={cn(
                                 "font-semibold text-sm",
-                                theme === 'pastel' ? "text-slate-800" : "text-slate-900 dark:text-white"
+                                "text-slate-900 dark:text-white"
                             )}>
                                 Notifications {unreadCount > 0 && `(${unreadCount})`}
                             </h3>
@@ -181,7 +161,7 @@ export function DsaLayout() {
                                     onClick={markAllAsRead}
                                     className={cn(
                                         "text-xs font-medium transition-colors",
-                                        theme === 'pastel' ? "text-rose-600 hover:text-rose-700" : "text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300"
+                                        "text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300"
                                     )}
                                 >
                                     Mark all read
@@ -201,23 +181,21 @@ export function DsaLayout() {
                                         key={notification.id}
                                         className={cn(
                                             "p-4 border-b transition-colors cursor-pointer",
-                                            theme === 'pastel' 
-                                                ? "border-rose-50 hover:bg-rose-50" 
-                                                : "border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5",
-                                            !notification.read && (theme === 'pastel' ? "bg-rose-50/50" : "bg-cyan-50/50 dark:bg-cyan-500/5")
+                                            "border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5",
+                                            !notification.read && "bg-cyan-50/50 dark:bg-cyan-500/5"
                                         )}
                                     >
                                         <div className="flex items-start gap-3">
                                             {!notification.read && (
                                                 <div className={cn(
                                                     "h-2 w-2 rounded-full mt-1.5 shrink-0",
-                                                    theme === 'pastel' ? "bg-rose-400" : "bg-cyan-500"
+                                                    "bg-cyan-500"
                                                 )} />
                                             )}
                                             <div className="flex-1 min-w-0">
                                                 <p className={cn(
                                                     "text-sm font-medium mb-1",
-                                                    theme === 'pastel' ? "text-slate-800" : "text-slate-900 dark:text-white"
+                                                    "text-slate-900 dark:text-white"
                                                 )}>
                                                     {notification.title}
                                                 </p>
@@ -250,11 +228,11 @@ export function DsaLayout() {
                                 ) : (
                                     <div className={cn(
                                         "h-full w-full rounded-full flex items-center justify-center",
-                                        theme === 'pastel' ? "bg-rose-100" : "bg-[#0B0F19]"
+                                        "bg-[#0B0F19]"
                                     )}>
                                         <span className={cn(
                                             "text-xs font-bold",
-                                            theme === 'pastel' ? "text-rose-700" : "text-white"
+                                            "text-white"
                                         )}>
                                             {currentUser.name.charAt(0).toUpperCase()}
                                         </span>
@@ -272,9 +250,7 @@ export function DsaLayout() {
                     <PopoverContent 
                         className={cn(
                             "w-64 p-0 mr-4",
-                            theme === 'pastel' 
-                                ? "bg-white border-rose-100" 
-                                : "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/10"
+                            "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/10"
                         )}
                         align="end"
                     >
@@ -283,7 +259,7 @@ export function DsaLayout() {
                                 {/* User Info */}
                                 <div className={cn(
                                     "p-4 border-b",
-                                    theme === 'pastel' ? "border-rose-100" : "border-slate-200 dark:border-white/10"
+                                    "border-slate-200 dark:border-white/10"
                                 )}>
                                     <div className="flex items-center gap-3">
                                         <div className="h-12 w-12 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 p-[2px]">
@@ -296,11 +272,11 @@ export function DsaLayout() {
                                             ) : (
                                                 <div className={cn(
                                                     "h-full w-full rounded-full flex items-center justify-center",
-                                                    theme === 'pastel' ? "bg-rose-100" : "bg-[#0B0F19]"
+                                                    "bg-[#0B0F19]"
                                                 )}>
                                                     <span className={cn(
                                                         "text-lg font-bold",
-                                                        theme === 'pastel' ? "text-rose-700" : "text-white"
+                                                        "text-white"
                                                     )}>
                                                         {currentUser.name.charAt(0).toUpperCase()}
                                                     </span>
@@ -310,7 +286,7 @@ export function DsaLayout() {
                                         <div className="flex-1 min-w-0">
                                             <p className={cn(
                                                 "font-semibold text-sm truncate",
-                                                theme === 'pastel' ? "text-slate-800" : "text-slate-900 dark:text-white"
+                                                "text-slate-900 dark:text-white"
                                             )}>
                                                 {currentUser.name}
                                             </p>
@@ -327,9 +303,7 @@ export function DsaLayout() {
                                         onClick={() => navigate('/dsa/profile')}
                                         className={cn(
                                             "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
-                                            theme === 'pastel' 
-                                                ? "hover:bg-rose-50 text-slate-700" 
-                                                : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
+                                            "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
                                         )}
                                     >
                                         <User className="h-4 w-4" />
@@ -340,15 +314,13 @@ export function DsaLayout() {
                                 {/* Logout */}
                                 <div className={cn(
                                     "border-t py-2",
-                                    theme === 'pastel' ? "border-rose-100" : "border-slate-200 dark:border-white/10"
+                                    "border-slate-200 dark:border-white/10"
                                 )}>
                                     <button
                                         onClick={handleLogout}
                                         className={cn(
                                             "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-red-600 dark:text-red-400",
-                                            theme === 'pastel' 
-                                                ? "hover:bg-rose-50" 
-                                                : "hover:bg-red-50 dark:hover:bg-red-500/10"
+                                            "hover:bg-red-50 dark:hover:bg-red-500/10"
                                         )}
                                     >
                                         <LogOut className="h-4 w-4" />

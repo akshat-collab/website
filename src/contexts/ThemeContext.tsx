@@ -1,24 +1,21 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type Theme = 'light' | 'dark' | 'pastel';
+export type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEMES: Theme[] = ['pastel', 'dark', 'light'];
-
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem('techmasterai_theme');
-    if (stored === 'light' || stored === 'dark' || stored === 'pastel') {
+    if (stored === 'light' || stored === 'dark') {
       return stored as Theme;
     }
-    return 'pastel';
+    return 'dark';
   });
 
   const setTheme = (t: Theme) => {
@@ -37,13 +34,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('techmasterai_theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    const idx = THEMES.indexOf(theme);
-    setThemeState(THEMES[(idx + 1) % THEMES.length]);
-  };
-
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

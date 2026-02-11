@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, X, User, Sparkles, Heart, LogIn, UserPlus } from 'lucide-react';
-import { ThemeSelector } from './ThemeSelector';
+import { LogOut, Menu, X, User, Sparkles, LogIn, UserPlus } from 'lucide-react';
 import { useState, useEffect, memo, lazy, Suspense } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { toast } from 'sonner';
@@ -147,34 +146,23 @@ const Header = memo(() => {
           <div className="flex-1 flex justify-start">
             <Link
               to="/"
-              className={`flex items-center gap-2 group pointer-events-auto z-50 ${theme === 'pastel' ? 'font-pixel-nav text-primary' : ''}`}
+              className="flex items-center gap-2 group pointer-events-auto z-50"
             >
-              {theme === 'pastel' ? (
-                <>
-                  <Heart className="w-6 h-6 sm:w-7 sm:h-7 fill-primary shrink-0" aria-hidden />
-                  <span className="font-bold text-sm sm:text-base tracking-wide">
-                    Pixel Code Haven
-                  </span>
-                </>
-              ) : (
-                <>
-                  <img
-                    src={theme === 'dark' ? '/tmai-logo.png' : '/tmai-logo-dark.png'}
-                    alt="TechMasterAI Logo"
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded transition-all duration-300 logo-hover"
-                    style={{
-                      objectFit: 'contain',
-                      filter: theme === 'dark' ? 'brightness(1.1)' : 'brightness(1)',
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.src = '/tmai-logo.png';
-                    }}
-                  />
-                  <span className="font-heading font-bold text-sm sm:text-base tracking-wide theme-text-primary">
-                    TECHMASTER<span className="theme-accent">AI</span>
-                  </span>
-                </>
-              )}
+              <img
+                src={theme === 'dark' ? '/tmai-logo.png' : '/tmai-logo-dark.png'}
+                alt="TechMasterAI Logo"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded transition-all duration-300 logo-hover"
+                style={{
+                  objectFit: 'contain',
+                  filter: theme === 'dark' ? 'brightness(1.1)' : 'brightness(1)',
+                }}
+                onError={(e) => {
+                  e.currentTarget.src = '/tmai-logo.png';
+                }}
+              />
+              <span className="font-heading font-bold text-sm sm:text-base tracking-wide theme-text-primary">
+                TECHMASTER<span className="theme-accent">AI</span>
+              </span>
             </Link>
           </div>
 
@@ -275,7 +263,6 @@ const Header = memo(() => {
                     <Sparkles className="w-5 h-5 text-primary" />
                 </span>
                 </button>
-                <ThemeSelector />
             </div>
 
             {/* Mobile Menu Button - Only visible on mobile/tablet */}
