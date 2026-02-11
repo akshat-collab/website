@@ -1,5 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { recordActivity } from "@/lib/activityTracker";
 import { DsaSidebar } from "@/components/dsa/DsaSidebar";
 import { DsaFilterProvider } from "@/contexts/DsaFilterContext";
 import { ChevronLeft, Bell, User, LogOut } from "lucide-react";
@@ -7,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { getProfilePhoto } from "@/features/dsa/profile/dsaProfileStore";
@@ -22,6 +23,10 @@ export function DsaLayout() {
   const { theme } = useTheme();
   
   const { user: dsaUser, authUser, logout: dsaLogout } = useDsaAuth();
+
+  useEffect(() => {
+    recordActivity("dsa_visit");
+  }, []);
   const [legacyUser, setLegacyUser] = useState<{ name: string; email: string; photo?: string } | null>(null);
 
   useEffect(() => {
@@ -50,7 +55,7 @@ export function DsaLayout() {
   const handleLogout = async () => {
     localStorage.removeItem('techmasterai_admin');
     localStorage.removeItem('techmasterai_user');
-    if (dsaUser) await dsaLogout();
+    await dsaLogout();
     toast.success('Logged out successfully');
     navigate('/');
   };
@@ -71,7 +76,7 @@ export function DsaLayout() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const profilePhoto = currentUser
-    ? (getProfilePhoto() || authUser?.user_metadata?.avatar_url || currentUser.photo)
+    ? (getProfilePhoto() || (authUser as { profile_photo_url?: string })?.profile_photo_url || currentUser.photo)
     : null;
 
   const markAllAsRead = () => {

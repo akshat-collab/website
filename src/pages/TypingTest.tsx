@@ -16,6 +16,7 @@ import { RotateCcw, Clock, Zap, Target, Code, Type, Sparkles, Rocket, ArrowLeft,
 import { CodingClock } from "@/components/CodingClock";
 import { AstroType } from "@/components/AstroType";
 import { getRandomPassage, type PassageLength } from "@/data/typingPassages";
+import { recordActivity } from "@/lib/activityTracker";
 import {
   getRandomCodeSnippet,
   getSyntaxClasses,
@@ -70,7 +71,10 @@ export default function TypingTest() {
 
   useEffect(() => {
     if (!passage || passage.length === 0) return;
-    if (input.length === 1 && !startTime) setStartTime(Date.now());
+    if (input.length === 1 && !startTime) {
+      setStartTime(Date.now());
+      recordActivity("typing_start");
+    }
     setErrorIndices((prev) => {
       const next = new Set(prev);
       const i = input.length - 1;
@@ -80,11 +84,14 @@ export default function TypingTest() {
       }
       return next;
     });
-    if (input.length >= passage.length && passage.length > 0) {
+    if (input.length >= passage.length && passage.length > 0 && !isComplete) {
       setIsComplete(true);
-      setCompletionTime(Date.now());
+      const compTime = Date.now();
+      setCompletionTime(compTime);
+      const wpm = startTime ? Math.round((input.length / 5) / ((compTime - startTime) / 60000)) : 0;
+      recordActivity("typing_complete", `WPM: ${wpm}`);
     }
-  }, [input, passage]);
+  }, [input, passage, startTime, isComplete]);
 
   const elapsedSeconds = startTime ? (Date.now() - startTime) / 1000 : 0;
   const elapsedMinutes = elapsedSeconds / 60;

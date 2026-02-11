@@ -37,6 +37,9 @@ const ContactForm = () => {
 
       const result = await response.json();
 
+      import("@/lib/activityTracker").then(({ recordActivity }) =>
+        recordActivity("contact", formData.subject || formData.email)
+      );
       // Store in localStorage for admin panel
       const existingData = JSON.parse(localStorage.getItem('techmasterai_users') || '[]');
       const newEntry = {

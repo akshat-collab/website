@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generates src/data/dsaProblems500.ts and updates dsaTestCases.ts with 500 problems.
+ * Generates src/data/dsaProblems500.ts and dsaTestCases500.generated.ts with ~1000 problems.
  * Run: node scripts/generate-500-problems.mjs
  * Uses LeetCode API for problem list, templates for metadata + test cases.
  */
@@ -53,7 +53,7 @@ async function fetchLeetCodeProblems() {
       total_submitted: p.stat.total_submitted || 1,
     }))
     .sort((a, b) => a.id - b.id);
-  return free.slice(0, 500);
+  return free.slice(0, 1000);
 }
 
 function titleFromSlug(slug) {
@@ -377,8 +377,71 @@ async function main() {
       'largest-component-size-by-common-factor', 'verifying-an-alien-dictionary', 'array-of-doubled-pairs',
       'delete-columns-to-make-sorted-ii', 'tallest-billboard', 'prison-cells-after-n-days',
       'check-completeness-of-a-binary-tree',
+      'encode-number', 'decode-string-at-index', 'reconstruct-a-2-row-binary-matrix',
+      'matrix-cells-in-distance-order', 'two-sum-less-than-k', 'maximum-sum-of-two-non-overlapping-subarrays',
+      'stream-of-characters', 'moving-stones-until-consecutive', 'coloring-a-border',
+      'uncrossed-lines', 'escape-a-large-maze', 'minimum-cost-tree-from-leaf-values',
+      'number-of-days-in-a-month', 'remove-outermost-parentheses', 'sum-of-root-to-leaf-binary-numbers',
+      'capacity-to-ship-packages-within-d-days', 'grumpy-bookstore-owner', 'previous-permutation-with-one-swap',
+      'distant-barcodes', 'greatest-common-divisor-of-strings', 'flip-columns-for-maximum-number-of-equal-rows',
+      'last-stone-weight-ii', 'longest-string-chain', 'last-stone-weight', 'insufficient-nodes-in-root-to-leaf-paths',
+      'smallest-sufficient-team', 'linked-list-in-binary-tree', 'minimum-cost-to-connect-sticks',
+      'reconstruct-a-tree-from-preorder-traversal', 'string-transforms-into-another-string',
+      'compare-strings-by-frequency-of-the-smallest-character', 'minimum-moves-to-make-array-complementary',
+      'defanging-an-ip-address', 'maximum-nesting-depth-of-two-valid-parentheses-strings',
+      'corporate-flight-bookings', 'delete-nodes-and-return-forest', 'maximum-level-sum-of-a-binary-tree',
+      'as-far-from-land-as-possible', 'partition-array-for-maximum-sum', 'longest-arithmetic-subsequence',
+      'binary-prefix-divisible-by-5', 'next-greater-node-in-linked-list', 'number-of-enclaves',
+      'minimum-score-triangulation-of-polygon', 'satisfiability-of-equality-equations',
+      'broken-calculator', 'subarrays-with-k-different-integers', 'distribute-candies-to-people',
+      'path-in-zigzag-labelled-binary-tree', 'filling-bookcase-shelves', 'parsing-a-boolean-expression',
+      'minimum-swaps-to-group-all-1s-together', 'divide-array-in-sets-of-k-consecutive-numbers',
+      'minimum-number-of-days-to-disconnect-island', 'number-of-transactions-per-visit',
+      'minimum-time-to-rebuild-the-tree', 'find-a-value-of-a-mysterious-function-closest-to-target',
+      'count-good-nodes-in-binary-tree', 'form-largest-integer-with-digits-that-add-up-to-target',
+      'number-of-ways-to-paint-n-3-grid', 'minimum-cost-to-make-at-least-one-valid-path-in-a-grid',
+      'maximum-profit-of-operating-a-centennial-wheel', 'maximum-number-of-get-food',
+      'number-of-ways-where-square-of-number-is-equal-to-product-of-two-numbers',
+      'minimum-deletion-cost-to-avoid-repeating-letters', 'maximum-number-of-non-overlapping-substrings',
+      'find-a-corresponding-node-of-a-binary-tree-in-a-clone-of-that-tree',
+      'check-if-a-string-can-break-another-string', 'number-of-ways-to-split-a-string',
+      'minimum-time-to-collect-all-apples-in-a-tree', 'count-good-triplets',
+      'minimum-subsequence-in-non-increasing-order', 'string-matching-in-an-array',
+      'queries-on-a-permutation-with-key', 'html-entity-parser', 'number-of-ways-to-form-a-target-string',
+      'minimum-number-of-frogs-croaking', 'build-array-where-you-can-find-the-maximum-exactly-k-comparisons',
+      'maximum-students-taking-exam', 'create-target-array-in-the-given-order',
+      'check-if-all-1s-are-at-least-length-k-places-away', 'longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit',
+      'find-the-kth-smallest-sum-of-a-matrix-with-sorted-rows', 'reformat-date',
+      'string-compression-ii', 'get-the-maximum-score', 'can-make-arithmetic-progression-from-sequence',
+      'count-all-valid-pickup-and-delivery-options', 'number-of-days-between-two-dates',
+      'validate-ip-address', 'running-sum-of-1d-array', 'find-the-winner-of-the-circular-game',
+      'minimum-suffix-flips', 'throne-inheritance', 'detect-pattern-of-length-m-repeated-k-or-more-times',
+      'maximum-length-of-subarray-with-positive-product', 'minimum-number-of-days-to-eat-n-oranges',
+      'group-the-people-given-the-group-size-they-belong-to', 'find-the-winner-of-an-array-game',
+      'minimum-swaps-to-arrange-a-binary-grid', 'get-the-maximum-score', 'special-positions-in-a-binary-matrix',
+      'count-unhappy-friends', 'min-cost-to-connect-all-points', 'check-if-array-pairs-are-divisible-by-k',
+      'number-of-subsequences-that-satisfy-the-given-sum-condition', 'final-prices-with-a-special-discount-in-a-shop',
+      'subrectangle-queries', 'find-two-non-overlapping-subarrays-each-with-target-sum',
+      'allocate-mailboxes', 'xor-operation-in-an-array',
+      'make-two-arrays-equal-by-reversing-sub-arrays', 'check-if-a-string-contains-all-binary-codes-of-size-k',
+      'sequential-digits', 'iterator-for-combination', 'angle-between-hands-of-clock',
+      'tiling-a-rectangle-with-the-fewest-squares', 'maximum-equal-frequency',
+      'deepest-leaves-sum', 'sum-of-mutated-array-closest-to-target', 'path-with-maximum-gold',
+      'play-with-chips', 'letter-tile-possibilities', 'insufficient-nodes-in-root-to-leaf-paths',
+      'web-crawler', 'longest-chunked-palindrome-decomposition', 'day-of-the-week',
+      'occurrences-after-bigram', 'online-majority-element-in-subarray', 'find-words-that-can-be-formed-by-characters',
+      'swap-for-longest-repeated-character-substring', 'height-checker', 'distant-barcodes',
+      'last-substring-in-lexicographical-order', 'before-and-after-puzzle', 'shortest-path-in-binary-matrix',
+      'confusing-number', 'largest-unique-number', 'connecting-cities-with-minimum-cost',
+      'parallel-courses', 'minimum-remove-to-make-valid-parentheses', 'print-foobar-alternately',
+      'print-zero-even-odd', 'building-h2o', 'dinner-plate-stacks', 'count-servers-that-communicate',
+      'search-suggestions-system', 'all-elements-in-two-binary-search-trees',
+      'jump-game-iii', 'verbal-arithmetic-puzzle', 'adding-two-negabinary-numbers',
+      'number-of-closed-islands', 'maximum-number-of-balloons', 'reverse-substrings-between-each-pair-of-parentheses',
+      'minimum-insertions-to-balance-a-parentheses-string', 'design-underground-system', 'lucky-numbers-in-a-matrix',
+      'reformat-the-string', 'display-table-of-food-orders-in-a-restaurant', 'check-if-n-and-its-double-exist',
     ];
-    problems = slugList.slice(0, 500).map((slug, i) => ({
+    problems = slugList.slice(0, 1000).map((slug, i) => ({
       id: i + 1,
       title: titleFromSlug(typeof slug === 'string' ? slug : slug.slug || slug),
       slug: typeof slug === 'string' ? slug : slug.slug || String(slug),
@@ -406,7 +469,7 @@ async function main() {
     const problem = generateProblem(p, tpl);
     generated.push(problem);
     testCasesMap[p.slug] = TEST_CASES[tpl] || TEST_CASES.nums;
-    if (generated.length >= 484) break;
+    if (generated.length >= 984) break;
   }
 
   const existingCount = 16;

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Phone, UserPlus, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import * as localAuth from '@/lib/localAuth';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FloatingLines from '../components/FloatingLines';
@@ -20,28 +21,29 @@ const Signup = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Store signup data
+    // Store signup data for admin (without password)
     const existingData = JSON.parse(localStorage.getItem('techmasterai_users') || '[]');
     const signupEntry = {
       ...formData,
-      password: undefined, // Don't store password
+      password: undefined,
       id: Date.now(),
       submittedAt: new Date().toISOString(),
       type: 'signup',
     };
     localStorage.setItem('techmasterai_users', JSON.stringify([...existingData, signupEntry]));
 
+    const result = localAuth.register(formData.name.trim() || formData.email.split('@')[0], formData.email.trim(), formData.password);
     setIsLoading(false);
-    
-    // Welcome popup for new users
-    toast.success('🎉 Welcome to TechMaster!', {
-      description: 'Account created successfully. Please login to continue.',
-      duration: 4000,
-    });
-    
-    navigate('/login');
+
+    if (result.success) {
+      toast.success('🎉 Welcome to TechMaster!', {
+        description: 'Account created. You are now logged in.',
+        duration: 4000,
+      });
+      navigate('/');
+    } else {
+      toast.error(result.error ?? 'Signup failed');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

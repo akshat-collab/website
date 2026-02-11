@@ -124,6 +124,11 @@ const Header = memo(() => {
       },
       show: !currentUser, // Hide when user is logged in
     },
+    {
+      title: 'Admin',
+      action: () => navigate('/admin'),
+      show: isAdmin,
+    },
   ];
 
   return (

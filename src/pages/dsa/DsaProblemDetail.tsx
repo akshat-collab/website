@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { recordActivity } from "@/features/dsa/streak/dsaActivityStore";
 import { addSolvedProblem, addAttemptedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
+import { recordActivity } from "@/lib/activityTracker";
 import { fetchDsaQuestionById, DsaApiError } from "@/features/dsa/api/questions";
 import type { DsaQuestionDetail } from "@/features/dsa/api/questions";
 import { executeCode } from "@/services/codeExecutionService";
@@ -833,7 +834,8 @@ int main() {
             
             const entryPoint = getEntryPoint(id, problemTestCases);
             const result = await executeCode(code, language, problemTestCases, false, entryPoint);
-            
+            recordActivity("dsa_run", id);
+
             if (result.overallStatus === 'compilation_error') {
                 setJudgeStatus('error');
                 setTestCases([{

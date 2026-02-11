@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Camera, Save, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import * as localAuth from '@/lib/localAuth';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FloatingLines from '../components/FloatingLines';
@@ -18,23 +19,22 @@ const Profile = () => {
   const [previewPhoto, setPreviewPhoto] = useState('');
 
   useEffect(() => {
-    // Check if user is logged in
+    const session = localAuth.getSession();
     const userStr = localStorage.getItem('techmasterai_user');
-    if (!userStr) {
+    if (!session && !userStr) {
       toast.error('Please login to access your profile');
       navigate('/login');
       return;
     }
-
     try {
-      const user = JSON.parse(userStr);
+      const user = userStr ? JSON.parse(userStr) : { name: session?.username, email: session?.email, phone: '', photo: session?.profilePhoto };
       setProfileData({
-        name: user.name || '',
-        email: user.email || '',
+        name: user.name || session?.username || '',
+        email: user.email || session?.email || '',
         phone: user.phone || '',
-        photo: user.photo || '',
+        photo: user.photo || session?.profilePhoto || '',
       });
-      setPreviewPhoto(user.photo || '');
+      setPreviewPhoto(user.photo || session?.profilePhoto || '');
     } catch {
       navigate('/login');
     }
@@ -82,15 +82,25 @@ const Profile = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // Update local auth session (username, profilePhoto)
+    localAuth.updateProfile({
+      username: profileData.name,
+      profilePhoto: profileData.photo || null,
+    });
 
-    // Update user data in localStorage
-    localStorage.setItem('techmasterai_user', JSON.stringify(profileData));
+    // Update techmasterai_user for header/profile
+    localStorage.setItem('techmasterai_user', JSON.stringify({
+      name: profileData.name,
+      email: profileData.email,
+      phone: profileData.phone,
+      photo: profileData.photo,
+    }));
 
-    // Update in users array if exists
+    // Update users array if exists
     const existingData = JSON.parse(localStorage.getItem('techmasterai_users') || '[]');
-    const updatedData = existingData.map((user: any) => {
+    const updatedData = existingData.map((user: { email?: string }) => {
       if (user.email === profileData.email) {
         return { ...user, ...profileData, updatedAt: new Date().toISOString() };
       }
@@ -100,8 +110,6 @@ const Profile = () => {
 
     setIsLoading(false);
     toast.success('Profile updated successfully!');
-    
-    // Trigger storage event to update header
     window.dispatchEvent(new Event('storage'));
   };
 

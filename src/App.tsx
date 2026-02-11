@@ -14,6 +14,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const JoinUs = lazy(() => import("./pages/JoinUs"));
 const TypingTest = lazy(() => import("./pages/TypingTest"));
 const AstroTypePage = lazy(() => import("./pages/AstroTypePage"));
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/join-us" element={<JoinUs />} />
               <Route path="/typing-test" element={<TypingTest />} />

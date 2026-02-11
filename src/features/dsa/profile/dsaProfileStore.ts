@@ -128,25 +128,25 @@ export function addSolvedProblem(problemId: string): void {
   const next = [...list, id];
   localStorage.setItem(SOLVED_PROBLEMS_KEY, JSON.stringify(next));
   window.dispatchEvent(new StorageEvent("storage", { key: SOLVED_PROBLEMS_KEY, newValue: JSON.stringify(next) }));
+  import("@/lib/activityTracker").then(({ recordActivity }) => recordActivity("dsa_solve", id));
 }
 
 /** Call after addSolvedProblem when user is logged in — sync to Supabase so problems_solved and submissions are updated. */
 export async function syncSolvedToBackend(problemId: string, opts?: { language?: string; runtime_ms?: number; memory_mb?: number }): Promise<void> {
   try {
-    const { auth } = await import("@/lib/firebase");
-    const user = auth.currentUser;
-    if (!user) return;
+    const { getSession } = await import("@/lib/localAuth");
+    const session = getSession();
+    if (!session?.id) return;
     const { supabase } = await import("@/lib/supabase");
-    // Use Firebase UID as user_id (Supabase RLS may need to allow Firebase-authenticated writes)
     await supabase.from("dsa_submissions").insert({
-      user_id: user.uid,
+      user_id: session.id,
       problem_id: problemId,
       status: "Accepted",
       language: opts?.language ?? "javascript",
       runtime_ms: opts?.runtime_ms ?? null,
       memory_mb: opts?.memory_mb ?? null,
     });
-    await supabase.rpc("increment_problems_solved", { user_id: user.uid });
+    await supabase.rpc("increment_problems_solved", { user_id: session.id });
   } catch {
     // offline or Supabase down — localStorage already updated
   }

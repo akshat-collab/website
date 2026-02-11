@@ -1,8 +1,8 @@
 /**
- * API client: base URL and auth headers (Firebase ID token).
+ * API client: base URL and auth headers (local auth token placeholder).
  */
 
-import { auth } from "@/lib/firebase";
+import { getSession } from "@/lib/localAuth";
 
 function getApiBase(): string {
   return import.meta.env.VITE_API_URL || '';
@@ -18,14 +18,9 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  const user = auth.currentUser;
-  if (user) {
-    try {
-      const token = await user.getIdToken();
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-    } catch {
-      /* ignore */
-    }
+  const session = getSession();
+  if (session?.id) {
+    headers['Authorization'] = `Bearer local-${session.id}`;
   }
   return headers;
 }
