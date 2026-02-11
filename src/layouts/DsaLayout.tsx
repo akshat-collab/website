@@ -8,6 +8,7 @@ import { ChevronLeft, Bell, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { toast } from "sonner";
 import { getProfilePhoto } from "@/features/dsa/profile/dsaProfileStore";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
@@ -119,6 +120,7 @@ export function DsaLayout() {
              </div>
              
              <div className="flex items-center gap-4">
+                <ThemeSelector />
                 {/* Notification Bell with Popover */}
                 <Popover>
                     <PopoverTrigger asChild>

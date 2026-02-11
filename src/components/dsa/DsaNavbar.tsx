@@ -3,6 +3,7 @@ import { Code2, List, User, Menu, X, LogOut, Swords, Sparkles, Zap } from "lucid
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -85,6 +86,7 @@ export function DsaNavbar() {
             <Sparkles className="h-4 w-4" />
           </Button>
           
+          <ThemeSelector />
 
           {user ? (
             <DropdownMenu>

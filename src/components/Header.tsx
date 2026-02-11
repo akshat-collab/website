@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Menu, X, User, Sparkles, LogIn, UserPlus } from 'lucide-react';
+import { ThemeSelector } from './ThemeSelector';
 import { useState, useEffect, memo, lazy, Suspense } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { toast } from 'sonner';
@@ -263,6 +264,7 @@ const Header = memo(() => {
                     <Sparkles className="w-5 h-5 text-primary" />
                 </span>
                 </button>
+                <ThemeSelector />
             </div>
 
             {/* Mobile Menu Button - Only visible on mobile/tablet */}
