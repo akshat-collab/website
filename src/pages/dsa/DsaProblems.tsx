@@ -217,17 +217,6 @@ export default function DsaProblems() {
         "h-full flex flex-col overflow-hidden transition-colors duration-300",
         theme === 'pastel' ? "bg-transparent" : "bg-white dark:bg-[#0B0F19]" 
     )}>
-      {/* Fallback mode banner when API is unavailable */}
-      {useFallbackList && error && (
-        <div className="shrink-0 bg-cyan-500/10 border-b border-cyan-500/20 px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-cyan-800 dark:text-cyan-200">
-            {error} {problems.length} problems. Run & Submit work offline (JS in browser; Java/C++/Python via Piston API).
-          </p>
-          <Button variant="outline" size="sm" onClick={() => loadProblems(true)} className="border-cyan-500/50">
-            Retry
-          </Button>
-        </div>
-      )}
       {/* Fixed Header Section */}
       <div className="shrink-0 p-6 pb-2 space-y-4">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -237,11 +226,9 @@ export default function DsaProblems() {
                     theme === 'pastel' ? "text-slate-800" : "text-slate-900 dark:text-white"
                 )}>Problems</h1>
                 <p className="text-sm text-muted-foreground">
-                  {useFallbackList
-                    ? '500 problems with full test cases. Use JavaScript — Run/Submit works offline in browser.'
-                    : problems.length > 0
-                      ? `Search your practice problems here. ${problems.length.toLocaleString()} questions from database.`
-                      : 'Search your practice problems here and get started.'}
+                  {problems.length > 0
+                    ? `Search your practice problems here. ${problems.length.toLocaleString()} questions available.`
+                    : 'Search your practice problems here and get started.'}
                 </p>
             </div>
             

@@ -323,7 +323,7 @@ export default function DsaProblemDetailNew() {
         } catch (error) {
             setJudgeStatus('error');
             toast.error('Execution failed', {
-                description: 'Server unavailable. Use JavaScript for offline runs — test cases run in browser.',
+                description: 'Could not run your code. Check your code and try again.',
             });
         }
     }, [id, code, language, problem]);
@@ -887,7 +887,7 @@ int main() {
         } catch (error) {
             setJudgeStatus('error');
             toast.error('Execution failed', {
-                description: 'Server unavailable. Use JavaScript for offline runs — test cases run in browser.',
+                description: 'Could not run your code. Check your code and try again.',
             });
         }
     }, [id, code, language, problem]);

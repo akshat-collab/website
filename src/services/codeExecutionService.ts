@@ -1,8 +1,12 @@
-// Code Execution Service - Connects to backend via /api (Vite proxy in dev)
+// Code Execution Service - Uses backend when available, else browser JS or Piston API
 import { getApiUrl } from '@/lib/api';
 
-function getExecuteApi() {
+function getExecuteApi(): string {
   return getApiUrl('/api/execute');
+}
+
+function hasBackend(): boolean {
+  return Boolean(import.meta.env.VITE_API_URL?.trim());
 }
 
 export interface ExecutionResult {
@@ -233,6 +237,19 @@ export async function executeCode(
     };
   }
   
+  // When no backend URL is set, use fallbacks directly (avoids 404/405 on static deploy)
+  if (!hasBackend()) {
+    const fallbackResult = await runFallbacks(code, language, testCases, entryPoint ?? null);
+    if (fallbackResult) return fallbackResult;
+    return {
+      results: [],
+      overallStatus: 'runtime_error',
+      totalExecutionTime: 0,
+      averageMemory: 0,
+      complexity: { timeComplexity: 'N/A', spaceComplexity: 'N/A', analysis: 'Execution failed. Check your code and try again.' },
+    };
+  }
+
   try {
     const base = getExecuteApi();
     const endpoint = isSubmission ? `${base}/submit` : `${base}/run`;
@@ -300,60 +317,9 @@ export async function executeCode(
     };
     
   } catch (error) {
-    console.warn('Code execution server unavailable, trying fallbacks:', error);
-
-    // Fallback 1: JavaScript/TypeScript in browser
-    if (language === 'javascript' || language === 'typescript') {
-      const fallback = runInBrowser(code, testCases, entryPoint ?? null);
-      if (fallback.results.length > 0) {
-        const complexity = analyzeComplexity(code);
-        return {
-          results: fallback.results.map((r) => ({
-            testCaseId: r.testCaseId,
-            passed: r.passed,
-            input: r.input,
-            expected: r.expected,
-            actual: r.actual,
-            executionTime: r.executionTime,
-            error: r.error,
-          })),
-          overallStatus: fallback.overallStatus,
-          totalExecutionTime: fallback.totalExecutionTime,
-          averageMemory: 0,
-          complexity,
-        };
-      }
-    }
-
-    // Fallback 2: Java, C++, Python via Piston API (no server needed)
-    if (language === 'java' || language === 'cpp' || language === 'c' || language === 'python') {
-      try {
-        const { runWithPiston } = await import('./pistonExecutionService');
-        const piston = await runWithPiston(code, language, testCases, entryPoint ?? null);
-        if (piston.results.length > 0) {
-          const complexity = analyzeComplexity(code);
-          return {
-            results: piston.results.map((r, i) => ({
-              testCaseId: i + 1,
-              passed: r.passed,
-              input: testCases[i]?.input,
-              expected: testCases[i]?.expected,
-              actual: r.actual,
-              executionTime: r.executionTime,
-              error: r.error,
-            })),
-            overallStatus: piston.overallStatus,
-            totalExecutionTime: piston.totalExecutionTime,
-            averageMemory: 0,
-            complexity,
-          };
-        }
-      } catch (e) {
-        console.warn('Piston fallback failed:', e);
-      }
-    }
-
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.warn('Code execution failed, trying fallbacks:', error);
+    const fallbackResult = await runFallbacks(code, language, testCases, entryPoint ?? null);
+    if (fallbackResult) return fallbackResult;
     return {
       results: [],
       overallStatus: 'runtime_error',
@@ -362,10 +328,72 @@ export async function executeCode(
       complexity: {
         timeComplexity: 'N/A',
         spaceComplexity: 'N/A',
-        analysis: `Server unavailable: ${errorMessage}. JavaScript runs in browser; Java/C++/Python use Piston API.`,
+        analysis: 'Execution failed. Check your code and try again.',
       },
     };
   }
+}
+
+async function runFallbacks(
+  code: string,
+  language: string,
+  testCases: Array<{ input: any; expected: any }>,
+  entryPoint: EntryPoint | null
+): Promise<{
+  results: TestCaseResult[];
+  overallStatus: ExecutionResult['status'];
+  totalExecutionTime: number;
+  averageMemory: number;
+  complexity: ComplexityAnalysis;
+} | null> {
+  if (language === 'javascript' || language === 'typescript') {
+    const fallback = runInBrowser(code, testCases, entryPoint);
+    if (fallback.results.length > 0) {
+      const complexity = analyzeComplexity(code);
+      return {
+        results: fallback.results.map((r) => ({
+          testCaseId: r.testCaseId,
+          passed: r.passed,
+          input: r.input,
+          expected: r.expected,
+          actual: r.actual,
+          executionTime: r.executionTime,
+          error: r.error,
+        })),
+        overallStatus: fallback.overallStatus,
+        totalExecutionTime: fallback.totalExecutionTime,
+        averageMemory: 0,
+        complexity,
+      };
+    }
+  }
+  if (language === 'java' || language === 'cpp' || language === 'c' || language === 'python') {
+    try {
+      const { runWithPiston } = await import('./pistonExecutionService');
+      const piston = await runWithPiston(code, language, testCases, entryPoint);
+      if (piston.results.length > 0) {
+        const complexity = analyzeComplexity(code);
+        return {
+          results: piston.results.map((r, i) => ({
+            testCaseId: i + 1,
+            passed: r.passed,
+            input: testCases[i]?.input,
+            expected: testCases[i]?.expected,
+            actual: r.actual,
+            executionTime: r.executionTime,
+            error: r.error,
+          })),
+          overallStatus: piston.overallStatus,
+          totalExecutionTime: piston.totalExecutionTime,
+          averageMemory: 0,
+          complexity,
+        };
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
 }
 
 // Real-time syntax validation for Monaco Editor
