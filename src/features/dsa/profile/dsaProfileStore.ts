@@ -7,6 +7,7 @@ const PHOTO_KEY = "dsa_profile_photo";
 const GENDER_KEY = "dsa_profile_gender";
 const LOGIN_STREAK_KEY = "dsa_login_streak"; // { lastDate: "YYYY-MM-DD", streak: number }
 const SOLVED_PROBLEMS_KEY = "dsa_solved_problems"; // string[] of problem ids (slugs)
+const ATTEMPTED_PROBLEMS_KEY = "dsa_attempted_problems"; // string[] of problem ids (slugs)
 
 function dateKey(d: Date): string {
   const y = d.getFullYear();
@@ -98,6 +99,23 @@ export function getSolvedProblemIds(): string[] {
     return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === "string") : [];
   } catch {
     return [];
+  }
+}
+
+/** Add a problem id to attempted list (when user runs/submits but doesn't pass). */
+export function addAttemptedProblem(problemId: string): void {
+  if (!problemId?.trim()) return;
+  const id = problemId.trim();
+  if (getSolvedProblemIds().includes(id)) return; // Already solved
+  try {
+    const raw = localStorage.getItem(ATTEMPTED_PROBLEMS_KEY);
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    if (list.includes(id)) return;
+    const next = [...list, id];
+    localStorage.setItem(ATTEMPTED_PROBLEMS_KEY, JSON.stringify(next));
+    window.dispatchEvent(new StorageEvent("storage", { key: ATTEMPTED_PROBLEMS_KEY, newValue: JSON.stringify(next) }));
+  } catch {
+    /* ignore */
   }
 }
 

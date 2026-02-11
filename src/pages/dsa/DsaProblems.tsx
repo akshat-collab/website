@@ -390,9 +390,13 @@ export default function DsaProblems() {
                             key={row.id}
                             className={cn(
                                 "cursor-pointer border-[1.5px] transition-all duration-300 group h-12",
-                                theme === 'pastel' 
-                                    ? "border-rose-50 hover:bg-rose-50 hover:border-l-4 hover:border-l-rose-400 hover:shadow-[0_0_20px_rgba(244,63,94,0.1)] border-l-2 border-l-transparent" 
-                                    : "border-slate-200 dark:border-white/50 hover:bg-cyan-500/10 hover:border-l-4 hover:border-l-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.1)] border-l-2 border-l-transparent dark:hover:bg-cyan-500/10"
+                                isSolved
+                                    ? theme === 'pastel'
+                                        ? "bg-green-50/80 border-green-200/50 border-l-2 border-l-green-400/50"
+                                        : "bg-green-500/5 dark:bg-green-500/10 border-green-500/20 border-l-2 border-l-green-500/40"
+                                    : theme === 'pastel'
+                                        ? "border-rose-50 hover:bg-rose-50 hover:border-l-4 hover:border-l-rose-400 hover:shadow-[0_0_20px_rgba(244,63,94,0.1)] border-l-2 border-l-transparent"
+                                        : "border-slate-200 dark:border-white/50 hover:bg-cyan-500/10 hover:border-l-4 hover:border-l-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.1)] border-l-2 border-l-transparent dark:hover:bg-cyan-500/10"
                             )}
                             onClick={() => navigate(`/dsa/problem/${row.id}`)}
                         >

@@ -1,3 +1,5 @@
+import { DSA_PROBLEMS_GENERATED } from "./dsaProblems500.generated";
+
 export type Difficulty = "Easy" | "Medium" | "Hard";
 
 export interface DsaProblemExample {
@@ -645,6 +647,7 @@ public:
       cpp: `int mySqrt(int x) { return 0; }`,
     },
   },
+  ...DSA_PROBLEMS_GENERATED,
 ];
 
 const problemMap = new Map(DSA_PROBLEMS.map((p) => [p.id, p]));

@@ -49,7 +49,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { recordActivity } from "@/features/dsa/streak/dsaActivityStore";
-import { addSolvedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
+import { addSolvedProblem, addAttemptedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
 import { fetchDsaQuestionById, DsaApiError } from "@/features/dsa/api/questions";
 import type { DsaQuestionDetail } from "@/features/dsa/api/questions";
 import { executeCode } from "@/services/codeExecutionService";
@@ -269,11 +269,13 @@ export default function DsaProblemDetailNew() {
                     timestamp: new Date(),
                 });
                 setHasSubmitted(true);
+                if (id) addAttemptedProblem(id);
                 toast.error('Compilation Error', {
                     description: result.complexity.analysis || 'Failed to compile code',
                 });
             } else {
                 setJudgeStatus('wrong');
+                if (id) addAttemptedProblem(id);
                 setHasSubmitted(true);
                 setRunMetrics({
                     runtime: result.totalExecutionTime,

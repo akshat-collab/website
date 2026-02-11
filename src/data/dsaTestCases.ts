@@ -1,3 +1,5 @@
+import { DSA_TEST_CASES_GENERATED } from "./dsaTestCases500.generated";
+
 // Test cases for DSA problems
 export interface TestCase {
   input: any;
@@ -238,6 +240,7 @@ export const DSA_TEST_CASES: ProblemTestCases[] = [
       { input: { x: 16 }, expected: 4, hidden: true },
     ],
   },
+  ...DSA_TEST_CASES_GENERATED,
 ];
 
 export function getTestCasesByProblemId(problemId: string): TestCase[] {
