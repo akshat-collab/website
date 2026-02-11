@@ -53,7 +53,7 @@ export default function DsaDailyChallenge() {
           if (cancelled) return;
           setProblem(item);
         } catch {
-          throw new Error("No problems available. Add questions to Supabase.");
+          throw new Error("No problems available.");
         }
         if (!cancelled) setCode(DEFAULT_PYTHON);
       } catch (e) {

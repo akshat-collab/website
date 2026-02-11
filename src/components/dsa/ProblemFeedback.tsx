@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
 import { useDsaAuth } from '@/features/dsa/auth/DsaAuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +17,8 @@ import {
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 
+const COMMENTS_KEY = (slug: string) => `dsa_comments_${slug}`;
+
 interface Comment {
   id: string;
   problem_slug: string;
@@ -27,6 +28,7 @@ interface Comment {
   content: string;
   parent_comment_id?: string;
   likes: number;
+  liked_by: string[];
   created_at: string;
   updated_at: string;
   replies?: Comment[];
@@ -35,6 +37,7 @@ interface Comment {
 
 interface ProblemFeedbackProps {
   problemSlug: string;
+  onCommentCountChange?: (count: number) => void;
 }
 
 function buildCommentTree(rows: Comment[], userLikes: string[]): Comment[] {
@@ -61,7 +64,27 @@ function buildCommentTree(rows: Comment[], userLikes: string[]): Comment[] {
   return roots;
 }
 
-export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
+function loadCommentsFromStorage(slug: string): Comment[] {
+  try {
+    const raw = localStorage.getItem(COMMENTS_KEY(slug));
+    if (!raw) return [];
+    const arr = JSON.parse(raw) as unknown;
+    if (!Array.isArray(arr)) return [];
+    return arr.map((c: Record<string, unknown>) => ({
+      ...c,
+      liked_by: Array.isArray(c.liked_by) ? c.liked_by : [],
+      likes: Array.isArray(c.liked_by) ? c.liked_by.length : Number(c.likes) || 0,
+    })) as Comment[];
+  } catch {
+    return [];
+  }
+}
+
+function saveCommentsToStorage(slug: string, comments: Comment[]): void {
+  localStorage.setItem(COMMENTS_KEY(slug), JSON.stringify(comments));
+}
+
+export function ProblemFeedback({ problemSlug, onCommentCountChange }: ProblemFeedbackProps) {
   const { user: currentUser } = useDsaAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,77 +96,26 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
   const [hasNewComments, setHasNewComments] = useState(false);
   const [lastViewedTime, setLastViewedTime] = useState<Date>(new Date());
 
-  const fetchComments = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { data: commentsData, error: commentsErr } = await supabase
-        .from('problem_comments')
-        .select('id, problem_slug, user_id, username, user_avatar, content, parent_comment_id, likes, created_at, updated_at')
-        .eq('problem_slug', problemSlug)
-        .order('created_at', { ascending: true });
-
-      if (commentsErr) throw commentsErr;
-
-      let userLikes: string[] = [];
-      if (currentUser?.id) {
-        const commentIds = (commentsData || []).map((c) => c.id);
-        if (commentIds.length > 0) {
-          const { data: likesData } = await supabase
-            .from('comment_likes')
-            .select('comment_id')
-            .eq('user_id', currentUser.id)
-            .in('comment_id', commentIds);
-          userLikes = (likesData || []).map((l) => l.comment_id);
-        }
-      }
-
-      const rows = (commentsData || []).map((r) => ({
-        ...r,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
-      })) as Comment[];
-      const roots = buildCommentTree(rows, userLikes);
-      const sorted =
-        sortBy === 'popular'
-          ? roots.sort((a, b) => b.likes - a.likes)
-          : roots.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      setHasNewComments(sorted.some((c) => new Date(c.created_at) > lastViewedTime));
-      setComments(sorted);
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      toast.error('Failed to load feedback');
-    } finally {
-      setLoading(false);
-    }
-  }, [problemSlug, currentUser?.id, sortBy, lastViewedTime]);
+  const fetchComments = useCallback(() => {
+    setLoading(true);
+    const rows = loadCommentsFromStorage(problemSlug);
+    const userLikes: string[] = currentUser?.id
+      ? rows.filter((c) => c.liked_by?.includes(currentUser.id)).map((c) => c.id)
+      : [];
+    const roots = buildCommentTree(rows, userLikes);
+    const sorted =
+      sortBy === 'popular'
+        ? roots.sort((a, b) => b.likes - a.likes)
+        : roots.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setHasNewComments(sorted.some((c) => new Date(c.created_at) > lastViewedTime));
+    setComments(sorted);
+    onCommentCountChange?.(rows.length);
+    setLoading(false);
+  }, [problemSlug, currentUser?.id, sortBy, lastViewedTime, onCommentCountChange]);
 
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
-
-  // Realtime: subscribe to problem_comments changes for this problem
-  useEffect(() => {
-    const channel = supabase
-      .channel(`problem_comments:${problemSlug}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'problem_comments',
-          filter: `problem_slug=eq.${problemSlug}`,
-        },
-        () => {
-          fetchComments();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [problemSlug, fetchComments]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -164,14 +136,21 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
     }
     try {
       setSubmitting(true);
-      const { error } = await supabase.from('problem_comments').insert({
+      const rows = loadCommentsFromStorage(problemSlug);
+      const comment: Comment = {
+        id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
         problem_slug: problemSlug,
         user_id: currentUser.id,
         username: currentUser.username || currentUser.email?.split('@')[0] || 'User',
-        user_avatar: null,
+        user_avatar: undefined,
         content: newComment.trim(),
-      });
-      if (error) throw error;
+        liked_by: [],
+        likes: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      rows.push(comment);
+      saveCommentsToStorage(problemSlug, rows);
       setNewComment('');
       toast.success('Feedback posted!');
       fetchComments();
@@ -190,15 +169,22 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
     if (!replyContent.trim()) return;
     try {
       setSubmitting(true);
-      const { error } = await supabase.from('problem_comments').insert({
+      const rows = loadCommentsFromStorage(problemSlug);
+      const reply: Comment = {
+        id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
         problem_slug: problemSlug,
         user_id: currentUser.id,
         username: currentUser.username || currentUser.email?.split('@')[0] || 'User',
-        user_avatar: null,
+        user_avatar: undefined,
         content: replyContent.trim(),
         parent_comment_id: parentId,
-      });
-      if (error) throw error;
+        liked_by: [],
+        likes: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      rows.push(reply);
+      saveCommentsToStorage(problemSlug, rows);
       setReplyContent('');
       setReplyTo(null);
       toast.success('Reply posted!');
@@ -216,18 +202,17 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
       return;
     }
     try {
-      if (isLiked) {
-        await supabase
-          .from('comment_likes')
-          .delete()
-          .eq('comment_id', commentId)
-          .eq('user_id', currentUser.id);
-      } else {
-        await supabase.from('comment_likes').insert({
-          comment_id: commentId,
-          user_id: currentUser.id,
-        });
-      }
+      const rows = loadCommentsFromStorage(problemSlug);
+      const comment = rows.find((c) => c.id === commentId);
+      if (!comment) return;
+      const liked_by = comment.liked_by || [];
+      const next = isLiked
+        ? liked_by.filter((id) => id !== currentUser.id)
+        : [...liked_by, currentUser.id];
+      comment.liked_by = next;
+      comment.likes = next.length;
+      comment.updated_at = new Date().toISOString();
+      saveCommentsToStorage(problemSlug, rows);
       fetchComments();
     } catch (error) {
       toast.error('Failed to update like');

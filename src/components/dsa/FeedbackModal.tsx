@@ -10,8 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Star, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
-import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
 
 interface FeedbackModalProps {
   open: boolean;
@@ -20,7 +18,6 @@ interface FeedbackModalProps {
 }
 
 export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModalProps) {
-  const { user } = useDsaAuth();
   const [text, setText] = useState("");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -34,32 +31,15 @@ export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModal
 
     setSubmitting(true);
     try {
-      const userId = user?.id ?? user?.email ?? 'anonymous';
-
-      const { error } = await supabase.from('dsa_feedback').insert({
-        user_id: userId,
-        problem_slug: problemSlug,
-        feedback_text: text.trim(),
-        rating: rating >= 1 && rating <= 5 ? rating : null,
-      });
-
-      if (error) throw error;
-
-      toast.success("Feedback submitted! Thank you.");
-      setText("");
-      setRating(0);
-      onOpenChange(false);
-    } catch {
-      // Store locally as fallback
       const feedbackKey = `dsa_feedback_${problemSlug}`;
       const existing = JSON.parse(localStorage.getItem(feedbackKey) || '[]');
       existing.push({
         text: text.trim(),
-        rating: rating || null,
+        rating: rating >= 1 && rating <= 5 ? rating : null,
         timestamp: new Date().toISOString(),
       });
       localStorage.setItem(feedbackKey, JSON.stringify(existing));
-      toast.success("Feedback saved ✓ Thanks! Will sync when connected.");
+      toast.success("Feedback submitted! Thank you.");
       setText("");
       setRating(0);
       onOpenChange(false);

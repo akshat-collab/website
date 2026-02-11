@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/pagination";
 import { Trophy, Loader2 } from "lucide-react";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
-import { supabase } from "@/lib/supabase";
+import { getSolvedProblemIds } from "@/features/dsa/profile/dsaProfileStore";
+import * as localAuth from "@/lib/localAuth";
 
 interface LeaderboardRow {
   rank: number;
@@ -36,28 +37,24 @@ export default function DsaLeaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase
-      .from("dsa_users")
-      .select("id, username, rating, problems_solved")
-      .order("rating", { ascending: false })
-      .limit(200)
-      .then(({ data, error }) => {
-        if (error) {
-          setItems([]);
-          return;
-        }
-        const rows = (data ?? []).map((r, i) => ({
-          rank: i + 1,
-          username: r.username ?? "",
-          userId: r.id ?? "",
-          rating: r.rating ?? 1200,
-          problemsSolved: r.problems_solved ?? 0,
-        }));
-        setItems(rows);
-      })
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false));
-  }, []);
+    // Local leaderboard: show current user from localStorage
+    const session = localAuth.getSession();
+    const solved = getSolvedProblemIds();
+    if (session) {
+      setItems([
+        {
+          rank: 1,
+          username: session.username || session.email?.split("@")[0] || "You",
+          userId: session.id,
+          rating: 1200 + solved.length * 10,
+          problemsSolved: solved.length,
+        },
+      ]);
+    } else {
+      setItems([]);
+    }
+    setLoading(false);
+  }, [user?.id]);
 
   const totalPages = Math.ceil(items.length / PAGE_SIZE) || 1;
   const paginated = items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);

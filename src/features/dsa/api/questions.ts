@@ -1,4 +1,3 @@
-import { supabase } from "@/lib/supabase";
 import { getDsaProblemById, getDsaProblemList } from "@/data/dsaProblems";
 import { getAllTestCases } from "@/data/dsaTestCases";
 
@@ -83,19 +82,7 @@ function hardcodedToListItem(p: { id: string; title: string; difficulty: Difficu
   return { id: p.id, title: p.title, difficulty: p.difficulty, acceptance: p.acceptance, tags: p.tags };
 }
 
-export async function fetchDsaQuestions(): Promise<{ items: DsaQuestionListItem[]; source: "supabase" | "hardcoded" }> {
-  try {
-    const { data, error } = await supabase
-      .from("questions")
-      .select("slug, title, difficulty, acceptance_rate, tags")
-      .order("id", { ascending: true });
-
-    if (error) throw error;
-    const items = (data ?? []).map((row) => mapRowToListItem(row as Record<string, unknown>));
-    if (items.length > 0) return { items, source: "supabase" };
-  } catch {
-    // Supabase failed or empty - use hardcoded list
-  }
+export async function fetchDsaQuestions(): Promise<{ items: DsaQuestionListItem[]; source: "hardcoded" }> {
   const hardcoded = getDsaProblemList();
   return { items: hardcoded.map(hardcodedToListItem), source: "hardcoded" };
 }
@@ -129,19 +116,6 @@ function hardcodedToDetail(p: {
 }
 
 export async function fetchDsaQuestionById(id: string): Promise<{ item: DsaQuestionDetail }> {
-  try {
-    const { data, error } = await supabase
-      .from("questions")
-      .select("*")
-      .eq("slug", id)
-      .single();
-
-    if (!error && data) {
-      return { item: mapRowToDetail(data as Record<string, unknown>) };
-    }
-  } catch {
-    // Supabase failed - fall through to hardcoded
-  }
   const hardcoded = getDsaProblemById(id);
   if (hardcoded) {
     return { item: hardcodedToDetail(hardcoded) };
@@ -151,20 +125,6 @@ export async function fetchDsaQuestionById(id: string): Promise<{ item: DsaQuest
 
 /** One problem slug per day (same for everyone). */
 export async function fetchDailySlug(): Promise<{ slug: string }> {
-  try {
-    const { data, error } = await supabase
-      .from("questions")
-      .select("slug")
-      .order("id", { ascending: true });
-
-    if (!error && data?.length) {
-      const today = new Date().toISOString().slice(0, 10);
-      const idx = today.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0) % data.length;
-      return { slug: String(data[idx]?.slug ?? data[0]?.slug) };
-    }
-  } catch {
-    // fall through
-  }
   const list = getDsaProblemList();
   if (list.length === 0) throw new DsaApiError("No questions in database", 404);
   const today = new Date().toISOString().slice(0, 10);
@@ -174,19 +134,6 @@ export async function fetchDailySlug(): Promise<{ slug: string }> {
 
 /** One random problem slug. */
 export async function fetchRandomSlug(): Promise<{ slug: string }> {
-  try {
-    const { data, error } = await supabase
-      .from("questions")
-      .select("slug")
-      .order("id", { ascending: true });
-
-    if (!error && data?.length) {
-      const idx = Math.floor(Math.random() * data.length);
-      return { slug: String(data[idx]?.slug ?? data[0]?.slug) };
-    }
-  } catch {
-    // fall through
-  }
   const list = getDsaProblemList();
   if (list.length === 0) throw new DsaApiError("No questions in database", 404);
   const idx = Math.floor(Math.random() * list.length);
@@ -195,18 +142,6 @@ export async function fetchRandomSlug(): Promise<{ slug: string }> {
 
 /** Fetch all questions with full detail (for duels, profile, etc.) */
 export async function fetchAllDsaQuestions(): Promise<DsaQuestionDetail[]> {
-  try {
-    const { data, error } = await supabase
-      .from("questions")
-      .select("*")
-      .order("id", { ascending: true });
-
-    if (!error && data?.length) {
-      return (data ?? []).map((row) => mapRowToDetail(row as Record<string, unknown>));
-    }
-  } catch {
-    // fall through
-  }
   const list = getDsaProblemList();
   return list.map((p) => hardcodedToDetail(p));
 }

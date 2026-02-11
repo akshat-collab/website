@@ -96,7 +96,7 @@ export default function DsaSoloChallenge() {
           if (cancelled) return;
           setProblem(item);
         } catch {
-          throw new Error("No problems available. Add questions to Supabase.");
+          throw new Error("No problems available.");
         }
         if (!cancelled) setCode(DEFAULT_BOILERPLATE.python);
       } catch (e) {

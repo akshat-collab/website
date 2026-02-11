@@ -53,7 +53,7 @@ interface ProblemContext {
   constraints: string[];
   difficulty: string;
   tags: string[];
-  /** Test case inputs from Supabase (no expected outputs to avoid spoilers) */
+  /** Test case inputs (no expected outputs to avoid spoilers) */
   testCases?: Array<{ input: unknown; expected?: unknown }>;
 }
 

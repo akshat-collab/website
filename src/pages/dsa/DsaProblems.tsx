@@ -67,7 +67,7 @@ export default function DsaProblems() {
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
 
-  // Fetch problems (Supabase first, then hardcoded fallback with full test cases)
+  // Fetch problems (hardcoded list with full test cases)
   const loadProblems = useCallback(async (isRetry = false) => {
     setLoading(true);
     if (isRetry) setError(null);
@@ -78,7 +78,7 @@ export default function DsaProblems() {
       setUserSkillLevel(calculateSkillLevel(userActivity));
       setRecommendedProblems(getRecommendedProblems(items, userActivity, 50));
       setUseFallbackList(source === "hardcoded");
-      setError(source === "hardcoded" ? "Using built-in problems. Connect Supabase for more." : null);
+      setError(null);
     } catch (err) {
       console.error("Failed to fetch problems:", err);
       setError(err instanceof Error ? err.message : "Failed to load");

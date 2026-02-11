@@ -47,7 +47,6 @@ import {
     Clock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
 import { recordActivity } from "@/features/dsa/streak/dsaActivityStore";
 import { addSolvedProblem, addAttemptedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
 import { recordActivity } from "@/lib/activityTracker";
@@ -432,34 +431,6 @@ int main() {
     useEffect(() => {
         loadProblem();
     }, [loadProblem]);
-
-    // Comment count from Supabase + Realtime
-    useEffect(() => {
-        if (!id) return;
-        const fetchCount = async () => {
-            try {
-                const { count, error } = await supabase
-                    .from('problem_comments')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('problem_slug', id);
-                if (!error) setCommentCount(count ?? 0);
-            } catch {
-                // ignore
-            }
-        };
-        fetchCount();
-        const channel = supabase
-            .channel(`comment_count:${id}`)
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'problem_comments', filter: `problem_slug=eq.${id}` },
-                fetchCount
-            )
-            .subscribe();
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [id]);
 
     const handleLanguageChange = useCallback((newLanguage: string) => {
         // Save current code before switching
@@ -1005,7 +976,12 @@ int main() {
                             )}
 
                             {/* Feedback Section */}
-                            {id && <ProblemFeedback problemSlug={id} />}
+                            {id && (
+                                <ProblemFeedback
+                                    problemSlug={id}
+                                    onCommentCountChange={setCommentCount}
+                                />
+                            )}
                         </div>
 
                         {/* Engagement Bar - Fixed at bottom */}

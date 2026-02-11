@@ -1,6 +1,5 @@
 /**
  * DSA profile: photo, gender, login streak, solved problems. Stored in localStorage.
- * Solved problems sync to Supabase when user is logged in.
  */
 
 const PHOTO_KEY = "dsa_profile_photo";
@@ -131,23 +130,10 @@ export function addSolvedProblem(problemId: string): void {
   import("@/lib/activityTracker").then(({ recordActivity }) => recordActivity("dsa_solve", id));
 }
 
-/** Call after addSolvedProblem when user is logged in — sync to Supabase so problems_solved and submissions are updated. */
-export async function syncSolvedToBackend(problemId: string, opts?: { language?: string; runtime_ms?: number; memory_mb?: number }): Promise<void> {
-  try {
-    const { getSession } = await import("@/lib/localAuth");
-    const session = getSession();
-    if (!session?.id) return;
-    const { supabase } = await import("@/lib/supabase");
-    await supabase.from("dsa_submissions").insert({
-      user_id: session.id,
-      problem_id: problemId,
-      status: "Accepted",
-      language: opts?.language ?? "javascript",
-      runtime_ms: opts?.runtime_ms ?? null,
-      memory_mb: opts?.memory_mb ?? null,
-    });
-    await supabase.rpc("increment_problems_solved", { user_id: session.id });
-  } catch {
-    // offline or Supabase down — localStorage already updated
-  }
+/** No-op: previously synced to Supabase. Now using local storage only. */
+export async function syncSolvedToBackend(
+  _problemId: string,
+  _opts?: { language?: string; runtime_ms?: number; memory_mb?: number }
+): Promise<void> {
+  // Local storage only — no backend sync
 }
