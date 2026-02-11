@@ -35,6 +35,7 @@ import {
 } from "@/features/dsa/duels/duelRating";
 import { getApiUrl } from "@/lib/api";
 import { toast } from "sonner";
+import { getRandomBotReply, getContextualBotReply } from "@/data/duelBots";
 
 const DUEL_DURATION_SEC = 15 * 60; // 15 min
 
@@ -241,10 +242,28 @@ export default function DsaDuelRoom() {
     };
   }, [roomId]);
 
+  const botGreetedRef = useRef(false);
+  useEffect(() => {
+    if (!isBot || botGreetedRef.current) return;
+    botGreetedRef.current = true;
+    const t = setTimeout(() => {
+      setChatMessages((m) => [
+        ...m,
+        {
+          id: `bot-welcome-${Date.now()}`,
+          from: "opponent",
+          text: getRandomBotReply(),
+          time: new Date(),
+        },
+      ]);
+    }, 800 + Math.random() * 700);
+    return () => clearTimeout(t);
+  }, [isBot]);
+
   const sendChat = () => {
     const text = chatInput.trim();
     if (!text) return;
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
+    if (wsRef.current?.readyState === WebSocket.OPEN && !isBot) {
       wsRef.current.send(
         JSON.stringify({
           type: "chat",
@@ -252,17 +271,30 @@ export default function DsaDuelRoom() {
           roomId: roomId ?? undefined,
         })
       );
-      setChatMessages((m) => [
-        ...m,
-        { id: `m-${Date.now()}`, from: "me", text, time: new Date() },
-      ]);
-    } else {
-      setChatMessages((m) => [
-        ...m,
-        { id: `m-${Date.now()}`, from: "me", text, time: new Date() },
-      ]);
     }
+    setChatMessages((m) => [
+      ...m,
+      { id: `m-${Date.now()}`, from: "me", text, time: new Date() },
+    ]);
     setChatInput("");
+
+    // Bot duel: add contextual reply based on user message
+    if (isBot) {
+      const delay = 400 + Math.random() * 800;
+      const userText = text;
+      setTimeout(() => {
+        const botText = getContextualBotReply(userText);
+        setChatMessages((m) => [
+          ...m,
+          {
+            id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            from: "opponent",
+            text: botText,
+            time: new Date(),
+          },
+        ]);
+      }, delay);
+    }
   };
 
   const toggleVoice = () => {

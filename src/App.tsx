@@ -4,6 +4,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
+
+// Page transition wrapper - smooth fade when switching routes
+const PageTransition = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="page-transition-wrapper animate-page-in">
+      {children}
+    </div>
+  );
+};
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { DsaAuthProvider } from "./features/dsa/auth/DsaAuthContext";
 import { DsaLayout } from "./layouts/DsaLayout";
@@ -81,6 +91,7 @@ const App = () => (
               </div>
             </div>
           }>
+            <PageTransition>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
@@ -137,6 +148,7 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </PageTransition>
             <ConditionalChatBot />
           </Suspense>
         </BrowserRouter>

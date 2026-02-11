@@ -4,7 +4,7 @@
 export const TYPING_PASSAGES = {
   short: [
     "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.",
-    "Technology is best when it brings people together. Innovation distinguishes between a leader and a follower.",
+    "Technology is best when it brings people together. Innovation distinguishes between an innovator and a follower.",
     "Code is like humor. When you have to explain it, it's bad. Simplicity is the soul of efficiency.",
     "Typing speed matters in every job. Practice daily and your fingers will learn the keys. Accuracy first, then speed.",
     "Variables hold data. Functions process it. Logic connects them. Master these three.",

@@ -272,6 +272,15 @@
     @apply border-border;
   }
 
+  /* Page transition - smooth fade when switching routes */
+  .page-transition-wrapper {
+    animation: page-fade-in 0.3s ease forwards;
+  }
+  @keyframes page-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;

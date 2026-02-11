@@ -10,7 +10,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const THEMES: Theme[] = ['dark', 'light', 'pastel'];
+const THEMES: Theme[] = ['pastel', 'dark', 'light'];
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
@@ -18,7 +18,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (stored === 'light' || stored === 'dark' || stored === 'pastel') {
       return stored as Theme;
     }
-    return 'dark';
+    return 'pastel';
   });
 
   const setTheme = (t: Theme) => {

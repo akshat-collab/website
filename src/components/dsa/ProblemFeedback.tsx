@@ -1,6 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useDsaAuth } from '@/features/dsa/auth/DsaAuthContext';
 import { Button } from '@/components/ui/button';
+
+/** Get effective user: DSA login, main site login (techmasterai_user), or null for guest */
+function useEffectiveUser(): { id: string; username: string; email?: string } | null {
+  const { user: dsaUser } = useDsaAuth();
+  const [mainUser, setMainUser] = useState<{ name: string; email: string } | null>(null);
+
+  const readMainUser = useCallback(() => {
+    const raw = localStorage.getItem('techmasterai_user');
+    if (!raw) {
+      setMainUser(null);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw) as { name?: string; email?: string };
+      if (parsed?.email)
+        setMainUser({ name: parsed.name ?? parsed.email ?? 'User', email: parsed.email });
+      else setMainUser(null);
+    } catch {
+      setMainUser(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    readMainUser();
+    window.addEventListener('storage', readMainUser);
+    return () => window.removeEventListener('storage', readMainUser);
+  }, [readMainUser]);
+
+  if (dsaUser) return { id: dsaUser.id, username: dsaUser.username, email: dsaUser.email };
+  if (mainUser) return { id: mainUser.email, username: mainUser.name, email: mainUser.email };
+  return null;
+}
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -85,7 +117,7 @@ function saveCommentsToStorage(slug: string, comments: Comment[]): void {
 }
 
 export function ProblemFeedback({ problemSlug, onCommentCountChange }: ProblemFeedbackProps) {
-  const { user: currentUser } = useDsaAuth();
+  const currentUser = useEffectiveUser();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
@@ -126,10 +158,6 @@ export function ProblemFeedback({ problemSlug, onCommentCountChange }: ProblemFe
   }, [comments]);
 
   const handlePostComment = async () => {
-    if (!currentUser) {
-      toast.error('Please login to comment');
-      return;
-    }
     if (!newComment.trim()) {
       toast.error('Comment cannot be empty');
       return;
@@ -137,11 +165,13 @@ export function ProblemFeedback({ problemSlug, onCommentCountChange }: ProblemFe
     try {
       setSubmitting(true);
       const rows = loadCommentsFromStorage(problemSlug);
+      const userId = currentUser?.id ?? `guest_${Date.now()}`;
+      const username = currentUser?.username || currentUser?.email?.split('@')[0] || 'Guest';
       const comment: Comment = {
         id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
         problem_slug: problemSlug,
-        user_id: currentUser.id,
-        username: currentUser.username || currentUser.email?.split('@')[0] || 'User',
+        user_id: userId,
+        username,
         user_avatar: undefined,
         content: newComment.trim(),
         liked_by: [],
@@ -162,19 +192,17 @@ export function ProblemFeedback({ problemSlug, onCommentCountChange }: ProblemFe
   };
 
   const handlePostReply = async (parentId: string) => {
-    if (!currentUser) {
-      toast.error('Please login to reply');
-      return;
-    }
     if (!replyContent.trim()) return;
     try {
       setSubmitting(true);
       const rows = loadCommentsFromStorage(problemSlug);
+      const userId = currentUser?.id ?? `guest_${Date.now()}`;
+      const username = currentUser?.username || currentUser?.email?.split('@')[0] || 'Guest';
       const reply: Comment = {
         id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
         problem_slug: problemSlug,
-        user_id: currentUser.id,
-        username: currentUser.username || currentUser.email?.split('@')[0] || 'User',
+        user_id: userId,
+        username,
         user_avatar: undefined,
         content: replyContent.trim(),
         parent_comment_id: parentId,
@@ -198,7 +226,7 @@ export function ProblemFeedback({ problemSlug, onCommentCountChange }: ProblemFe
 
   const handleToggleLike = async (commentId: string, isLiked: boolean) => {
     if (!currentUser) {
-      toast.error('Please login to like comments');
+      toast.error('Login to like comments');
       return;
     }
     try {
@@ -345,16 +373,13 @@ export function ProblemFeedback({ problemSlug, onCommentCountChange }: ProblemFe
           <Textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder={
-              currentUser ? 'Share your feedback or ask a question...' : 'Login to comment'
-            }
-            disabled={!currentUser}
+            placeholder="Share your feedback or ask a question..."
             className="min-h-[100px] bg-[#1a1f2e] border-white/20 text-white placeholder:text-slate-500 resize-none"
           />
           <div className="flex justify-end">
             <Button
               onClick={handlePostComment}
-              disabled={submitting || !newComment.trim() || !currentUser}
+              disabled={submitting || !newComment.trim()}
               className="bg-cyan-500 hover:bg-cyan-400 text-black font-semibold"
             >
               {submitting ? (

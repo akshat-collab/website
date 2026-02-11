@@ -17,50 +17,6 @@ export const TECHMASTERAI_KNOWLEDGE = {
     email: "techmaster.hub@gmail.com"
   },
 
-  // Leadership Team
-  team: {
-    founder: {
-      name: "Adarsh Kumar",
-      role: "Founder/CFO",
-      email: "adarshcollab09@gmail.com",
-      linkedin: "https://www.linkedin.com/in/adarsh-kumar-300061331/",
-      photo: "/adarsh.jpeg",
-      bio: "Visionary founder of TechMasterAI, passionate about creating opportunities for developers worldwide."
-    },
-    ceo: {
-      name: "Akshat Singh",
-      role: "Co-Founder/CEO",
-      email: "akshatthakur823@gmail.com",
-      linkedin: "https://www.linkedin.com/in/akshat-singh-1103a0370/",
-      photo: "/akshat.png",
-      bio: "Leading TechMasterAI's strategic vision and growth initiatives."
-    },
-    managingDirector: {
-      name: "Kartavya Rana",
-      role: "Managing Director",
-      email: "kartavyarana2004@gmail.com",
-      linkedin: "https://www.linkedin.com/in/kartavya-rana-970945280/",
-      photo: "/kartavya.jpeg",
-      bio: "Overseeing operations and ensuring excellence in platform delivery."
-    },
-    cmo: {
-      name: "Divyam",
-      role: "Chief Marketing Officer",
-      email: "divyam11nov@gmail.com",
-      linkedin: "https://www.linkedin.com/in/divyam-1a683430a/",
-      photo: "/divyam.png",
-      bio: "Driving marketing strategies and community engagement initiatives."
-    },
-    cto: {
-      name: "Amey Rathore",
-      role: "Chief Technology Officer",
-      email: "ameycollab069@gmail.com",
-      linkedin: "https://www.linkedin.com/in/amey-rathore-92146535a/",
-      photo: "/amey.png",
-      bio: "Leading technical innovation and platform architecture."
-    }
-  },
-
   // Platform Features
   features: [
     {
@@ -145,46 +101,22 @@ ${TECHMASTERAI_KNOWLEDGE.company.description}
 Founded in ${TECHMASTERAI_KNOWLEDGE.company.founded} and headquartered in ${TECHMASTERAI_KNOWLEDGE.company.headquarters}, we're building the future of competitive programming!`;
   }
 
-  // Founder queries - multiple variations
+  // Founder/Team queries - generic response
   if (normalizedQuery.includes('founder') || 
-      normalizedQuery.includes('adarsh') ||
-      normalizedQuery.includes('who founded') ||
-      normalizedQuery.includes('who started')) {
-    return `👨‍💼 **${TECHMASTERAI_KNOWLEDGE.team.founder.name}** is our ${TECHMASTERAI_KNOWLEDGE.team.founder.role}
-
-${TECHMASTERAI_KNOWLEDGE.team.founder.bio}
-
-📧 Contact: ${TECHMASTERAI_KNOWLEDGE.team.founder.email}
-🔗 LinkedIn: ${TECHMASTERAI_KNOWLEDGE.team.founder.linkedin}`;
-  }
-
-  // CEO queries - multiple variations
-  if (normalizedQuery.includes('ceo') || 
-      normalizedQuery.includes('akshat') ||
-      normalizedQuery.includes('chief executive') ||
-      normalizedQuery.includes('who is ceo')) {
-    return `👨‍💼 **${TECHMASTERAI_KNOWLEDGE.team.ceo.name}** is our ${TECHMASTERAI_KNOWLEDGE.team.ceo.role}
-
-${TECHMASTERAI_KNOWLEDGE.team.ceo.bio}
-
-📧 Contact: ${TECHMASTERAI_KNOWLEDGE.team.ceo.email}
-🔗 LinkedIn: ${TECHMASTERAI_KNOWLEDGE.team.ceo.linkedin}`;
-  }
-
-  // Team queries
-  if (normalizedQuery.includes('team') || 
+      normalizedQuery.includes('ceo') ||
+      normalizedQuery.includes('team') ||
       normalizedQuery.includes('leadership') ||
       normalizedQuery.includes('who works') ||
-      normalizedQuery.includes('staff')) {
-    return `👥 **Our Leadership Team**:
+      normalizedQuery.includes('staff') ||
+      normalizedQuery.includes('who founded') ||
+      normalizedQuery.includes('who started') ||
+      normalizedQuery.includes('who is ceo')) {
+    return `👥 **Our Team**
 
-🏆 **${TECHMASTERAI_KNOWLEDGE.team.founder.name}** - ${TECHMASTERAI_KNOWLEDGE.team.founder.role}
-🏆 **${TECHMASTERAI_KNOWLEDGE.team.ceo.name}** - ${TECHMASTERAI_KNOWLEDGE.team.ceo.role}
-🏆 **${TECHMASTERAI_KNOWLEDGE.team.managingDirector.name}** - ${TECHMASTERAI_KNOWLEDGE.team.managingDirector.role}
-🏆 **${TECHMASTERAI_KNOWLEDGE.team.cmo.name}** - ${TECHMASTERAI_KNOWLEDGE.team.cmo.role}
-🏆 **${TECHMASTERAI_KNOWLEDGE.team.cto.name}** - ${TECHMASTERAI_KNOWLEDGE.team.cto.role}
+TechMasterAI is built by a passionate team dedicated to empowering developers worldwide.
 
-We're a passionate team dedicated to empowering developers worldwide! 🚀`;
+📧 Contact: ${TECHMASTERAI_KNOWLEDGE.company.email}
+🌐 Visit our website to learn more about us!`;
   }
 
   // Features queries

@@ -53,7 +53,7 @@ async function fetchLeetCodeProblems() {
       total_submitted: p.stat.total_submitted || 1,
     }))
     .sort((a, b) => a.id - b.id);
-  return free.slice(0, 1000);
+  return free.slice(0, 2000);
 }
 
 function titleFromSlug(slug) {
@@ -441,7 +441,7 @@ async function main() {
       'minimum-insertions-to-balance-a-parentheses-string', 'design-underground-system', 'lucky-numbers-in-a-matrix',
       'reformat-the-string', 'display-table-of-food-orders-in-a-restaurant', 'check-if-n-and-its-double-exist',
     ];
-    problems = slugList.slice(0, 1000).map((slug, i) => ({
+    problems = slugList.slice(0, 2000).map((slug, i) => ({
       id: i + 1,
       title: titleFromSlug(typeof slug === 'string' ? slug : slug.slug || slug),
       slug: typeof slug === 'string' ? slug : slug.slug || String(slug),
@@ -469,7 +469,7 @@ async function main() {
     const problem = generateProblem(p, tpl);
     generated.push(problem);
     testCasesMap[p.slug] = TEST_CASES[tpl] || TEST_CASES.nums;
-    if (generated.length >= 984) break;
+    if (generated.length >= 1984) break; // 1000 base + 984 existing style + 1000 more
   }
 
   const existingCount = 16;
