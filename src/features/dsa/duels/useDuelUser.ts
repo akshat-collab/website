@@ -19,7 +19,7 @@ export interface DuelUser {
  * So if the user is already logged in on the main website, they are treated as logged in for duels too.
  */
 export function useDuelUser(): DuelUser | null {
-  const { user: dsaUser, firebaseUser } = useDsaAuth();
+  const { user: dsaUser, authUser } = useDsaAuth();
   const [mainUser, setMainUser] = useState<{ name: string; email: string } | null>(null);
 
   const readMainUser = () => {
@@ -47,7 +47,7 @@ export function useDuelUser(): DuelUser | null {
   const photo =
     (dsaUser && "profile_photo_url" in dsaUser && dsaUser.profile_photo_url) ||
     getProfilePhoto() ||
-    firebaseUser?.photoURL ||
+    authUser?.user_metadata?.avatar_url ||
     undefined;
   const gender = getProfileGender();
   if (dsaUser) return { id: dsaUser.id, username: dsaUser.username, email: dsaUser.email, photo, gender };

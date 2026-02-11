@@ -1,14 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { auth } from '../lib/firebase';
-import {
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-} from 'firebase/auth';
+import { supabase } from '@/lib/supabase';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FloatingLines from '../components/FloatingLines';
@@ -24,23 +18,7 @@ function GoogleLogoIcon({ className }: { className?: string }) {
   );
 }
 
-const ONE_TIME_USED_KEY = 'techmasterai_onetime_used_emails';
 const ADMIN_EMAIL = 'admin@123';
-
-function getOneTimeUsedEmails(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(ONE_TIME_USED_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function markEmailUsedOnce(email: string): void {
-  const list = getOneTimeUsedEmails();
-  if (list.includes(email.toLowerCase())) return;
-  list.push(email.toLowerCase());
-  localStorage.setItem(ONE_TIME_USED_KEY, JSON.stringify(list));
-}
 
 const Login = () => {
   const navigate = useNavigate();
@@ -51,33 +29,12 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // Handle Google redirect return
-  useEffect(() => {
-    if (!auth) return;
-    getRedirectResult(auth)
-      .then((result) => {
-        if (!result?.user) return;
-        const u = result.user;
-        const name = u.displayName || u.email?.split('@')[0] || 'User';
-        localStorage.setItem(
-          'techmasterai_user',
-          JSON.stringify({ name, email: u.email || '', photo: u.photoURL || undefined })
-        );
-        toast.success('Signed in with Google!');
-        navigate('/', { replace: true });
-      })
-      .catch(() => {});
-  }, [navigate]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
-    const emailLower = formData.email.trim().toLowerCase();
-
-    // Check for admin credentials (admin exempt from one-time restriction)
     if (formData.email === ADMIN_EMAIL && formData.password === 'Akshat#4678') {
       localStorage.setItem('techmasterai_admin', 'true');
       localStorage.setItem('techmasterai_user', JSON.stringify({ name: 'Admin', email: formData.email }));
@@ -90,38 +47,33 @@ const Login = () => {
       return;
     }
 
-    // Strict one-time login: each account can log in only once
-    const usedEmails = getOneTimeUsedEmails();
-    if (usedEmails.includes(emailLower)) {
-      setIsLoading(false);
-      toast.error('One-time login already used', {
-        description: 'This account has already used its one-time login. Each account can log in only once.',
-        duration: 6000,
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email.trim(),
+        password: formData.password,
       });
-      return;
+      if (error) throw error;
+      const u = data.user;
+      const name = u?.user_metadata?.username || u?.email?.split('@')[0] || 'User';
+      localStorage.setItem(
+        'techmasterai_user',
+        JSON.stringify({
+          name,
+          email: u?.email || '',
+          photo: u?.user_metadata?.avatar_url || undefined,
+        })
+      );
+      toast.success('🎉 Welcome to TechMaster!', {
+        description: 'Login successful.',
+        duration: 4000,
+      });
+      navigate('/');
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Login failed';
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
     }
-
-    // First (and only) login for this account
-    markEmailUsedOnce(formData.email.trim());
-
-    const userName = formData.email.split('@')[0];
-    const existingData = JSON.parse(localStorage.getItem('techmasterai_users') || '[]');
-    const loginEntry = {
-      email: formData.email,
-      name: userName,
-      id: Date.now(),
-      submittedAt: new Date().toISOString(),
-      type: 'login',
-    };
-    localStorage.setItem('techmasterai_users', JSON.stringify([...existingData, loginEntry]));
-    localStorage.setItem('techmasterai_user', JSON.stringify({ name: userName, email: formData.email }));
-
-    setIsLoading(false);
-    toast.success('🎉 Welcome to TechMaster!', {
-      description: 'Login successful. This is your one-time login for this account.',
-      duration: 4000,
-    });
-    navigate('/');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,29 +81,19 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!auth) {
-      toast.error('Google sign-in is not configured');
-      return;
-    }
     setIsGoogleLoading(true);
-    const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      const u = result.user;
-      const name = u.displayName || u.email?.split('@')[0] || 'User';
-      localStorage.setItem(
-        'techmasterai_user',
-        JSON.stringify({ name, email: u.email || '', photo: u.photoURL || undefined })
-      );
-      toast.success('Signed in with Google!');
-      navigate('/');
-    } catch (err: unknown) {
-      const code = err && typeof err === 'object' && 'code' in err ? (err as { code: string }).code : '';
-      if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request') {
-        await signInWithRedirect(auth, provider);
-        return;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/` },
+      });
+      if (error) throw error;
+      if (data.url) {
+        window.location.href = data.url;
       }
-      toast.error(err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Google sign-in failed');
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Google sign-in failed';
+      toast.error(msg);
     } finally {
       setIsGoogleLoading(false);
     }
@@ -161,14 +103,11 @@ const Login = () => {
     <div className="min-h-screen flex flex-col bg-background scanline">
       <Header />
       <main className="flex-1 flex items-center justify-center px-4 pt-32 pb-16 relative overflow-hidden">
-        {/* Floating Lines Background Animation */}
         <FloatingLines
           enabledWaves={['top', 'middle', 'bottom']}
           lineCount={5}
           lineDistance={5}
         />
-
-        {/* Background Effects */}
         <div className="absolute inset-0 cyber-grid opacity-30" style={{ zIndex: 1 }} />
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" style={{ zIndex: 2 }} />
         <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s', zIndex: 2 }} />
@@ -178,11 +117,8 @@ const Login = () => {
             <h1 className="font-orbitron text-3xl font-bold text-center theme-accent mb-2">
               Access Terminal
             </h1>
-            <p className="font-rajdhani text-center theme-text-secondary mb-2">
+            <p className="font-rajdhani text-center theme-text-secondary mb-8">
               Enter your credentials to continue
-            </p>
-            <p className="font-rajdhani text-center text-xs theme-text-secondary mb-8 opacity-90">
-              One-time login only — each account can log in once.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -196,9 +132,7 @@ const Login = () => {
                   placeholder="Email Address"
                   required
                   className="w-full pl-12 pr-4 py-4 theme-input rounded-lg font-rajdhani text-lg"
-                  style={{ 
-                    color: 'var(--theme-text-primary)',
-                  }}
+                  style={{ color: 'var(--theme-text-primary)' }}
                 />
               </div>
 
@@ -212,9 +146,7 @@ const Login = () => {
                   placeholder="Password"
                   required
                   className="w-full pl-12 pr-4 py-4 theme-input rounded-lg font-rajdhani text-lg"
-                  style={{ 
-                    color: 'var(--theme-text-primary)',
-                  }}
+                  style={{ color: 'var(--theme-text-primary)' }}
                 />
               </div>
 
@@ -262,14 +194,12 @@ const Login = () => {
               </Link>
             </p>
 
-            {/* Decorative corners */}
             <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2" style={{ borderColor: 'var(--theme-accent)' }} />
             <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2" style={{ borderColor: 'var(--theme-accent)' }} />
             <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2" style={{ borderColor: 'var(--theme-accent)' }} />
             <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2" style={{ borderColor: 'var(--theme-accent)' }} />
           </div>
 
-          {/* Back to Home - Secondary Navigation */}
           <div className="mt-8 flex justify-center">
             <Link
               to="/"

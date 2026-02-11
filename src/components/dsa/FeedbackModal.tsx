@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Star, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
+import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
 
 interface FeedbackModalProps {
   open: boolean;
@@ -17,9 +19,8 @@ interface FeedbackModalProps {
   problemSlug: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
 export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModalProps) {
+  const { user } = useDsaAuth();
   const [text, setText] = useState("");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -33,21 +34,16 @@ export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModal
 
     setSubmitting(true);
     try {
-      const user = localStorage.getItem('techmasterai_user');
-      const userId = user ? JSON.parse(user).email || 'anonymous' : 'anonymous';
+      const userId = user?.id ?? user?.email ?? 'anonymous';
 
-      const response = await fetch(`${API_BASE}/api/dsa/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          problemSlug,
-          userId,
-          feedbackText: text.trim(),
-          rating: rating || null,
-        }),
+      const { error } = await supabase.from('dsa_feedback').insert({
+        user_id: userId,
+        problem_slug: problemSlug,
+        feedback_text: text.trim(),
+        rating: rating >= 1 && rating <= 5 ? rating : null,
       });
 
-      if (!response.ok) throw new Error('Failed to submit');
+      if (error) throw error;
 
       toast.success("Feedback submitted! Thank you.");
       setText("");

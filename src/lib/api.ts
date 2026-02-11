@@ -1,10 +1,10 @@
 /**
- * API client: base URL and auth headers (Firebase ID token).
- * Use for all backend API calls when user is logged in.
+ * API client: base URL and auth headers (Supabase session token).
  */
 
+import { supabase } from "@/lib/supabase";
+
 function getApiBase(): string {
-  if (import.meta.env.DEV) return ''; // Vite proxy to backend
   return import.meta.env.VITE_API_URL || '';
 }
 
@@ -18,13 +18,9 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  const { auth } = await import('@/lib/firebase');
-  if (!auth?.currentUser) return headers;
-  try {
-    const token = await auth.currentUser.getIdToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-  } catch {
-    // ignore
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`;
   }
   return headers;
 }

@@ -11,21 +11,7 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      },
-      '/ws': {
-        target: 'http://localhost:3001',
-        ws: true,
-      },
-      '/.netlify/functions': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/.netlify\/functions/, '/api'),
-      },
-    },
+    // No backend proxy - use Supabase directly. For chat: `netlify dev` runs the chat function.
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

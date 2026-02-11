@@ -19,7 +19,6 @@ import {
   getSolvedProblemIds,
   type ProfileGender,
 } from "@/features/dsa/profile/dsaProfileStore";
-import { getDsaProblemById } from "@/data/dsaProblems";
 import { getActivityDates } from "@/features/dsa/streak/dsaActivityStore";
 import { StickyNotes } from "@/components/dsa/StickyNotes";
 
@@ -56,12 +55,12 @@ function ActivityHeatmap() {
 
 export default function DsaProfile() {
   const user = useDuelUser();
-  const { user: dsaUser, firebaseUser, token } = useDsaAuth();
+  const { user: dsaUser, authUser, token } = useDsaAuth();
   const [photo, setPhotoState] = useState<string | null>(() => getProfilePhoto());
   const displayPhoto =
     (dsaUser && "profile_photo_url" in dsaUser && dsaUser.profile_photo_url) ||
     photo ||
-    firebaseUser?.photoURL ||
+    authUser?.user_metadata?.avatar_url ||
     null;
   const [gender, setGenderState] = useState<ProfileGender | null>(() => getProfileGender());
   const [solvedIds, setSolvedIds] = useState<string[]>(() => getSolvedProblemIds());
@@ -277,8 +276,7 @@ export default function DsaProfile() {
             <CardContent>
               <ul className="space-y-1.5 max-h-60 overflow-y-auto">
                 {[...solvedIds].reverse().map((problemId) => {
-                  const p = getDsaProblemById(problemId);
-                  const title = p?.title ?? problemId;
+                  const title = problemId.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                   return (
                     <li key={problemId}>
                       <Link
@@ -287,11 +285,6 @@ export default function DsaProfile() {
                       >
                         <span className="text-primary">✓</span>
                         <span className="font-medium truncate">{title}</span>
-                        {p?.difficulty && (
-                          <Badge variant="secondary" className="text-xs shrink-0">
-                            {p.difficulty}
-                          </Badge>
-                        )}
                       </Link>
                     </li>
                   );

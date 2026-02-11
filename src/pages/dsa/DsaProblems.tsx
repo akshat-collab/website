@@ -11,8 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, CheckCircle2, Circle, Mic, Flame, Star, ChevronDown, Minus, Sparkles } from "lucide-react";
-import { fetchDsaQuestions, DsaApiError } from "@/features/dsa/api/questions";
-import { getDsaProblemList } from "@/data/dsaProblems";
+import { fetchDsaQuestions } from "@/features/dsa/api/questions";
 import { useDsaFilter } from "@/contexts/DsaFilterContext";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -68,41 +67,22 @@ export default function DsaProblems() {
     return saved ? new Set(JSON.parse(saved)) : new Set();
   });
 
-  // Fetch problems from API; on failure, use static fallback list so the app is still usable
+  // Fetch problems (Supabase first, then hardcoded fallback with full test cases)
   const loadProblems = useCallback(async (isRetry = false) => {
+    setLoading(true);
+    if (isRetry) setError(null);
     try {
-      setLoading(true);
-      if (isRetry) setError(null);
-      const data = await fetchDsaQuestions();
-      const items = data.items;
+      const { items, source } = await fetchDsaQuestions();
       setProblems(items);
       const userActivity = getUserActivityWithProblems(items);
-      const skillLevel = calculateSkillLevel(userActivity);
-      setUserSkillLevel(skillLevel);
-      const recommended = getRecommendedProblems(items, userActivity, 50);
-      setRecommendedProblems(recommended);
-      setError(null);
-      setUseFallbackList(false);
-    } catch (err) {
-      console.error('Failed to fetch problems:', err);
-      const fallback = getDsaProblemList();
-      const fallbackRows: ProblemRow[] = fallback.map((p) => ({
-        id: p.id,
-        title: p.title,
-        difficulty: p.difficulty,
-        acceptance: p.acceptance,
-        tags: p.tags,
-      }));
-      setProblems(fallbackRows);
-      const userActivity = getUserActivityWithProblems(fallbackRows);
       setUserSkillLevel(calculateSkillLevel(userActivity));
-      setRecommendedProblems(getRecommendedProblems(fallbackRows, userActivity, 50));
+      setRecommendedProblems(getRecommendedProblems(items, userActivity, 50));
+      setUseFallbackList(source === "hardcoded");
+      setError(source === "hardcoded" ? "Using built-in problems. Connect Supabase for more." : null);
+    } catch (err) {
+      console.error("Failed to fetch problems:", err);
+      setError(err instanceof Error ? err.message : "Failed to load");
       setUseFallbackList(true);
-      setError(
-        err instanceof DsaApiError
-          ? err.message
-          : 'Backend unavailable. Showing sample problems.'
-      );
     } finally {
       setLoading(false);
     }
@@ -239,11 +219,11 @@ export default function DsaProblems() {
     )}>
       {/* Fallback mode banner when API is unavailable */}
       {useFallbackList && error && (
-        <div className="shrink-0 bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-amber-800 dark:text-amber-200">
-            {error} Showing sample problems. Start the server and database to see all questions.
+        <div className="shrink-0 bg-cyan-500/10 border-b border-cyan-500/20 px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-cyan-800 dark:text-cyan-200">
+            {error} {problems.length} problems with full test cases available.
           </p>
-          <Button variant="outline" size="sm" onClick={() => loadProblems(true)} className="border-amber-500/50">
+          <Button variant="outline" size="sm" onClick={() => loadProblems(true)} className="border-cyan-500/50">
             Retry
           </Button>
         </div>

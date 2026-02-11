@@ -47,7 +47,7 @@ import {
     Clock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { getApiUrl } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 import { recordActivity } from "@/features/dsa/streak/dsaActivityStore";
 import { addSolvedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
 import { fetchDsaQuestionById, DsaApiError } from "@/features/dsa/api/questions";
@@ -60,8 +60,6 @@ import { ProblemFeedback } from "@/components/dsa/ProblemFeedback";
 import { FeedbackModal } from "@/components/dsa/FeedbackModal";
 import { analyzeComplexity, getComplexityBadgeClass } from "@/utils/codeComplexity";
 import { useTimerStopwatch } from "@/hooks/useTimerStopwatch";
-import { getTestCasesByProblemId } from "@/data/dsaTestCases";
-import { getDsaProblemById } from "@/data/dsaProblems";
 
 const STORAGE_KEY = (id: string) => `dsa_code_${id}`;
 
@@ -184,16 +182,10 @@ export default function DsaProblemDetailNew() {
         try {
             // Get ALL test cases: from API or fallback to local tough test cases
             const apiCases = problem.testCases || [];
-            const problemTestCases =
-                apiCases.length > 0
-                    ? apiCases.map((tc: any) => ({
-                          input: tc.input,
-                          expected: tc.output ?? tc.expected,
-                      }))
-                    : getTestCasesByProblemId(id!).map((tc) => ({
-                          input: tc.input,
-                          expected: tc.expected,
-                      }));
+            const problemTestCases = apiCases.map((tc: any) => ({
+                input: tc.input,
+                expected: tc.expected ?? tc.output,
+            }));
 
             if (problemTestCases.length === 0) {
                 toast.error('No test cases available for this problem');
@@ -399,31 +391,8 @@ int main() {
         setLoadError(null);
         try {
             setLoading(true);
-            try {
-                const data = await fetchDsaQuestionById(id);
-                setProblem(data.item);
-            } catch (apiErr) {
-                const fallback = getDsaProblemById(id);
-                if (fallback) {
-                    const testCases = getTestCasesByProblemId(id);
-                    setProblem({
-                        id: fallback.id,
-                        title: fallback.title,
-                        difficulty: fallback.difficulty,
-                        acceptance: fallback.acceptance,
-                        tags: fallback.tags,
-                        description: fallback.description,
-                        examples: fallback.examples,
-                        constraints: fallback.constraints,
-                        testCases: testCases.map((tc) => ({ input: tc.input, expected: tc.expected })),
-                        isPremium: false,
-                        likes: 0,
-                        dislikes: 0,
-                    });
-                } else {
-                    throw apiErr;
-                }
-            }
+            const data = await fetchDsaQuestionById(id);
+            setProblem(data.item);
         } catch (err) {
             const message =
                 err instanceof DsaApiError
@@ -443,23 +412,32 @@ int main() {
         loadProblem();
     }, [loadProblem]);
 
-    // Comment count from API
+    // Comment count from Supabase + Realtime
     useEffect(() => {
         if (!id) return;
-        const fetchCommentCount = async () => {
+        const fetchCount = async () => {
             try {
-                const res = await fetch(getApiUrl(`/api/comments/count?problem_slug=${encodeURIComponent(id)}`));
-                if (res.ok) {
-                    const data = await res.json();
-                    setCommentCount(data.count ?? 0);
-                }
+                const { count, error } = await supabase
+                    .from('problem_comments')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('problem_slug', id);
+                if (!error) setCommentCount(count ?? 0);
             } catch {
                 // ignore
             }
         };
-        fetchCommentCount();
-        const t = setInterval(fetchCommentCount, 20000);
-        return () => clearInterval(t);
+        fetchCount();
+        const channel = supabase
+            .channel(`comment_count:${id}`)
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'problem_comments', filter: `problem_slug=eq.${id}` },
+                fetchCount
+            )
+            .subscribe();
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [id]);
 
     const handleLanguageChange = useCallback((newLanguage: string) => {
@@ -822,13 +800,9 @@ int main() {
         try {
             // Get visible test cases: from API or fallback to local (first 3)
             const apiCases = problem.testCases || [];
-            const sourceCases =
-                apiCases.length > 0
-                    ? apiCases
-                    : getTestCasesByProblemId(id!).map((tc) => ({ input: tc.input, output: tc.expected }));
-            const problemTestCases = sourceCases.slice(0, 3).map((tc: any) => ({
+            const problemTestCases = apiCases.slice(0, 3).map((tc: any) => ({
                 input: tc.input,
-                expected: tc.output ?? tc.expected,
+                expected: tc.expected ?? tc.output,
             }));
 
             if (problemTestCases.length === 0) {
@@ -1625,7 +1599,7 @@ int main() {
                         <div className="h-full min-h-[400px]">
                             <DsaAiHelper
                                 onClose={() => setShowAiHelper(false)}
-                                problemContext={problem ? { title: problem.title, description: problem.description || '', constraints: problem.constraints || [], difficulty: problem.difficulty || '', tags: problem.tags || [] } : undefined}
+                                problemContext={problem ? { title: problem.title, description: problem.description || '', constraints: problem.constraints || [], difficulty: problem.difficulty || '', tags: problem.tags || [], testCases: problem.testCases } : undefined}
                                 userCode={code}
                                 language={language}
                                 problemId={id || undefined}
@@ -1650,7 +1624,7 @@ int main() {
                             style={layoutMode !== 'split-vertical' ? { width: `${aiPanelWidth}%` } : {}}
                         >
                             <DsaAiHelper
-                                problemContext={problem ? { title: problem.title, description: problem.description || '', constraints: problem.constraints || [], difficulty: problem.difficulty || '', tags: problem.tags || [] } : undefined}
+                                problemContext={problem ? { title: problem.title, description: problem.description || '', constraints: problem.constraints || [], difficulty: problem.difficulty || '', tags: problem.tags || [], testCases: problem.testCases } : undefined}
                                 userCode={code}
                                 language={language}
                                 problemId={id || undefined}

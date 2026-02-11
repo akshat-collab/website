@@ -6,17 +6,11 @@ import { Swords, Loader2, Users, Timer, Calendar, Zap } from "lucide-react";
 import { getDuelWsUrl } from "@/features/dsa/duels/duelWsUrl";
 import { useDuelUser } from "@/features/dsa/duels/useDuelUser";
 import { getDuelRating, getRankTier, getDuelStats } from "@/features/dsa/duels/duelRating";
+import { getApiUrl } from "@/lib/api";
 import { toast } from "sonner";
 
 const COUNTDOWN_SEC = 4;
 const BOT_FALLBACK_MS = 4000; // Match backend: 4s then auto-match with bot
-
-function getDuelApiBase(): string {
-  const api = import.meta.env.VITE_API_URL;
-  if (api) return api.replace(/\/$/, "");
-  if (typeof window !== "undefined") return window.location.origin;
-  return "http://localhost:3001";
-}
 
 export default function DsaDuelsLobby() {
   const navigate = useNavigate();
@@ -102,8 +96,7 @@ export default function DsaDuelsLobby() {
       fallbackTimerRef.current = null;
       if (matchedRef.current) return;
       try {
-        const base = getDuelApiBase();
-        const res = await fetch(`${base}/api/duels/bot-match`, {
+        const res = await fetch(getApiUrl("/api/duels/bot-match"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ gender: user?.gender ?? undefined }),

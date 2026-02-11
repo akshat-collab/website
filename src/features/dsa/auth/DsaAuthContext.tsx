@@ -1,17 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  type User as FirebaseUser,
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { getApiUrl, getAuthHeaders } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
+import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { recordLoginStreak } from "@/features/dsa/profile/dsaProfileStore";
 import { toast } from "sonner";
 
@@ -26,7 +15,7 @@ export interface DsaUser {
 
 interface DsaAuthContextType {
   user: DsaUser | null;
-  firebaseUser: FirebaseUser | null;
+  authUser: SupabaseUser | null;
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -37,35 +26,36 @@ interface DsaAuthContextType {
 
 const DsaAuthContext = createContext<DsaAuthContextType | undefined>(undefined);
 
-async function fetchMe(token: string): Promise<DsaUser | null> {
-  const res = await fetch(getApiUrl("/api/auth/me"), {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const u = data.user;
-  if (!u) return null;
+async function fetchProfileFromSupabase(userId: string): Promise<DsaUser | null> {
+  const { data, error } = await supabase
+    .from("dsa_users")
+    .select("id, username, email, rating, problems_solved")
+    .eq("id", userId)
+    .single();
+
+  if (error || !data) return null;
   return {
-    id: u.id,
-    username: u.username || u.email?.split("@")[0] || "user",
-    email: u.email || "",
-    rating: u.rating,
-    problemsSolved: u.problems_solved ?? u.problemsSolved,
-    profile_photo_url: u.profile_photo_url ?? null,
+    id: data.id,
+    username: data.username ?? data.email?.split("@")[0] ?? "user",
+    email: data.email ?? "",
+    rating: data.rating,
+    problemsSolved: data.problems_solved,
+    profile_photo_url: null,
   };
 }
 
 export function DsaAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<DsaUser | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const syncProfile = useCallback(async (firebaseUser: FirebaseUser) => {
-    const t = await firebaseUser.getIdToken();
-    const profile = await fetchMe(t);
+  const syncProfile = useCallback(async (session: Session) => {
+    const u = session.user;
+    setAuthUser(u);
+    const profile = await fetchProfileFromSupabase(u.id);
     setUser(profile);
-    setToken(t);
+    setToken(session.access_token);
     if (profile?.profile_photo_url) {
       const { setProfilePhoto } = await import("@/features/dsa/profile/dsaProfileStore");
       setProfilePhoto(profile.profile_photo_url);
@@ -73,61 +63,40 @@ export function DsaAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!auth) {
-      setIsLoading(false);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const result = await getRedirectResult(auth!);
-        if (cancelled || !result?.user) return;
-        const displayName =
-          result.user.displayName || result.user.email?.split("@")[0] || "User";
-        const token = await result.user.getIdToken();
-        await fetch(getApiUrl("/api/auth/register"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ username: displayName.trim().slice(0, 64) }),
-        });
-        await syncProfile(result.user);
-        recordLoginStreak();
-        toast.success("Signed in with Google!");
-        if (typeof window !== "undefined" && window.location.pathname.includes("/dsa/login")) {
-          window.location.replace("/dsa/dashboard");
-        }
-      } catch {
-        // No redirect result or error — continue to auth state listener
-      }
-    })();
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
-      setFirebaseUser(fbUser);
-      if (!fbUser) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setAuthUser(session?.user ?? null);
+      if (!session?.user) {
         setUser(null);
         setToken(null);
         setIsLoading(false);
         return;
       }
       try {
-        await syncProfile(fbUser);
+        await syncProfile(session);
       } catch {
         setUser(null);
         setToken(null);
       }
       setIsLoading(false);
     });
-    return () => {
-      cancelled = true;
-      unsub();
-    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        syncProfile(session).finally(() => setIsLoading(false));
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [syncProfile]);
 
   const login = useCallback(async (email: string, password: string) => {
-    if (!auth) return { success: false, error: "Firebase not configured" };
     if (!email.trim() || !password) return { success: false, error: "Email and password required" };
     try {
-      const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
-      await syncProfile(cred.user);
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (error) throw error;
+      if (data.session) await syncProfile(data.session);
       recordLoginStreak();
       toast.success("Signed in successfully!");
       return { success: true };
@@ -140,18 +109,16 @@ export function DsaAuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithGoogle = useCallback(
     async (gender?: "male" | "female") => {
-      if (!auth) return { success: false, error: "Firebase not configured" };
-      const provider = new GoogleAuthProvider();
       try {
-        const cred = await signInWithPopup(auth, provider);
-        const displayName = cred.user.displayName || cred.user.email?.split("@")[0] || "User";
-        const token = await cred.user.getIdToken();
-        await fetch(getApiUrl("/api/auth/register"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ username: displayName.trim().slice(0, 64) }),
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: `${window.location.origin}/dsa/dashboard` },
         });
-        await syncProfile(cred.user);
+        if (error) throw error;
+        if (data.url) {
+          window.location.href = data.url;
+          return { success: true };
+        }
         if (gender) {
           try {
             const { setProfileGender } = await import("@/features/dsa/profile/dsaProfileStore");
@@ -161,53 +128,40 @@ export function DsaAuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
         recordLoginStreak();
-        toast.success("Signed in with Google!");
+        toast.success("Redirecting to Google…");
         return { success: true };
       } catch (err: unknown) {
-        const code = err && typeof err === "object" && "code" in err ? (err as { code: string }).code : "";
-        if (code === "auth/popup-blocked" || code === "auth/cancelled-popup-request" || code === "auth/popup-closed-by-user") {
-          try {
-            await signInWithRedirect(auth, provider);
-            return { success: true };
-          } catch (redirectErr: unknown) {
-            const msg = redirectErr && typeof redirectErr === "object" && "message" in redirectErr
-              ? String((redirectErr as { message: string }).message)
-              : "Google sign-in failed";
-            toast.error(msg);
-            return { success: false, error: msg };
-          }
-        }
-        const message =
-          err && typeof err === "object" && "message" in err
-            ? String((err as { message: string }).message)
-            : "Google sign-in failed";
+        const message = err && typeof err === "object" && "message" in err ? String((err as { message: string }).message) : "Google sign-in failed";
         toast.error(message);
         return { success: false, error: message };
       }
     },
-    [syncProfile]
+    []
   );
 
   const register = useCallback(
     async (username: string, email: string, password: string) => {
-      if (!auth) return { success: false, error: "Firebase not configured" };
       if (!username.trim() || !email.trim() || !password) return { success: false, error: "All fields required" };
       try {
-        const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
-        const token = await cred.user.getIdToken();
-        const res = await fetch(getApiUrl("/api/auth/register"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ username: username.trim() }),
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: { username: username.trim().slice(0, 64) },
+          },
         });
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || "Failed to create profile");
+        if (error) throw error;
+        if (data.user && data.session) {
+          await syncProfile(data.session);
+          recordLoginStreak();
+          toast.success("Account created successfully!");
+          return { success: true };
         }
-        await syncProfile(cred.user);
-        recordLoginStreak();
-        toast.success("Account created successfully!");
-        return { success: true };
+        if (data.user && !data.session) {
+          toast.success("Check your email to confirm your account.");
+          return { success: true };
+        }
+        return { success: false, error: "Registration failed" };
       } catch (err: unknown) {
         const message = err && typeof err === "object" && "message" in err ? String((err as { message: string }).message) : "Registration failed";
         toast.error(message);
@@ -218,16 +172,16 @@ export function DsaAuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    if (auth) await firebaseSignOut(auth);
+    await supabase.auth.signOut();
     setUser(null);
-    setFirebaseUser(null);
+    setAuthUser(null);
     setToken(null);
     toast.success("Signed out");
   }, []);
 
   return (
     <DsaAuthContext.Provider
-      value={{ user, firebaseUser, token, isLoading, login, loginWithGoogle, register, logout }}
+      value={{ user, authUser, token, isLoading, login, loginWithGoogle, register, logout }}
     >
       {children}
     </DsaAuthContext.Provider>

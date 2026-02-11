@@ -147,6 +147,97 @@ export const DSA_TEST_CASES: ProblemTestCases[] = [
       { input: { s: "))))" }, expected: false, hidden: true },
     ],
   },
+  {
+    problemId: "add-two-numbers",
+    testCases: [
+      { input: { l1: [2, 4, 3], l2: [5, 6, 4] }, expected: [7, 0, 8] },
+      { input: { l1: [0], l2: [0] }, expected: [0] },
+      { input: { l1: [9, 9, 9, 9, 9, 9, 9], l2: [9, 9, 9, 9] }, expected: [8, 9, 9, 9, 0, 0, 0, 1] },
+      { input: { l1: [2, 4], l2: [5, 6, 4] }, expected: [7, 0, 5], hidden: true },
+    ],
+  },
+  {
+    problemId: "merge-two-sorted-lists",
+    testCases: [
+      { input: { list1: [1, 2, 4], list2: [1, 3, 4] }, expected: [1, 1, 2, 3, 4, 4] },
+      { input: { list1: [], list2: [] }, expected: [] },
+      { input: { list1: [], list2: [0] }, expected: [0] },
+      { input: { list1: [1, 3, 5], list2: [2, 4, 6] }, expected: [1, 2, 3, 4, 5, 6], hidden: true },
+    ],
+  },
+  {
+    problemId: "longest-common-prefix",
+    testCases: [
+      { input: { strs: ["flower", "flow", "flight"] }, expected: "fl" },
+      { input: { strs: ["dog", "racecar", "car"] }, expected: "" },
+      { input: { strs: ["a"] }, expected: "a" },
+      { input: { strs: ["ab", "a"] }, expected: "a", hidden: true },
+    ],
+  },
+  {
+    problemId: "remove-duplicates-from-sorted-array",
+    testCases: [
+      { input: { nums: [1, 1, 2] }, expected: 2 },
+      { input: { nums: [0, 0, 1, 1, 1, 2, 2, 3, 3, 4] }, expected: 5 },
+      { input: { nums: [1, 2, 3] }, expected: 3, hidden: true },
+      { input: { nums: [1, 1, 1, 1] }, expected: 1, hidden: true },
+    ],
+  },
+  {
+    problemId: "maximum-subarray",
+    testCases: [
+      { input: { nums: [-2, 1, -3, 4, -1, 2, 1, -5, 4] }, expected: 6 },
+      { input: { nums: [1] }, expected: 1 },
+      { input: { nums: [5, 4, -1, 7, 8] }, expected: 23 },
+      { input: { nums: [-1, -2, -3] }, expected: -1, hidden: true },
+    ],
+  },
+  {
+    problemId: "climbing-stairs",
+    testCases: [
+      { input: { n: 2 }, expected: 2 },
+      { input: { n: 3 }, expected: 3 },
+      { input: { n: 1 }, expected: 1 },
+      { input: { n: 4 }, expected: 5, hidden: true },
+      { input: { n: 5 }, expected: 8, hidden: true },
+    ],
+  },
+  {
+    problemId: "same-tree",
+    testCases: [
+      { input: { p: [1, 2, 3], q: [1, 2, 3] }, expected: true },
+      { input: { p: [1, 2], q: [1, null, 2] }, expected: false },
+      { input: { p: [1, 2, 1], q: [1, 1, 2] }, expected: false },
+      { input: { p: [], q: [] }, expected: true, hidden: true },
+    ],
+  },
+  {
+    problemId: "symmetric-tree",
+    testCases: [
+      { input: { root: [1, 2, 2, 3, 4, 4, 3] }, expected: true },
+      { input: { root: [1, 2, 2, null, 3, null, 3] }, expected: false },
+      { input: { root: [1] }, expected: true, hidden: true },
+    ],
+  },
+  {
+    problemId: "plus-one",
+    testCases: [
+      { input: { digits: [1, 2, 3] }, expected: [1, 2, 4] },
+      { input: { digits: [4, 3, 2, 1] }, expected: [4, 3, 2, 2] },
+      { input: { digits: [9] }, expected: [1, 0] },
+      { input: { digits: [9, 9, 9] }, expected: [1, 0, 0, 0], hidden: true },
+    ],
+  },
+  {
+    problemId: "sqrtx",
+    testCases: [
+      { input: { x: 4 }, expected: 2 },
+      { input: { x: 8 }, expected: 2 },
+      { input: { x: 0 }, expected: 0 },
+      { input: { x: 1 }, expected: 1, hidden: true },
+      { input: { x: 16 }, expected: 4, hidden: true },
+    ],
+  },
 ];
 
 export function getTestCasesByProblemId(problemId: string): TestCase[] {

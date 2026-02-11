@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getApiUrl, getAuthHeaders } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 import { useDsaAuth } from '@/features/dsa/auth/DsaAuthContext';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,6 +37,30 @@ interface ProblemFeedbackProps {
   problemSlug: string;
 }
 
+function buildCommentTree(rows: Comment[], userLikes: string[]): Comment[] {
+  const commentMap = new Map<string, Comment>();
+  rows.forEach((c) => {
+    commentMap.set(c.id, {
+      ...c,
+      replies: [],
+      isLiked: userLikes.includes(c.id),
+    });
+  });
+  const roots: Comment[] = [];
+  commentMap.forEach((c) => {
+    if (c.parent_comment_id) {
+      const parent = commentMap.get(c.parent_comment_id);
+      if (parent) {
+        parent.replies = parent.replies || [];
+        parent.replies.push(c);
+      }
+    } else {
+      roots.push(c);
+    }
+  });
+  return roots;
+}
+
 export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
   const { user: currentUser } = useDsaAuth();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -52,46 +76,38 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
   const fetchComments = useCallback(async () => {
     try {
       setLoading(true);
-      const headers = await getAuthHeaders();
-      const [commentsRes, likesRes] = await Promise.all([
-        fetch(getApiUrl(`/api/comments?problem_slug=${encodeURIComponent(problemSlug)}`), { headers }),
-        currentUser ? fetch(getApiUrl('/api/comments/likes'), { headers }) : null,
-      ]);
-      if (!commentsRes.ok) throw new Error('Failed to fetch comments');
-      const { comments: commentsData } = await commentsRes.json();
+      const { data: commentsData, error: commentsErr } = await supabase
+        .from('problem_comments')
+        .select('id, problem_slug, user_id, username, user_avatar, content, parent_comment_id, likes, created_at, updated_at')
+        .eq('problem_slug', problemSlug)
+        .order('created_at', { ascending: true });
+
+      if (commentsErr) throw commentsErr;
+
       let userLikes: string[] = [];
-      if (likesRes?.ok) {
-        const { commentIds } = await likesRes.json();
-        userLikes = commentIds || [];
+      if (currentUser?.id) {
+        const commentIds = (commentsData || []).map((c) => c.id);
+        if (commentIds.length > 0) {
+          const { data: likesData } = await supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .eq('user_id', currentUser.id)
+            .in('comment_id', commentIds);
+          userLikes = (likesData || []).map((l) => l.comment_id);
+        }
       }
 
-      const commentMap = new Map<string, Comment>();
-      const rootComments: Comment[] = [];
-      (commentsData || []).forEach((comment: Comment) => {
-        const commentWithLike = {
-          ...comment,
-          replies: [],
-          isLiked: userLikes.includes(comment.id),
-        };
-        commentMap.set(comment.id, commentWithLike);
-      });
-      commentMap.forEach((comment: Comment) => {
-        if (comment.parent_comment_id) {
-          const parent = commentMap.get(comment.parent_comment_id);
-          if (parent) {
-            parent.replies = parent.replies || [];
-            parent.replies.push(comment);
-          }
-        } else {
-          rootComments.push(comment);
-        }
-      });
+      const rows = (commentsData || []).map((r) => ({
+        ...r,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+      })) as Comment[];
+      const roots = buildCommentTree(rows, userLikes);
       const sorted =
         sortBy === 'popular'
-          ? rootComments.sort((a, b) => b.likes - a.likes)
-          : rootComments.sort(
-              (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            );
+          ? roots.sort((a, b) => b.likes - a.likes)
+          : roots.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
       setHasNewComments(sorted.some((c) => new Date(c.created_at) > lastViewedTime));
       setComments(sorted);
     } catch (error) {
@@ -100,13 +116,34 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
     } finally {
       setLoading(false);
     }
-  }, [problemSlug, currentUser, sortBy, lastViewedTime]);
+  }, [problemSlug, currentUser?.id, sortBy, lastViewedTime]);
 
   useEffect(() => {
     fetchComments();
-    const t = setInterval(fetchComments, 30000);
-    return () => clearInterval(t);
   }, [fetchComments]);
+
+  // Realtime: subscribe to problem_comments changes for this problem
+  useEffect(() => {
+    const channel = supabase
+      .channel(`problem_comments:${problemSlug}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'problem_comments',
+          filter: `problem_slug=eq.${problemSlug}`,
+        },
+        () => {
+          fetchComments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [problemSlug, fetchComments]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -127,12 +164,14 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
     }
     try {
       setSubmitting(true);
-      const res = await fetch(getApiUrl('/api/comments'), {
-        method: 'POST',
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({ problem_slug: problemSlug, content: newComment.trim() }),
+      const { error } = await supabase.from('problem_comments').insert({
+        problem_slug: problemSlug,
+        user_id: currentUser.id,
+        username: currentUser.username || currentUser.email?.split('@')[0] || 'User',
+        user_avatar: null,
+        content: newComment.trim(),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (error) throw error;
       setNewComment('');
       toast.success('Feedback posted!');
       fetchComments();
@@ -151,16 +190,15 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
     if (!replyContent.trim()) return;
     try {
       setSubmitting(true);
-      const res = await fetch(getApiUrl('/api/comments'), {
-        method: 'POST',
-        headers: await getAuthHeaders(),
-        body: JSON.stringify({
-          problem_slug: problemSlug,
-          content: replyContent.trim(),
-          parent_comment_id: parentId,
-        }),
+      const { error } = await supabase.from('problem_comments').insert({
+        problem_slug: problemSlug,
+        user_id: currentUser.id,
+        username: currentUser.username || currentUser.email?.split('@')[0] || 'User',
+        user_avatar: null,
+        content: replyContent.trim(),
+        parent_comment_id: parentId,
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (error) throw error;
       setReplyContent('');
       setReplyTo(null);
       toast.success('Reply posted!');
@@ -178,12 +216,17 @@ export function ProblemFeedback({ problemSlug }: ProblemFeedbackProps) {
       return;
     }
     try {
-      const url = getApiUrl(`/api/comments/${commentId}/like`);
-      const headers = await getAuthHeaders();
       if (isLiked) {
-        await fetch(url, { method: 'DELETE', headers });
+        await supabase
+          .from('comment_likes')
+          .delete()
+          .eq('comment_id', commentId)
+          .eq('user_id', currentUser.id);
       } else {
-        await fetch(url, { method: 'POST', headers });
+        await supabase.from('comment_likes').insert({
+          comment_id: commentId,
+          user_id: currentUser.id,
+        });
       }
       fetchComments();
     } catch (error) {

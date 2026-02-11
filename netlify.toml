@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci && npm run build"
+  command = "npm install && npm run build"
   publish = "dist"
   functions = "netlify/functions"
 
@@ -18,7 +18,13 @@
 #   status = 301
 #   force = true
 
-# Redirect all routes to index.html for SPA
+# API routes MUST come before SPA catch-all (Netlify uses first match)
+[[redirects]]
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
+  status = 200
+
+# SPA fallback: all frontend routes serve index.html (React Router handles /dsa/*, /typeforge/*, etc.)
 [[redirects]]
   from = "/*"
   to = "/index.html"

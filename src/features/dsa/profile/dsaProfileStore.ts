@@ -1,6 +1,6 @@
 /**
  * DSA profile: photo, gender, login streak, solved problems. Stored in localStorage.
- * Solved problems sync to backend when user is logged in (Firebase).
+ * Solved problems sync to Supabase when user is logged in.
  */
 
 const PHOTO_KEY = "dsa_profile_photo";
@@ -112,26 +112,22 @@ export function addSolvedProblem(problemId: string): void {
   window.dispatchEvent(new StorageEvent("storage", { key: SOLVED_PROBLEMS_KEY, newValue: JSON.stringify(next) }));
 }
 
-/** Call after addSolvedProblem when user is logged in — sync to backend so problems_solved and submissions are updated. */
+/** Call after addSolvedProblem when user is logged in — sync to Supabase so problems_solved and submissions are updated. */
 export async function syncSolvedToBackend(problemId: string, opts?: { language?: string; runtime_ms?: number; memory_mb?: number }): Promise<void> {
   try {
-    const { getApiUrl, getAuthHeaders } = await import("@/lib/api");
-    const { auth } = await import("@/lib/firebase");
-    if (!auth?.currentUser) return;
-    const token = await auth.currentUser.getIdToken();
-    if (!token) return;
-    await fetch(getApiUrl("/api/dsa/submissions"), {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({
-        problem_id: problemId,
-        status: "Accepted",
-        language: opts?.language ?? "javascript",
-        runtime_ms: opts?.runtime_ms ?? null,
-        memory_mb: opts?.memory_mb ?? null,
-      }),
+    const { supabase } = await import("@/lib/supabase");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("dsa_submissions").insert({
+      user_id: user.id,
+      problem_id: problemId,
+      status: "Accepted",
+      language: opts?.language ?? "javascript",
+      runtime_ms: opts?.runtime_ms ?? null,
+      memory_mb: opts?.memory_mb ?? null,
     });
+    await supabase.rpc("increment_problems_solved", { user_id: user.id });
   } catch {
-    // offline or backend down — localStorage already updated
+    // offline or Supabase down — localStorage already updated
   }
 }

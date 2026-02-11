@@ -21,7 +21,7 @@ export function DsaLayout() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   
-  const { user: dsaUser, firebaseUser, logout: dsaLogout } = useDsaAuth();
+  const { user: dsaUser, authUser, logout: dsaLogout } = useDsaAuth();
   const [legacyUser, setLegacyUser] = useState<{ name: string; email: string; photo?: string } | null>(null);
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export function DsaLayout() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
   const profilePhoto = currentUser
-    ? (getProfilePhoto() || firebaseUser?.photoURL || currentUser.photo)
+    ? (getProfilePhoto() || authUser?.user_metadata?.avatar_url || currentUser.photo)
     : null;
 
   const markAllAsRead = () => {

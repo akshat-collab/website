@@ -7,8 +7,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar, Trophy, ArrowLeft, Loader2, Play } from "lucide-react";
 import { fetchDailySlug, fetchDsaQuestionById } from "@/features/dsa/api/questions";
 import type { DsaQuestionDetail } from "@/features/dsa/api/questions";
-import { getDsaProblemList, getDsaProblemById } from "@/data/dsaProblems";
-import { getAllTestCases } from "@/data/dsaTestCases";
 import { executeCode } from "@/services/codeExecutionService";
 import { addSolvedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
 import { recordActivity } from "@/features/dsa/streak/dsaActivityStore";
@@ -55,26 +53,7 @@ export default function DsaDailyChallenge() {
           if (cancelled) return;
           setProblem(item);
         } catch {
-          const list = getDsaProblemList();
-          if (list.length === 0) throw new Error("No problems available.");
-          const today = new Date().toDateString();
-          let hash = 0;
-          for (let i = 0; i < today.length; i++) hash = (hash << 5) - hash + today.charCodeAt(i);
-          const pick = list[Math.abs(hash) % list.length];
-          setProblem({
-            id: pick.id,
-            title: pick.title,
-            difficulty: pick.difficulty,
-            acceptance: pick.acceptance,
-            tags: pick.tags,
-            description: pick.description,
-            examples: pick.examples,
-            constraints: pick.constraints,
-            testCases: [],
-            isPremium: false,
-            likes: 0,
-            dislikes: 0,
-          });
+          throw new Error("No problems available. Add questions to Supabase.");
         }
         if (!cancelled) setCode(DEFAULT_PYTHON);
       } catch (e) {
@@ -89,10 +68,7 @@ export default function DsaDailyChallenge() {
   }, []);
 
   useEffect(() => {
-    if (problem?.id) {
-      const p = getDsaProblemById(problem.id);
-      if (p?.boilerplate?.python) setCode(p.boilerplate.python);
-    }
+    if (problem?.id) setCode(DEFAULT_PYTHON);
   }, [problem?.id]);
 
   useEffect(() => {
@@ -101,9 +77,7 @@ export default function DsaDailyChallenge() {
     return () => clearInterval(t);
   }, [solved, startTime]);
 
-  const apiTestCases = problem ? normalizeTestCases(problem.testCases ?? []) : [];
-  const localTestCases = problem ? getAllTestCases(problem.id).map((tc) => ({ input: tc.input, expected: tc.expected })) : [];
-  const dailyTestCases = apiTestCases.length > 0 ? apiTestCases : localTestCases;
+  const dailyTestCases = problem ? normalizeTestCases(problem.testCases ?? []) : [];
   const hasTestCases = dailyTestCases.length > 0;
 
   const handleRun = async () => {

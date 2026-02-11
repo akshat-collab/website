@@ -1,0 +1,2 @@
+# SPA fallback: all routes serve index.html (React Router handles /dsa/*, /typeforge/*, etc.)
+/*    /index.html   200

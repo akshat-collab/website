@@ -14,8 +14,6 @@ import {
 import { Timer, Trophy, ArrowLeft, Loader2, CheckCircle2, XCircle, Play, Send, RotateCcw } from "lucide-react";
 import { fetchRandomSlug, fetchDsaQuestionById } from "@/features/dsa/api/questions";
 import type { DsaQuestionDetail } from "@/features/dsa/api/questions";
-import { getDsaProblemList } from "@/data/dsaProblems";
-import { getVisibleTestCases, getAllTestCases, getTestCasesByProblemId } from "@/data/dsaTestCases";
 import { executeCode } from "@/services/codeExecutionService";
 import { addSolvedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
 import { recordActivity } from "@/features/dsa/streak/dsaActivityStore";
@@ -98,24 +96,7 @@ export default function DsaSoloChallenge() {
           if (cancelled) return;
           setProblem(item);
         } catch {
-          const fallbackList = getDsaProblemList();
-          if (fallbackList.length === 0) throw new Error("No problems available.");
-          const pick = fallbackList[Math.floor(Math.random() * fallbackList.length)];
-          const tcs = getTestCasesByProblemId(pick.id);
-          setProblem({
-            id: pick.id,
-            title: pick.title,
-            difficulty: pick.difficulty,
-            acceptance: pick.acceptance,
-            tags: pick.tags,
-            description: pick.description,
-            examples: pick.examples,
-            constraints: pick.constraints,
-            testCases: tcs.map((tc) => ({ input: tc.input, expected: tc.expected })),
-            isPremium: false,
-            likes: 0,
-            dislikes: 0,
-          });
+          throw new Error("No problems available. Add questions to Supabase.");
         }
         if (!cancelled) setCode(DEFAULT_BOILERPLATE.python);
       } catch (e) {
@@ -145,13 +126,8 @@ export default function DsaSoloChallenge() {
   }, [solved, startTime]);
 
   const apiTestCases = problem ? normalizeTestCases(problem.testCases ?? []) : [];
-  const hasApiTestCases = apiTestCases.length > 0;
-  const visibleTestCases = hasApiTestCases
-    ? apiTestCases.slice(0, VISIBLE_COUNT)
-    : (problem ? getVisibleTestCases(problem.id) : []);
-  const allTestCases = hasApiTestCases
-    ? apiTestCases
-    : (problem ? getAllTestCases(problem.id) : []);
+  const visibleTestCases = apiTestCases.slice(0, VISIBLE_COUNT);
+  const allTestCases = apiTestCases;
 
   const runTests = useCallback(async (submitAll: boolean) => {
     if (!problem) return;

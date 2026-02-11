@@ -19,8 +19,8 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { getDsaProblemList, getDsaProblemById } from "@/data/dsaProblems";
-import { getAllTestCases } from "@/data/dsaTestCases";
+import { fetchDsaQuestionById, fetchRandomSlug } from "@/features/dsa/api/questions";
+import type { DsaQuestionDetail } from "@/features/dsa/api/questions";
 import { executeCode } from "@/services/codeExecutionService";
 import { getDuelWsUrl } from "@/features/dsa/duels/duelWsUrl";
 import { useDuelUser } from "@/features/dsa/duels/useDuelUser";
@@ -33,6 +33,7 @@ import {
   getRankTier,
   getDuelStats,
 } from "@/features/dsa/duels/duelRating";
+import { getApiUrl } from "@/lib/api";
 import { toast } from "sonner";
 
 const DUEL_DURATION_SEC = 15 * 60; // 15 min
@@ -54,22 +55,14 @@ export default function DsaDuelRoom() {
   const user = useDuelUser();
   const wsRef = useRef<WebSocket | null>(null);
 
-  const [problem, setProblem] = useState(() => {
-    if (problemIdParam) {
-      const p = getDsaProblemById(problemIdParam);
-      if (p) return p;
-    }
-    const list = getDsaProblemList();
-    return list[Math.floor(Math.random() * list.length)];
-  });
+  const [problem, setProblem] = useState<DsaQuestionDetail | null>(null);
+  const [problemLoading, setProblemLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState(DUEL_DURATION_SEC);
   const [mySolved, setMySolved] = useState(false);
   const [oppSolved, setOppSolved] = useState(false);
   const [winner, setWinner] = useState<"you" | "opponent" | null>(null);
   const [language, setLanguage] = useState<"python" | "javascript">("python");
-  const [code, setCode] = useState(
-    () => problem?.boilerplate?.python ?? problem?.boilerplate?.javascript ?? "# Your code"
-  );
+  const [code, setCode] = useState("# Your code");
   const [submitStatus, setSubmitStatus] = useState<"idle" | "running">("idle");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -88,8 +81,32 @@ export default function DsaDuelRoom() {
   }, [roomId, navigate]);
 
   useEffect(() => {
-    const boilerplate = language === "python" ? problem?.boilerplate?.python : problem?.boilerplate?.javascript;
-    if (boilerplate) setCode(boilerplate);
+    let cancelled = false;
+    (async () => {
+      try {
+        let slug: string;
+        if (problemIdParam) {
+          slug = problemIdParam;
+        } else {
+          const res = await fetchRandomSlug();
+          slug = res.slug;
+        }
+        if (cancelled) return;
+        const { item } = await fetchDsaQuestionById(slug);
+        if (cancelled) return;
+        setProblem(item);
+        setCode("# Your code");
+      } catch {
+        if (!cancelled) toast.error("Failed to load problem");
+      } finally {
+        if (!cancelled) setProblemLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [problemIdParam]);
+
+  useEffect(() => {
+    if (problem && language) setCode("# Your code");
   }, [problem?.id, language]);
 
   useEffect(() => {
@@ -117,9 +134,9 @@ export default function DsaDuelRoom() {
     }
   }, [timeLeft, winner, mySolved, oppSolved]);
 
-  const duelTestCases = problem ? getAllTestCases(problem.id) : [];
+  const duelTestCases = problem ? (problem.testCases ?? []).map((tc: any) => ({ input: tc.input, expected: tc.expected ?? tc.output })) : [];
   const hasTestCases = duelTestCases.length > 0;
-  const testCasesForRun = duelTestCases.map((tc) => ({ input: tc.input, expected: tc.expected }));
+  const testCasesForRun = duelTestCases;
 
   function getEntryPoint(pid: string, tcs: Array<{ input: any; expected: any }>) {
     if (!pid || !tcs.length) return null;
@@ -282,7 +299,7 @@ export default function DsaDuelRoom() {
         ? `Explain this DSA problem briefly: ${problem?.title}. ${problem?.description?.slice(0, 200)}...`
         : `Give a short approach to solve: ${problem?.title}. Don't give full code, just strategy.`;
     try {
-      const res = await fetch("/api/chat", {
+      const res = await fetch(getApiUrl("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -322,8 +339,19 @@ export default function DsaDuelRoom() {
   if (!problem) {
     return (
       <div className="flex-1 p-6 flex flex-col items-center justify-center gap-3 bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="text-muted-foreground">Loading problem...</p>
+        {problemLoading ? (
+          <>
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="text-muted-foreground">Loading problem...</p>
+          </>
+        ) : (
+          <>
+            <p className="text-muted-foreground">Failed to load problem.</p>
+            <Button variant="outline" asChild>
+              <Link to="/dsa/duels">Back to Duels</Link>
+            </Button>
+          </>
+        )}
       </div>
     );
   }

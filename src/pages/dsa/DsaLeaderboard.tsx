@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/pagination";
 import { Trophy, Loader2 } from "lucide-react";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
-import { getApiUrl } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 
 interface LeaderboardRow {
   rank: number;
@@ -36,13 +36,20 @@ export default function DsaLeaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(getApiUrl("/api/dsa/leaderboard?limit=200"))
-      .then((res) => res.ok ? res.json() : { items: [] })
-      .then((data) => {
-        const rows = (data.items || []).map((r: { id: string; username: string; rating: number; problems_solved: number }, i: number) => ({
+    supabase
+      .from("dsa_users")
+      .select("id, username, rating, problems_solved")
+      .order("rating", { ascending: false })
+      .limit(200)
+      .then(({ data, error }) => {
+        if (error) {
+          setItems([]);
+          return;
+        }
+        const rows = (data ?? []).map((r, i) => ({
           rank: i + 1,
-          username: r.username,
-          userId: r.id,
+          username: r.username ?? "",
+          userId: r.id ?? "",
           rating: r.rating ?? 1200,
           problemsSolved: r.problems_solved ?? 0,
         }));

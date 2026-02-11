@@ -16,15 +16,18 @@ CREATE TABLE IF NOT EXISTS public.dsa_users (
 -- Enable Row Level Security
 ALTER TABLE public.dsa_users ENABLE ROW LEVEL SECURITY;
 
--- Policies for dsa_users
+-- Policies for dsa_users (DROP IF EXISTS makes re-run safe)
+DROP POLICY IF EXISTS "Users can view all profiles" ON public.dsa_users;
 CREATE POLICY "Users can view all profiles"
   ON public.dsa_users FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON public.dsa_users;
 CREATE POLICY "Users can update own profile"
   ON public.dsa_users FOR UPDATE
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.dsa_users;
 CREATE POLICY "Users can insert own profile"
   ON public.dsa_users FOR INSERT
   WITH CHECK (auth.uid() = id);
@@ -51,10 +54,12 @@ CREATE TABLE IF NOT EXISTS public.dsa_submissions (
 ALTER TABLE public.dsa_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Policies for submissions
+DROP POLICY IF EXISTS "Users can view own submissions" ON public.dsa_submissions;
 CREATE POLICY "Users can view own submissions"
   ON public.dsa_submissions FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own submissions" ON public.dsa_submissions;
 CREATE POLICY "Users can insert own submissions"
   ON public.dsa_submissions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
@@ -81,14 +86,17 @@ CREATE TABLE IF NOT EXISTS public.dsa_rooms (
 ALTER TABLE public.dsa_rooms ENABLE ROW LEVEL SECURITY;
 
 -- Policies for rooms
+DROP POLICY IF EXISTS "Users can view rooms they're in" ON public.dsa_rooms;
 CREATE POLICY "Users can view rooms they're in"
   ON public.dsa_rooms FOR SELECT
   USING (auth.uid() = player1_id OR auth.uid() = player2_id OR status = 'waiting');
 
+DROP POLICY IF EXISTS "Users can create rooms" ON public.dsa_rooms;
 CREATE POLICY "Users can create rooms"
   ON public.dsa_rooms FOR INSERT
   WITH CHECK (auth.uid() = player1_id);
 
+DROP POLICY IF EXISTS "Users can update rooms they're in" ON public.dsa_rooms;
 CREATE POLICY "Users can update rooms they're in"
   ON public.dsa_rooms FOR UPDATE
   USING (auth.uid() = player1_id OR auth.uid() = player2_id);
@@ -122,6 +130,7 @@ CREATE TABLE IF NOT EXISTS public.questions (
 ALTER TABLE public.questions ENABLE ROW LEVEL SECURITY;
 
 -- Policies for questions (public read)
+DROP POLICY IF EXISTS "Anyone can view questions" ON public.questions;
 CREATE POLICY "Anyone can view questions"
   ON public.questions FOR SELECT
   USING (true);
