@@ -63,6 +63,23 @@ import { useTimerStopwatch } from "@/hooks/useTimerStopwatch";
 
 const STORAGE_KEY = (id: string) => `dsa_code_${id}`;
 
+const METHOD_OVERRIDES: Record<string, string> = {
+    'valid-palindrome': 'isPalindrome',
+    'valid-parentheses': 'isValid',
+    'max-depth-binary-tree': 'maxDepth',
+    'best-time-to-buy-sell': 'maxProfit',
+    'add-two-numbers': 'addTwoNumbers',
+    'merge-two-sorted-lists': 'mergeTwoLists',
+    'longest-common-prefix': 'longestCommonPrefix',
+    'remove-duplicates-from-sorted-array': 'removeDuplicates',
+    'maximum-subarray': 'maxSubArray',
+    'climbing-stairs': 'climbStairs',
+    'same-tree': 'isSameTree',
+    'symmetric-tree': 'isSymmetric',
+    'plus-one': 'plusOne',
+    'sqrtx': 'mySqrt',
+};
+
 /** Derive LeetCode-style entry point from problem slug and first test input. */
 function getEntryPoint(problemId: string | undefined, testCases: Array<{ input: any; expected: any }>): { functionName: string; paramOrder: string[] } | null {
     if (!problemId || !testCases.length) return null;
@@ -70,7 +87,7 @@ function getEntryPoint(problemId: string | undefined, testCases: Array<{ input: 
     const paramOrder = firstInput && typeof firstInput === 'object' && !Array.isArray(firstInput)
         ? Object.keys(firstInput)
         : [];
-    const functionName = problemId
+    const functionName = METHOD_OVERRIDES[problemId] ?? problemId
         .split('-')
         .map((part, i) => (i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)))
         .join('');
@@ -108,6 +125,7 @@ interface SubmissionData {
 }
 
 const LANGUAGES = [
+    { value: "javascript", label: "JavaScript" },
     { value: "java", label: "Java" },
     { value: "python", label: "Python 3" },
     { value: "c", label: "C" },
@@ -119,7 +137,7 @@ export default function DsaProblemDetailNew() {
     const navigate = useNavigate();
     const [problem, setProblem] = useState<DsaQuestionDetail | null>(null);
     const [loading, setLoading] = useState(true);
-    const [language, setLanguage] = useState("java");
+    const [language, setLanguage] = useState("javascript");
     const [code, setCode] = useState("");
     const [judgeStatus, setJudgeStatus] = useState<JudgeStatus>("idle");
     const [activeCase, setActiveCase] = useState(0);
@@ -305,7 +323,7 @@ export default function DsaProblemDetailNew() {
         } catch (error) {
             setJudgeStatus('error');
             toast.error('Execution failed', {
-                description: 'Failed to connect to execution server. Make sure backend is running on port 3001.',
+                description: 'Server unavailable. Use JavaScript for offline runs — test cases run in browser.',
             });
         }
     }, [id, code, language, problem]);
@@ -869,7 +887,7 @@ int main() {
         } catch (error) {
             setJudgeStatus('error');
             toast.error('Execution failed', {
-                description: 'Failed to connect to execution server. Make sure backend is running on port 3001.',
+                description: 'Server unavailable. Use JavaScript for offline runs — test cases run in browser.',
             });
         }
     }, [id, code, language, problem]);

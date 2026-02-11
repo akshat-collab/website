@@ -115,7 +115,99 @@ export interface EntryPoint {
   paramOrder: string[];
 }
 
-// Execute code against test cases - connects to real backend (LeetCode-style: auto-call solution with each test)
+/** Deep equality for arrays/objects (handles JSON-like values). */
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return a === b;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    return a.every((v, i) => deepEqual(v, b[i]));
+  }
+  if (typeof a === 'object' && typeof b === 'object') {
+    const ka = Object.keys(a as object).sort();
+    const kb = Object.keys(b as object).sort();
+    if (ka.length !== kb.length) return false;
+    return ka.every((k, i) => k === kb[i] && deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
+  }
+  return false;
+}
+
+/**
+ * Run JavaScript code in browser (fallback when server unavailable).
+ * Shows test-case results and feedback without needing backend.
+ */
+function runInBrowser(
+  code: string,
+  testCases: Array<{ input: any; expected: any }>,
+  entryPoint: EntryPoint | null
+): { results: TestCaseResult[]; overallStatus: ExecutionResult['status']; totalExecutionTime: number } {
+  const results: TestCaseResult[] = [];
+  const paramOrder = entryPoint?.paramOrder ?? (testCases[0]?.input && typeof testCases[0].input === 'object' ? Object.keys(testCases[0].input) : []);
+  const fnName = entryPoint?.functionName ?? 'solution';
+
+  try {
+    const fn = new Function(`
+      ${code}
+      return typeof ${fnName} === 'function' ? ${fnName} : (typeof solution === 'function' ? solution : null);
+    `)();
+    if (typeof fn !== 'function') {
+      return {
+        results: [],
+        overallStatus: 'compilation_error',
+        totalExecutionTime: 0,
+      };
+    }
+
+    let totalTime = 0;
+    let allPassed = true;
+    for (let i = 0; i < testCases.length; i++) {
+      const tc = testCases[i];
+      const input = tc.input;
+      const args = paramOrder.map((k: string) => (input && typeof input === 'object' && k in input ? input[k] : input));
+      const start = performance.now();
+      try {
+        const actual = fn(...args);
+        const elapsed = performance.now() - start;
+        totalTime += elapsed;
+        const passed = deepEqual(actual, tc.expected);
+        if (!passed) allPassed = false;
+        results.push({
+          testCaseId: i + 1,
+          passed,
+          input: tc.input,
+          expected: tc.expected,
+          actual,
+          executionTime: elapsed,
+        });
+      } catch (err) {
+        allPassed = false;
+        results.push({
+          testCaseId: i + 1,
+          passed: false,
+          input: tc.input,
+          expected: tc.expected,
+          actual: undefined,
+          executionTime: 0,
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+
+    return {
+      results,
+      overallStatus: allPassed ? 'success' : 'wrong_answer',
+      totalExecutionTime: totalTime,
+    };
+  } catch (err) {
+    return {
+      results: [],
+      overallStatus: 'compilation_error',
+      totalExecutionTime: 0,
+    };
+  }
+}
+
+// Execute code against test cases - tries backend first, falls back to browser JS when server unavailable
 export async function executeCode(
   code: string,
   language: string,
@@ -208,20 +300,69 @@ export async function executeCode(
     };
     
   } catch (error) {
-    console.error('Code execution error:', error);
-    
-    // Network or server error
+    console.warn('Code execution server unavailable, trying fallbacks:', error);
+
+    // Fallback 1: JavaScript/TypeScript in browser
+    if (language === 'javascript' || language === 'typescript') {
+      const fallback = runInBrowser(code, testCases, entryPoint ?? null);
+      if (fallback.results.length > 0) {
+        const complexity = analyzeComplexity(code);
+        return {
+          results: fallback.results.map((r) => ({
+            testCaseId: r.testCaseId,
+            passed: r.passed,
+            input: r.input,
+            expected: r.expected,
+            actual: r.actual,
+            executionTime: r.executionTime,
+            error: r.error,
+          })),
+          overallStatus: fallback.overallStatus,
+          totalExecutionTime: fallback.totalExecutionTime,
+          averageMemory: 0,
+          complexity,
+        };
+      }
+    }
+
+    // Fallback 2: Java, C++, Python via Piston API (no server needed)
+    if (language === 'java' || language === 'cpp' || language === 'c' || language === 'python') {
+      try {
+        const { runWithPiston } = await import('./pistonExecutionService');
+        const piston = await runWithPiston(code, language, testCases, entryPoint ?? null);
+        if (piston.results.length > 0) {
+          const complexity = analyzeComplexity(code);
+          return {
+            results: piston.results.map((r, i) => ({
+              testCaseId: i + 1,
+              passed: r.passed,
+              input: testCases[i]?.input,
+              expected: testCases[i]?.expected,
+              actual: r.actual,
+              executionTime: r.executionTime,
+              error: r.error,
+            })),
+            overallStatus: piston.overallStatus,
+            totalExecutionTime: piston.totalExecutionTime,
+            averageMemory: 0,
+            complexity,
+          };
+        }
+      } catch (e) {
+        console.warn('Piston fallback failed:', e);
+      }
+    }
+
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
     return {
       results: [],
       overallStatus: 'runtime_error',
       totalExecutionTime: 0,
       averageMemory: 0,
-      complexity: { 
-        timeComplexity: 'N/A', 
-        spaceComplexity: 'N/A', 
-        analysis: `Failed to connect to execution server: ${errorMessage}. Make sure the backend is running.` 
+      complexity: {
+        timeComplexity: 'N/A',
+        spaceComplexity: 'N/A',
+        analysis: `Server unavailable: ${errorMessage}. JavaScript runs in browser; Java/C++/Python use Piston API.`,
       },
     };
   }

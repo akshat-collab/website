@@ -221,7 +221,7 @@ export default function DsaProblems() {
       {useFallbackList && error && (
         <div className="shrink-0 bg-cyan-500/10 border-b border-cyan-500/20 px-4 py-2 flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-cyan-800 dark:text-cyan-200">
-            {error} {problems.length} problems with full test cases available.
+            {error} {problems.length} problems. Run & Submit work offline (JS in browser; Java/C++/Python via Piston API).
           </p>
           <Button variant="outline" size="sm" onClick={() => loadProblems(true)} className="border-cyan-500/50">
             Retry
@@ -238,7 +238,7 @@ export default function DsaProblems() {
                 )}>Problems</h1>
                 <p className="text-sm text-muted-foreground">
                   {useFallbackList
-                    ? 'Search your practice problems here (sample list). Start server + DB for full list.'
+                    ? '500 problems with full test cases. Use JavaScript — Run/Submit works offline in browser.'
                     : problems.length > 0
                       ? `Search your practice problems here. ${problems.length.toLocaleString()} questions from database.`
                       : 'Search your practice problems here and get started.'}

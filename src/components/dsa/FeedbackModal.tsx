@@ -59,7 +59,7 @@ export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModal
         timestamp: new Date().toISOString(),
       });
       localStorage.setItem(feedbackKey, JSON.stringify(existing));
-      toast.success("Feedback saved locally. Will sync when server is available.");
+      toast.success("Feedback saved ✓ Thanks! Will sync when connected.");
       setText("");
       setRating(0);
       onOpenChange(false);
