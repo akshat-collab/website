@@ -15,7 +15,6 @@ import { fetchDsaQuestions } from "@/features/dsa/api/questions";
 import { useDsaFilter } from "@/contexts/DsaFilterContext";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useTheme } from "@/contexts/ThemeContext";
 import { 
   getRecommendedProblems, 
   getUserActivityWithProblems,
@@ -41,8 +40,8 @@ export default function DsaProblems() {
     status,
     tags,
   } = useDsaFilter();
-  const { theme } = useTheme();
-
+  const PAGE_SIZE = 50;
+  const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"All" | "Favorite" | "Recommended">("Recommended");
   const [favorites, setFavorites] = useState<Set<string>>(() => {
     const saved = localStorage.getItem('dsa_favorites');
@@ -76,7 +75,7 @@ export default function DsaProblems() {
       setProblems(items);
       const userActivity = getUserActivityWithProblems(items);
       setUserSkillLevel(calculateSkillLevel(userActivity));
-      setRecommendedProblems(getRecommendedProblems(items, userActivity, 50));
+      setRecommendedProblems(getRecommendedProblems(items, userActivity, 20));
       setUseFallbackList(source === "hardcoded");
       setError(null);
     } catch (err) {
@@ -107,7 +106,7 @@ export default function DsaProblems() {
       const skillLevel = calculateSkillLevel(userActivity);
       setUserSkillLevel(skillLevel);
       
-      const recommended = getRecommendedProblems(problems, userActivity, 50);
+      const recommended = getRecommendedProblems(problems, userActivity, 20);
       setRecommendedProblems(recommended);
     }
   }, [solvedProblems, attemptedProblems, problems]);
@@ -193,6 +192,17 @@ export default function DsaProblems() {
     return list;
   }, [search, difficulty, status, tags, activeTab, favorites, solvedProblems, problems, recommendedProblems]);
 
+  const paginatedFiltered = useMemo(() => {
+    return filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  }, [filtered, page]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, difficulty, status, tags, activeTab]);
+
   const difficultyColor = (d: Difficulty) =>
     d === "Easy" ? "text-green-400 bg-green-400/10 border-green-400/20" : 
     d === "Medium" ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" : 
@@ -202,7 +212,7 @@ export default function DsaProblems() {
     return (
       <div className={cn(
         "h-full flex items-center justify-center",
-        theme === 'pastel' ? "bg-transparent" : "bg-white dark:bg-[#0B0F19]"
+        "bg-white dark:bg-[#0B0F19]"
       )}>
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
@@ -215,7 +225,7 @@ export default function DsaProblems() {
   return (
     <div className={cn(
         "h-full flex flex-col overflow-hidden transition-colors duration-300",
-        theme === 'pastel' ? "bg-transparent" : "bg-white dark:bg-[#0B0F19]" 
+        "bg-white dark:bg-[#0B0F19]" 
     )}>
       {/* Fixed Header Section */}
       <div className="shrink-0 p-6 pb-2 space-y-4">
@@ -223,7 +233,7 @@ export default function DsaProblems() {
             <div className="space-y-1">
                 <h1 className={cn(
                     "text-3xl font-bold tracking-tight mb-1 transition-colors",
-                    theme === 'pastel' ? "text-slate-800" : "text-slate-900 dark:text-white"
+                    "text-slate-900 dark:text-white"
                 )}>Problems</h1>
                 <p className="text-sm text-muted-foreground">
                   {problems.length > 0
@@ -236,19 +246,17 @@ export default function DsaProblems() {
             {activeTab === "Recommended" && (
               <div className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-xl border transition-all",
-                theme === 'pastel' 
-                  ? "bg-rose-50 border-rose-200" 
-                  : "bg-cyan-500/10 border-cyan-500/20"
+                "bg-cyan-500/10 border-cyan-500/20"
               )}>
                 <Sparkles className={cn(
                   "h-4 w-4",
-                  theme === 'pastel' ? "text-rose-500" : "text-cyan-400"
+                  "text-cyan-400"
                 )} />
                 <div className="text-sm">
                   <span className="text-muted-foreground">Skill Level: </span>
                   <span className={cn(
                     "font-semibold capitalize",
-                    theme === 'pastel' ? "text-rose-600" : "text-cyan-400"
+                    "text-cyan-400"
                   )}>
                     {userSkillLevel}
                   </span>
@@ -263,7 +271,7 @@ export default function DsaProblems() {
         {/* Tabs */}
         <div className={cn(
             "pt-4 flex items-center gap-6 border-b mt-2 transition-colors",
-            theme === 'pastel' ? "border-rose-100" : "border-slate-200 dark:border-white/50"
+            "border-slate-200 dark:border-white/50"
         )}>
             {["All Questions", "Favorite Questions", "Recommended"].map((tab) => {
                 const tabKey = tab.split(" ")[0] as "All" | "Favorite" | "Recommended";
@@ -275,8 +283,8 @@ export default function DsaProblems() {
                         className={cn(
                             "pb-2 text-sm font-medium transition-all relative flex items-center gap-2",
                             isActive 
-                                ? theme === 'pastel' ? "text-rose-600" : "text-cyan-600 dark:text-cyan-400" 
-                                : cn("text-muted-foreground", theme === 'pastel' ? "hover:text-rose-900" : "hover:text-slate-900 dark:hover:text-white")
+                                ? "text-cyan-600 dark:text-cyan-400" 
+                                : cn("text-muted-foreground", "hover:text-slate-900 dark:hover:text-white")
                         )}
                     >
                         {tabKey === "Recommended" && <Sparkles className="h-3.5 w-3.5" />}
@@ -284,7 +292,7 @@ export default function DsaProblems() {
                         {isActive && (
                             <div className={cn(
                                 "absolute bottom-0 left-0 w-full h-0.5 rounded-t-full",
-                                theme === 'pastel' ? "bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]" : "bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+                                "bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
                             )} />
                         )}
                     </button>
@@ -296,13 +304,11 @@ export default function DsaProblems() {
         {activeTab === "Recommended" && (
           <div className={cn(
             "mt-2 p-3 rounded-xl border text-sm flex items-start gap-3",
-            theme === 'pastel' 
-              ? "bg-rose-50/50 border-rose-200/50 text-rose-900" 
-              : "bg-cyan-500/5 border-cyan-500/20 text-cyan-700 dark:text-cyan-300"
+            "bg-cyan-500/5 border-cyan-500/20 text-cyan-700 dark:text-cyan-300"
           )}>
             <Sparkles className={cn(
               "h-4 w-4 mt-0.5 shrink-0",
-              theme === 'pastel' ? "text-rose-500" : "text-cyan-500"
+              "text-cyan-500"
             )} />
             <div>
               <p className="font-medium mb-1">Smart Recommendations</p>
@@ -319,7 +325,7 @@ export default function DsaProblems() {
         <div className="relative group ">
             <Search className={cn(
                 "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors",
-                theme === 'pastel' ? "group-focus-within:text-rose-500" : "group-focus-within:text-cyan-600 dark:group-focus-within:text-cyan-400"
+                "group-focus-within:text-cyan-600 dark:group-focus-within:text-cyan-400"
             )} />
             <Input
             placeholder="Search Problems"
@@ -327,14 +333,12 @@ export default function DsaProblems() {
             onChange={(e) => setSearch(e.target.value)}
             className={cn(
                 "pl-11 pr-10 h-10 border-[1.5px] rounded-xl transition-all text-sm",
-                theme === 'pastel' 
-                    ? "bg-white border-rose-100 focus-visible:ring-rose-400/20 focus-visible:border-rose-400/50 text-slate-900 placeholder:text-muted-foreground/50" 
-                    : "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/50 focus-visible:ring-cyan-500/20 focus-visible:border-cyan-500/50 text-slate-900 dark:text-white placeholder:text-muted-foreground/50"
+                "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/50 focus-visible:ring-cyan-500/20 focus-visible:border-cyan-500/50 text-slate-900 dark:text-white placeholder:text-muted-foreground/50"
             )}
             />
             <Mic className={cn(
                 "absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground cursor-pointer transition-colors",
-                theme === 'pastel' ? "hover:text-rose-600" : "hover:text-slate-900 dark:hover:text-white"
+                "hover:text-slate-900 dark:hover:text-white"
             )} />
         </div>
       </div>
@@ -343,12 +347,12 @@ export default function DsaProblems() {
       <div className="flex-1 overflow-hidden px-6 pb-6">
         <div className={cn(
             "h-full rounded-2xl border-[1.5px] overflow-hidden flex flex-col",
-            theme === 'pastel' ? "border-rose-100 bg-white/60" : "border-slate-200 dark:border-white/50 bg-slate-50 dark:bg-[#111625]/50"
+            "border-slate-200 dark:border-white/50 bg-slate-50 dark:bg-[#111625]/50"
         )}>
             {/* Table Header Fixed */}
             <div className={cn(
                 "border-[1.5px] backdrop-blur-sm z-10",
-                theme === 'pastel' ? "bg-white/80 border-rose-100" : "bg-white/80 dark:bg-[#111625]/80 border-slate-200 dark:border-white/50"
+                "bg-white/80 dark:bg-[#111625]/80 border-slate-200 dark:border-white/50"
             )}>
                 <Table>
                     <TableHeader>
@@ -367,7 +371,7 @@ export default function DsaProblems() {
             <ScrollArea className="flex-1 ">
                 <Table>
                     <TableBody>
-                        {filtered.map((row, index) => {
+                        {paginatedFiltered.map((row) => {
                         const isFavorite = favorites.has(row.id);
                         const isSolved = solvedProblems.has(row.id);
                         const isAttempted = attemptedProblems.has(row.id);
@@ -378,12 +382,8 @@ export default function DsaProblems() {
                             className={cn(
                                 "cursor-pointer border-[1.5px] transition-all duration-300 group h-12",
                                 isSolved
-                                    ? theme === 'pastel'
-                                        ? "bg-green-50/80 border-green-200/50 border-l-2 border-l-green-400/50"
-                                        : "bg-green-500/5 dark:bg-green-500/10 border-green-500/20 border-l-2 border-l-green-500/40"
-                                    : theme === 'pastel'
-                                        ? "border-rose-50 hover:bg-rose-50 hover:border-l-4 hover:border-l-rose-400 hover:shadow-[0_0_20px_rgba(244,63,94,0.1)] border-l-2 border-l-transparent"
-                                        : "border-slate-200 dark:border-white/50 hover:bg-cyan-500/10 hover:border-l-4 hover:border-l-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.1)] border-l-2 border-l-transparent dark:hover:bg-cyan-500/10"
+                                    ? "bg-green-500/5 dark:bg-green-500/10 border-green-500/20 border-l-2 border-l-green-500/40"
+                                    : "border-slate-200 dark:border-white/50 hover:bg-cyan-500/10 hover:border-l-4 hover:border-l-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.1)] border-l-2 border-l-transparent dark:hover:bg-cyan-500/10"
                             )}
                             onClick={() => navigate(`/dsa/problem/${row.id}`)}
                         >
@@ -398,7 +398,7 @@ export default function DsaProblems() {
                                     ) : (
                                         <div className={cn(
                                             "h-4 w-4 rounded-full border-2 border-muted-foreground/30 transition-colors",
-                                            theme === 'pastel' ? "group-hover:border-rose-400/50" : "group-hover:border-cyan-400/50"
+                                            "group-hover:border-cyan-400/50"
                                         )} />
                                     )}
                                 </div>
@@ -418,7 +418,7 @@ export default function DsaProblems() {
                                     </button>
                                     <span className={cn(
                                         "font-medium text-sm transition-colors",
-                                        theme === 'pastel' ? "text-slate-700 group-hover:text-slate-900" : "text-slate-700 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white"
+                                        "text-slate-700 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white"
                                     )}>
                                         {row.title}
                                     </span>
@@ -438,9 +438,7 @@ export default function DsaProblems() {
                                     variant="outline"
                                     className={cn(
                                         "h-7 text-xs px-3 rounded-full transition-all bg-transparent",
-                                        theme === 'pastel' 
-                                            ? "border-rose-200 text-rose-500 hover:bg-rose-400 hover:text-white" 
-                                            : "border-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-400 hover:text-white dark:hover:text-[#0B0F19]"
+                                        "border-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-400 hover:text-white dark:hover:text-[#0B0F19]"
                                     )}
                                 >
                                     Solve
@@ -451,6 +449,31 @@ export default function DsaProblems() {
                     </TableBody>
                 </Table>
             </ScrollArea>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-white/50 shrink-0">
+                <p className="text-sm text-muted-foreground">
+                  Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
         </div>
       </div>
     </div>

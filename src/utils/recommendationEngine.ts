@@ -165,13 +165,6 @@ export function getRecommendedProblems(
   const skillLevel = calculateSkillLevel(userActivity);
   const frequentTags = getFrequentTags(userActivity.solvedProblems, allProblems);
 
-  console.log('🎯 Recommendation Engine:', {
-    skillLevel,
-    totalSolved: userActivity.solvedProblems.length,
-    frequentTags,
-    distribution: getRecommendedDistribution(skillLevel)
-  });
-
   // Calculate scores for all problems
   const scoredProblems = allProblems.map((problem) => ({
     problem,
