@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider } from '@/lib/firebase';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FloatingLines from '../components/FloatingLines';
@@ -48,19 +49,14 @@ const Login = () => {
     }
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email.trim(),
-        password: formData.password,
-      });
-      if (error) throw error;
-      const u = data.user;
-      const name = u?.user_metadata?.username || u?.email?.split('@')[0] || 'User';
+      const { user } = await signInWithEmailAndPassword(auth, formData.email.trim(), formData.password);
+      const name = user.displayName || user.email?.split('@')[0] || 'User';
       localStorage.setItem(
         'techmasterai_user',
         JSON.stringify({
           name,
-          email: u?.email || '',
-          photo: u?.user_metadata?.avatar_url || undefined,
+          email: user.email || '',
+          photo: user.photoURL || undefined,
         })
       );
       toast.success('🎉 Welcome to TechMaster!', {
@@ -83,14 +79,18 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: `${window.location.origin}/` },
-      });
-      if (error) throw error;
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      const { user } = await signInWithPopup(auth, googleProvider);
+      const name = user.displayName || user.email?.split('@')[0] || 'User';
+      localStorage.setItem(
+        'techmasterai_user',
+        JSON.stringify({
+          name,
+          email: user.email || '',
+          photo: user.photoURL || undefined,
+        })
+      );
+      toast.success('Signed in with Google!');
+      navigate('/');
     } catch (err: unknown) {
       const msg = err && typeof err === 'object' && 'message' in err ? String((err as { message: string }).message) : 'Google sign-in failed';
       toast.error(msg);

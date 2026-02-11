@@ -6,19 +6,55 @@ This is a **Vite** app (not Next.js). Only these variables are used:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_SUPABASE_URL` | ✅ | Your Supabase project URL |
+| `VITE_SUPABASE_URL` | ✅ | Your Supabase project URL (for DSA questions, comments) |
 | `VITE_SUPABASE_ANON_KEY` | ✅ | Supabase anon/public key |
+| `VITE_FIREBASE_API_KEY` | ✅ | Firebase API key (for auth, Google login) |
+| `VITE_FIREBASE_AUTH_DOMAIN` | ✅ | Firebase auth domain (e.g. `website-b446b.firebaseapp.com`) |
+| `VITE_FIREBASE_PROJECT_ID` | ✅ | Firebase project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | ✅ | Firebase storage bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | ✅ | Firebase messaging sender ID |
+| `VITE_FIREBASE_APP_ID` | ✅ | Firebase app ID |
+| `VITE_FIREBASE_MEASUREMENT_ID` | ❌ | Optional – for Analytics |
 | `VITE_API_URL` | ❌ | Optional – for duels API |
 | `GROQ_API_KEY` | ❌ | Optional – for chat AI (if using serverless functions) |
 
 **Important:** Do NOT use `NEXT_PUBLIC_*` – this app uses Vite, which only exposes `VITE_*` prefixed vars at build time.
 
+## Where to Add Firebase Config in Vercel (for Google Login)
+
+1. **Vercel Dashboard** → Your Project → **Settings** → **Environment Variables**
+2. Add each variable above (e.g. `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, etc.)
+3. Set the scope to **Production**, **Preview**, and **Development** (or as needed)
+4. **Redeploy** after adding variables (env vars are baked in at build time)
+
+### Example values (from your Firebase config)
+
+```
+VITE_FIREBASE_API_KEY=AIzaSyBcHF94OFbIE7R17DIVTGDrW07brw-hX64
+VITE_FIREBASE_AUTH_DOMAIN=website-b446b.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=website-b446b
+VITE_FIREBASE_STORAGE_BUCKET=website-b446b.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=895029794575
+VITE_FIREBASE_APP_ID=1:895029794575:web:3bfe5600f6123f1002d07a
+VITE_FIREBASE_MEASUREMENT_ID=G-ECYGE5R59C
+```
+
+## Firebase Console – Enable Google Sign-In
+
+1. Open [Firebase Console](https://console.firebase.google.com) → Your project
+2. **Authentication** → **Sign-in method**
+3. Enable **Google** provider
+4. Add your **authorized domains**:
+   - `localhost` (for dev)
+   - `website-seven-kappa-80.vercel.app` (or your Vercel domain)
+   - Any custom domain you use
+
 ## Setup Steps
 
 1. **Vercel Dashboard** → Project → Settings → Environment Variables
-2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for **All Environments**
-3. Mark the anon key as **Sensitive**
-4. **Redeploy** after adding variables (env vars are baked in at build time)
+2. Add all `VITE_*` variables for **All Environments**
+3. Mark sensitive keys as **Sensitive** if desired
+4. **Redeploy** after adding variables
 
 ## SPA Routing
 
@@ -30,31 +66,24 @@ The `vercel.json` includes rewrites so routes like `/dsa/problems` serve `index.
 - **Output:** `dist/`
 - **Framework:** Vite (auto-detected)
 
-## Supabase Auth (Login / OAuth)
+## Auth Flow
 
-**Vite env vars:** Use `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (not `SUPABASE_URL`). Vite only exposes `VITE_` prefixed vars to the browser.
-
-**Supabase Dashboard → Authentication → URL Configuration:**
-1. **Site URL:** `https://website-seven-kappa-80.vercel.app` (or your production URL)
-2. **Redirect URLs:** Add:
-   - `https://website-seven-kappa-80.vercel.app/**`
-   - `https://website-seven-kappa-80.vercel.app/dsa/dashboard`
-   - `http://localhost:5173/**` (for local dev)
-
-**Auth providers:** Enable Email/Password and Google in Authentication → Providers.
+- **Main site (Login, Signup):** Firebase Auth (email/password + Google)
+- **DSA Practice:** Firebase Auth (email/password + Google via DsaAuthContext)
+- **Supabase:** Used for DSA questions, comments, feedback (not auth)
 
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
-| **Invalid API key** | Supabase → Settings → API → copy **anon public** key; update `VITE_SUPABASE_ANON_KEY` in Vercel; redeploy |
-| **401 on auth** | Wrong anon key, or keys not set before build; redeploy after adding env vars |
-| **403 / CORS** | Add your Vercel URL to Supabase Auth → Site URL & Redirect URLs |
-| **404 on /dsa/problems** | Ensure `vercel.json` is committed and redeploy |
+| **Invalid API key** | Copy from Firebase Console → Project Settings → General; update env vars in Vercel; redeploy |
+| **Google sign-in popup blocked** | Check Firebase Console → Auth → Authorized domains; add your Vercel URL |
+| **401 on auth** | Ensure Firebase env vars are set before build; redeploy |
 | **Blank page** | Check browser console; verify env vars were set before the build |
+| **404 on /dsa/problems** | Ensure `vercel.json` is committed and redeploy |
 
-## RLS Policies
+## RLS Policies (Supabase)
 
 `questions` table: `USING (true)` — public read.  
 `dsa_users` table: view all, update/insert own.  
-Auth uses anon key only (never service_role in browser).
+Auth is handled by Firebase; Supabase is used for data only.

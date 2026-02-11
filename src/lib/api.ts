@@ -1,8 +1,8 @@
 /**
- * API client: base URL and auth headers (Supabase session token).
+ * API client: base URL and auth headers (Firebase ID token).
  */
 
-import { supabase } from "@/lib/supabase";
+import { auth } from "@/lib/firebase";
 
 function getApiBase(): string {
   return import.meta.env.VITE_API_URL || '';
@@ -18,9 +18,14 @@ export async function getAuthHeaders(): Promise<HeadersInit> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
+  const user = auth.currentUser;
+  if (user) {
+    try {
+      const token = await user.getIdToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+    } catch {
+      /* ignore */
+    }
   }
   return headers;
 }

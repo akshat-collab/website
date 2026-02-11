@@ -133,18 +133,20 @@ export function addSolvedProblem(problemId: string): void {
 /** Call after addSolvedProblem when user is logged in — sync to Supabase so problems_solved and submissions are updated. */
 export async function syncSolvedToBackend(problemId: string, opts?: { language?: string; runtime_ms?: number; memory_mb?: number }): Promise<void> {
   try {
-    const { supabase } = await import("@/lib/supabase");
-    const { data: { user } } = await supabase.auth.getUser();
+    const { auth } = await import("@/lib/firebase");
+    const user = auth.currentUser;
     if (!user) return;
+    const { supabase } = await import("@/lib/supabase");
+    // Use Firebase UID as user_id (Supabase RLS may need to allow Firebase-authenticated writes)
     await supabase.from("dsa_submissions").insert({
-      user_id: user.id,
+      user_id: user.uid,
       problem_id: problemId,
       status: "Accepted",
       language: opts?.language ?? "javascript",
       runtime_ms: opts?.runtime_ms ?? null,
       memory_mb: opts?.memory_mb ?? null,
     });
-    await supabase.rpc("increment_problems_solved", { user_id: user.id });
+    await supabase.rpc("increment_problems_solved", { user_id: user.uid });
   } catch {
     // offline or Supabase down — localStorage already updated
   }
