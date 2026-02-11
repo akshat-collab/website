@@ -123,10 +123,13 @@ export default function DsaDuelRoom() {
       const newRating = addDuelWin(opponentName);
       setRatingUpdate({ newRating, change: getWinPoints() });
     } else {
-      const newRating = addDuelLoss(opponentName);
-      setRatingUpdate({ newRating, change: -getLossPoints() });
+      // Only apply ranking on win vs AI. Loss vs bot does not affect rating.
+      if (!isBot) {
+        const newRating = addDuelLoss(opponentName);
+        setRatingUpdate({ newRating, change: -getLossPoints() });
+      }
     }
-  }, [winner, opponentName]);
+  }, [winner, opponentName, isBot]);
 
   useEffect(() => {
     if (timeLeft === 0 && !winner) {
@@ -186,6 +189,11 @@ export default function DsaDuelRoom() {
 
   useEffect(() => {
     if (!roomId) return;
+    // Skip WebSocket for local bot rooms - no backend needed
+    if (isBot || roomId.startsWith("local_")) {
+      setWsConnected(false);
+      return;
+    }
     const wsUrl = getDuelWsUrl();
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
@@ -240,7 +248,7 @@ export default function DsaDuelRoom() {
       ws.close();
       wsRef.current = null;
     };
-  }, [roomId]);
+  }, [roomId, isBot]);
 
   const botGreetedRef = useRef(false);
   useEffect(() => {

@@ -1,6 +1,18 @@
 /**
  * 20+ hardcoded duel bot names and 1000+ common chat replies for 1v1 bot duels.
+ * BOT_ALIAS_NAMES: human-like names (male/female) shown as opponent - no "AI" label.
  */
+
+/** Human-like aliases for bot opponents - displayed as opponent name, no AI badge */
+export const BOT_ALIAS_NAMES = [
+  "Alex", "Priya", "Rahul", "Sneha", "Arjun", "Neha", "Vikram", "Ananya",
+  "Raj", "Kavya", "Amit", "Ishita", "Rohan", "Diya", "Karan", "Pooja",
+  "Aditya", "Meera", "Nikhil", "Sanjana", "Varun", "Shreya", "Dev", "Aisha",
+] as const;
+
+export function getRandomBotAlias(): string {
+  return BOT_ALIAS_NAMES[Math.floor(Math.random() * BOT_ALIAS_NAMES.length)];
+}
 
 export const DUEL_BOT_NAMES = [
   "CodeNinja",

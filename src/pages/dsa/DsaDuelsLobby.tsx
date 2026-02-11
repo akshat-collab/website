@@ -3,14 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Swords, Loader2, Users, Timer, Calendar, Zap } from "lucide-react";
-import { getDuelWsUrl } from "@/features/dsa/duels/duelWsUrl";
 import { useDuelUser } from "@/features/dsa/duels/useDuelUser";
 import { getDuelRating, getRankTier, getDuelStats } from "@/features/dsa/duels/duelRating";
-import { getApiUrl } from "@/lib/api";
+import { getRandomBotAlias } from "@/data/duelBots";
+import { fetchRandomSlug } from "@/features/dsa/api/questions";
 import { toast } from "sonner";
 
 const COUNTDOWN_SEC = 4;
-const BOT_FALLBACK_MS = 4000; // Match backend: 4s then auto-match with bot
+const BOT_MATCH_DELAY_MS = 1500; // Short delay to simulate "finding opponent"
 
 export default function DsaDuelsLobby() {
   const navigate = useNavigate();
@@ -24,17 +24,12 @@ export default function DsaDuelsLobby() {
   } | null>(null);
   const [countdown, setCountdown] = useState(COUNTDOWN_SEC);
   const [queued, setQueued] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
-  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const matchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const matchedRef = useRef(false);
 
   useEffect(() => {
     return () => {
-      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
+      if (matchTimerRef.current) clearTimeout(matchTimerRef.current);
     };
   }, []);
 
@@ -66,13 +61,9 @@ export default function DsaDuelsLobby() {
   const applyMatched = (roomId: string, opponent: string, problemId: string, isBot: boolean) => {
     if (matchedRef.current) return;
     matchedRef.current = true;
-    if (fallbackTimerRef.current) {
-      clearTimeout(fallbackTimerRef.current);
-      fallbackTimerRef.current = null;
-    }
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
+    if (matchTimerRef.current) {
+      clearTimeout(matchTimerRef.current);
+      matchTimerRef.current = null;
     }
     setFinding(false);
     setQueued(false);
@@ -89,93 +80,24 @@ export default function DsaDuelsLobby() {
     setFinding(true);
     setQueued(false);
     matchedRef.current = false;
-    toast.info("Finding opponent... (AI match in 4s if no one is online)");
+    toast.info("Finding opponent...");
 
-    // Fallback: if no "matched" after 6s, get bot room via REST
-    fallbackTimerRef.current = setTimeout(async () => {
-      fallbackTimerRef.current = null;
+    // Local bot match: no backend needed. Use human-like alias, no AI badge.
+    matchTimerRef.current = setTimeout(async () => {
+      matchTimerRef.current = null;
       if (matchedRef.current) return;
       try {
-        const res = await fetch(getApiUrl("/api/duels/bot-match"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gender: user?.gender ?? undefined }),
-        });
-        if (!res.ok) throw new Error("Match failed");
-        const data = await res.json();
-        applyMatched(
-          data.roomId,
-          data.opponent || "Opponent",
-          data.problemId || "",
-          data.isBot === true
-        );
-        toast.success(`Matched with ${data.opponent || "Opponent"}. Good luck!`);
+        const { slug } = await fetchRandomSlug();
+        const roomId = `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+        const opponent = getRandomBotAlias();
+        applyMatched(roomId, opponent, slug, true);
+        toast.success(`Matched with ${opponent}. Good luck!`);
       } catch (e) {
         setFinding(false);
         setQueued(false);
-        if (wsRef.current) {
-          wsRef.current.close();
-          wsRef.current = null;
-        }
-        toast.error("Could not start duel", {
-          description: "Start the backend (npm run server) so duels and bot matches work.",
-          duration: 8000,
-        });
+        toast.error("Could not start duel.");
       }
-    }, BOT_FALLBACK_MS);
-
-    const wsUrl = getDuelWsUrl();
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      ws.send(
-        JSON.stringify({
-          type: "find_match",
-          userId: user.id ?? "",
-          username: user.username ?? "Player",
-          gender: user?.gender ?? undefined,
-        })
-      );
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "queued") {
-          setQueued(true);
-        } else if (data.type === "matched") {
-          applyMatched(
-            data.roomId,
-            data.opponent || "Opponent",
-            data.problemId || "",
-            data.isBot === true
-          );
-        } else if (data.type === "error") {
-          setFinding(false);
-          setQueued(false);
-          if (fallbackTimerRef.current) {
-            clearTimeout(fallbackTimerRef.current);
-            fallbackTimerRef.current = null;
-          }
-          toast.error(data.message || "Matchmaking failed.");
-        }
-      } catch {
-        // ignore parse errors
-      }
-    };
-
-    ws.onerror = () => {
-      // Keep finding true so fallback can still run
-    };
-
-    ws.onclose = (ev) => {
-      if (ev.wasClean) return;
-      // Only show connection error if we never got a match (fallback will try REST)
-      if (finding && !queued) {
-        toast.info("Reconnecting via server...");
-      }
-    };
+    }, BOT_MATCH_DELAY_MS);
   };
 
   return (
@@ -190,12 +112,10 @@ export default function DsaDuelsLobby() {
               <div className="absolute -inset-2 rounded-full border border-primary/20 animate-ping opacity-30" />
             </div>
             <h3 className="text-lg font-semibold mb-1">
-              {queued ? "Waiting for opponent" : "Finding opponent..."}
+                Finding opponent...
             </h3>
             <p className="text-sm text-muted-foreground">
-              {queued
-                ? "AI opponent in a few seconds if no one joins"
-                : "Connecting to matchmaking"}
+              Connecting to matchmaking...
             </p>
             <div className="mt-4 flex gap-1">
               {[0, 1, 2].map((i) => (
@@ -255,11 +175,6 @@ export default function DsaDuelsLobby() {
                 </div>
                 <span className="text-sm font-medium truncate max-w-[100px] flex items-center gap-1 justify-center">
                   {matchedWith.opponent}
-                  {matchedWith.isBot && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium">
-                      AI
-                    </span>
-                  )}
                 </span>
               </div>
             </div>
@@ -348,7 +263,7 @@ export default function DsaDuelsLobby() {
               Find opponent
             </CardTitle>
             <CardDescription>
-              You’ll be matched with someone online. Same problem, same timer. First correct solution wins.
+              Match with an opponent. Same problem, same timer. First correct solution wins and climbs the rank.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -366,7 +281,7 @@ export default function DsaDuelsLobby() {
               {finding ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  {queued ? "Waiting for opponent… (AI soon)" : "Finding opponent…"}
+                  Finding opponent…
                 </>
               ) : (
                 <>
@@ -376,7 +291,7 @@ export default function DsaDuelsLobby() {
               )}
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              If no one is online, you’ll be matched with an AI opponent in a few seconds. Room includes: live chat, voice, AI. Winner gets +rank.
+              Matched with a random opponent. Same problem, same timer. First correct solution wins. Winner gets +rank.
             </p>
           </CardContent>
         </Card>
