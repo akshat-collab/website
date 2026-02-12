@@ -44,8 +44,12 @@ export default function DsaProblems() {
   const [page, setPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"All" | "Favorite" | "Recommended">("Recommended");
   const [favorites, setFavorites] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem('dsa_favorites');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
+    try {
+      const saved = localStorage.getItem('dsa_favorites');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
   });
   const [problems, setProblems] = useState<ProblemRow[]>([]);
   const [recommendedProblems, setRecommendedProblems] = useState<ProblemRow[]>([]);
@@ -56,14 +60,22 @@ export default function DsaProblems() {
   
   // Load solved problems from localStorage
   const [solvedProblems, setSolvedProblems] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem('dsa_solved_problems');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
+    try {
+      const saved = localStorage.getItem('dsa_solved_problems');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
   });
 
   // Load attempted problems from localStorage
   const [attemptedProblems, setAttemptedProblems] = useState<Set<string>>(() => {
-    const saved = localStorage.getItem('dsa_attempted_problems');
-    return saved ? new Set(JSON.parse(saved)) : new Set();
+    try {
+      const saved = localStorage.getItem('dsa_attempted_problems');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
   });
 
   // Fetch problems (hardcoded list with full test cases)
@@ -114,17 +126,23 @@ export default function DsaProblems() {
   // Listen for storage changes to update solved problems in real-time
   useEffect(() => {
     const handleStorageChange = () => {
-      const saved = localStorage.getItem('dsa_solved_problems');
-      if (saved) {
-        setSolvedProblems(new Set(JSON.parse(saved)));
+      try {
+        const saved = localStorage.getItem('dsa_solved_problems');
+        if (saved) setSolvedProblems(new Set(JSON.parse(saved)));
+      } catch {
+        /* ignore */
       }
-      const attempted = localStorage.getItem('dsa_attempted_problems');
-      if (attempted) {
-        setAttemptedProblems(new Set(JSON.parse(attempted)));
+      try {
+        const attempted = localStorage.getItem('dsa_attempted_problems');
+        if (attempted) setAttemptedProblems(new Set(JSON.parse(attempted)));
+      } catch {
+        /* ignore */
       }
-      const favs = localStorage.getItem('dsa_favorites');
-      if (favs) {
-        setFavorites(new Set(JSON.parse(favs)));
+      try {
+        const favs = localStorage.getItem('dsa_favorites');
+        if (favs) setFavorites(new Set(JSON.parse(favs)));
+      } catch {
+        /* ignore */
       }
     };
     

@@ -87,8 +87,13 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
   // Load persisted notes count
   const [notesCount, setNotesCount] = useState(() => {
     if (!problemId) return 0;
-    const notes = localStorage.getItem(`dsa_notes_${problemId}`);
-    return notes ? JSON.parse(notes).length : 0;
+    try {
+      const notes = localStorage.getItem(`dsa_notes_${problemId}`);
+      const arr = notes ? JSON.parse(notes) : [];
+      return Array.isArray(arr) ? arr.length : 0;
+    } catch {
+      return 0;
+    }
   });
 
   // Auto-scroll on new messages
@@ -145,7 +150,13 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
     }
 
     const notesKey = `dsa_notes_${problemId}`;
-    const existing = JSON.parse(localStorage.getItem(notesKey) || '[]');
+    let existing: unknown[] = [];
+    try {
+      existing = JSON.parse(localStorage.getItem(notesKey) || '[]') as unknown[];
+      if (!Array.isArray(existing)) existing = [];
+    } catch {
+      existing = [];
+    }
     existing.push({
       text: message.content,
       source: message.role,
@@ -168,7 +179,13 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
     if (!problemId) return;
 
     const notesKey = `dsa_notes_${problemId}`;
-    const notes = JSON.parse(localStorage.getItem(notesKey) || '[]');
+    let notes: unknown[] = [];
+    try {
+      notes = JSON.parse(localStorage.getItem(notesKey) || '[]') as unknown[];
+      if (!Array.isArray(notes)) notes = [];
+    } catch {
+      notes = [];
+    }
 
     if (notes.length === 0) {
       toast.info("No notes saved yet");

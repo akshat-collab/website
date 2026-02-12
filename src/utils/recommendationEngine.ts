@@ -183,11 +183,18 @@ export function getRecommendedProblems(
  * Get user activity from localStorage
  */
 export function getUserActivity(): UserActivity {
-  const solvedStr = localStorage.getItem('dsa_solved_problems');
-  const attemptedStr = localStorage.getItem('dsa_attempted_problems');
-
-  const solvedProblems = solvedStr ? JSON.parse(solvedStr) : [];
-  const attemptedProblems = attemptedStr ? JSON.parse(attemptedStr) : [];
+  let solvedProblems: string[] = [];
+  let attemptedProblems: string[] = [];
+  try {
+    const solvedStr = localStorage.getItem('dsa_solved_problems');
+    const attemptedStr = localStorage.getItem('dsa_attempted_problems');
+    const s = solvedStr ? JSON.parse(solvedStr) : [];
+    const a = attemptedStr ? JSON.parse(attemptedStr) : [];
+    solvedProblems = Array.isArray(s) ? s.filter((x): x is string => typeof x === "string") : [];
+    attemptedProblems = Array.isArray(a) ? a.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    /* ignore corrupted localStorage */
+  }
 
   // Calculate difficulty stats (this would ideally come from backend)
   // For now, we'll estimate based on problem IDs
@@ -218,11 +225,18 @@ export function getUserActivity(): UserActivity {
  * Get user activity with actual problem data
  */
 export function getUserActivityWithProblems(allProblems: Problem[]): UserActivity {
-  const solvedStr = localStorage.getItem('dsa_solved_problems');
-  const attemptedStr = localStorage.getItem('dsa_attempted_problems');
-
-  const solvedProblems = solvedStr ? JSON.parse(solvedStr) : [];
-  const attemptedProblems = attemptedStr ? JSON.parse(attemptedStr) : [];
+  let solvedProblems: string[] = [];
+  let attemptedProblems: string[] = [];
+  try {
+    const solvedStr = localStorage.getItem('dsa_solved_problems');
+    const attemptedStr = localStorage.getItem('dsa_attempted_problems');
+    const s = solvedStr ? JSON.parse(solvedStr) : [];
+    const a = attemptedStr ? JSON.parse(attemptedStr) : [];
+    solvedProblems = Array.isArray(s) ? s.filter((x): x is string => typeof x === "string") : [];
+    attemptedProblems = Array.isArray(a) ? a.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    /* ignore corrupted localStorage */
+  }
 
   // Calculate actual difficulty stats from solved problems
   const difficultyStats = {

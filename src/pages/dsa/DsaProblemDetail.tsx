@@ -158,8 +158,12 @@ export default function DsaProblemDetailNew() {
     
     // Favorites state with localStorage persistence
     const [favorites, setFavorites] = useState<Set<string>>(() => {
-        const saved = localStorage.getItem('dsa_favorites');
-        return saved ? new Set(JSON.parse(saved)) : new Set();
+        try {
+            const saved = localStorage.getItem('dsa_favorites');
+            return saved ? new Set(JSON.parse(saved)) : new Set();
+        } catch {
+            return new Set();
+        }
     });
     
     // Results tab state

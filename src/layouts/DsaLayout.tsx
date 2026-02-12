@@ -39,7 +39,15 @@ export function DsaLayout() {
     }
     const onStorage = () => {
       const s = localStorage.getItem('techmasterai_user');
-      setLegacyUser(s ? JSON.parse(s) : null);
+      if (!s) {
+        setLegacyUser(null);
+        return;
+      }
+      try {
+        setLegacyUser(JSON.parse(s));
+      } catch {
+        setLegacyUser(null);
+      }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
