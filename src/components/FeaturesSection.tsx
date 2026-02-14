@@ -1,7 +1,5 @@
 import { Code2, Swords, BookOpen, Trophy } from 'lucide-react';
-import { lazy, Suspense, memo } from 'react';
-
-const FloatingLines = lazy(() => import('./FloatingLines'));
+import { memo } from 'react';
 
 const FeaturesSection = memo(() => {
   const features = [
@@ -33,16 +31,6 @@ const FeaturesSection = memo(() => {
 
   return (
     <section className="features-section relative py-16 sm:py-20 md:py-24 px-4 sm:px-6 overflow-hidden">
-      {/* Floating Lines Background Animation - Opposite Direction, hidden on mobile */}
-      <Suspense fallback={null}>
-        <FloatingLines
-          enabledWaves={['top', 'middle', 'bottom']}
-          lineCount={5}
-          lineDistance={5}
-          reverseDirection={true}
-        />
-      </Suspense>
-
       {/* Background Grid - Same as Hero */}
       <div className="absolute inset-0 cyber-grid" style={{ zIndex: 1 }} />
       

@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import * as localAuth from '@/lib/localAuth';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import FloatingLines from '../components/FloatingLines';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -117,17 +116,7 @@ const Profile = () => {
     <div className="min-h-screen flex flex-col bg-background scanline">
       <Header />
       <main className="flex-1 flex items-center justify-center px-4 pt-32 pb-16 relative overflow-hidden">
-        {/* Floating Lines Background Animation */}
-        <FloatingLines
-          enabledWaves={['top', 'middle', 'bottom']}
-          lineCount={5}
-          lineDistance={5}
-        />
-
-        {/* Background Effects */}
         <div className="absolute inset-0 cyber-grid opacity-30" style={{ zIndex: 1 }} />
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" style={{ zIndex: 2 }} />
-        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s', zIndex: 2 }} />
 
         <div className="relative z-10 w-full max-w-2xl">
           <div className="glass-panel neon-border rounded-lg p-8 relative" style={{ boxShadow: '0 0 20px rgba(0, 194, 255, 0.5), 0 0 40px rgba(0, 194, 255, 0.3), 0 0 60px rgba(0, 194, 255, 0.15)' }}>

@@ -20,7 +20,7 @@ const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { from: 'bot', text: "Hey there! 👋 I'm Nova, your TechMasterAI assistant!" },
-    { from: 'bot', text: "I know everything about TechMasterAI - our team, features, and mission. Ask me anything! 🚀" }
+    { from: 'bot', text: "I know everything about TechMasterAI - our team, features, vision, and platform. Ask me about DSA Practice, 1v1 Duels, Type Forge, or how to join! 🚀" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -147,16 +147,16 @@ const ChatBot = () => {
                 onClick={() => setInput("What is TechMasterAI?")}
                 className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
               >
-                About Us
+                About
               </button>
               <button
-                onClick={() => setInput("Who is the founder?")}
+                onClick={() => setInput("What is your vision?")}
                 className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
               >
-                Founder
+                Vision
               </button>
               <button
-                onClick={() => setInput("What features do you offer?")}
+                onClick={() => setInput("What can I do on the platform?")}
                 className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
               >
                 Features
@@ -197,32 +197,10 @@ const ChatBot = () => {
               <div className="flex justify-start">
                 <div className="bg-secondary/20 border border-secondary/50 px-3 py-2 rounded-lg text-sm">
                   <div className="flex items-center gap-2">
-                    <img 
-                      src="/loading.gif"
-                      alt="Loading..." 
-                      className="w-8 h-6"
-                      style={{ 
-                        imageRendering: 'auto',
-                        objectFit: 'contain'
-                      }}
-                      onError={(e) => {
-                        // Fallback to CSS animation if GIF fails
-                        e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
-                      }}
-                    />
-                    {/* CSS fallback animation */}
-                    <div className="hidden gap-1">
-                      <div className="w-2 h-2 bg-secondary rounded-full animate-bounce"></div>
-                      <div
-                        className="w-2 h-2 bg-secondary rounded-full animate-bounce"
-                        style={{ animationDelay: '0.1s' }}
-                      ></div>
-                      <div
-                        className="w-2 h-2 bg-secondary rounded-full animate-bounce"
-                        style={{ animationDelay: '0.2s' }}
-                      ></div>
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-secondary/80 rounded-full" />
+                      <div className="w-2 h-2 bg-secondary/60 rounded-full" />
+                      <div className="w-2 h-2 bg-secondary/40 rounded-full" />
                     </div>
                     <span className="text-secondary text-xs">Nova is thinking...</span>
                   </div>
@@ -256,20 +234,14 @@ const ChatBot = () => {
           </div>
         </div>
       ) : (
-        <div className="relative animate-float-gentle">
-          {/* Outer glowing ring */}
-          <div className="absolute -inset-2 w-24 h-24 rounded-full bg-gradient-to-r from-primary/20 to-secondary/20 animate-pulse-glow blur-md"></div>
-          
-          {/* Middle glowing ring */}
-          <div className="absolute -inset-1 w-22 h-22 rounded-full bg-gradient-to-r from-primary/30 to-secondary/30 animate-pulse blur-sm"></div>
-          
-          {/* Main button */}
+        <div className="relative">
+          {/* Main button - static, smooth hover only */}
           <button
             onClick={() => setIsOpen(true)}
-            className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/50 via-primary/40 to-secondary/50 border-2 border-primary/70 flex items-center justify-center hover:scale-110 hover:border-primary transition-all duration-300 p-2 shadow-2xl backdrop-blur-sm animate-chatbot-glow"
+            className="relative w-20 h-20 rounded-full border-2 border-primary/70 flex items-center justify-center hover:scale-105 hover:border-primary transition-transform duration-200 p-2 shadow-lg backdrop-blur-sm"
             style={{ 
-              background: 'radial-gradient(circle at 30% 30%, rgba(0, 194, 255, 0.6), rgba(0, 194, 255, 0.3), rgba(63, 188, 229, 0.4))',
-              boxShadow: '0 0 30px rgba(0, 194, 255, 0.5), 0 0 60px rgba(0, 194, 255, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1)'
+              background: 'radial-gradient(circle at 30% 30%, rgba(0, 194, 255, 0.5), rgba(0, 194, 255, 0.25), rgba(63, 188, 229, 0.3))',
+              boxShadow: '0 0 20px rgba(0, 194, 255, 0.3)'
             }}
           >
             <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-inner">
@@ -300,9 +272,9 @@ const ChatBot = () => {
             </div>
           </button>
           
-          {/* Floating notification dot */}
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-r from-green-400 to-green-500 rounded-full border-2 border-white flex items-center justify-center animate-bounce shadow-lg">
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+          {/* Notification dot - static */}
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center shadow">
+            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
           </div>
         </div>
       )}

@@ -10,12 +10,22 @@ export const TECHMASTERAI_KNOWLEDGE = {
     tagline: "Master Code. Win Competitions.",
     description: "The premier platform where developers showcase their skills, compete in real-world challenges, and unlock career opportunities.",
     mission: "Empowering developers to compete and grow through innovative coding challenges and community collaboration.",
-    vision: "To become the world's leading platform for competitive programming and developer skill development.",
+    vision: "To become the world's leading platform for competitive programming and developer skill development. We envision a future where every developer can sharpen their skills through practice, compete fairly in 1v1 duels, and climb leaderboards that recognize real talent.",
     founded: "2024",
     headquarters: "India",
-    website: "https://techmaster.ai",
+    website: "https://techmasterai.in",
     email: "support@techmasterai.in"
   },
+
+  // Platform Functionality (what users can do)
+  functionality: [
+    { name: "DSA Practice", desc: "2,000+ curated problems across Easy, Medium, and Hard. Practice with smart recommendations, track solved/attempted status, and favorite problems." },
+    { name: "1v1 Code Arena", desc: "Challenge friends or bots in real-time coding duels. Solve the same problem faster than your opponent to win and climb the duel leaderboard." },
+    { name: "Type Forge", desc: "Improve your typing speed with code snippets, live coding sessions, and gamified typing challenges." },
+    { name: "Leaderboard", desc: "Compete on duel ratings and problems solved. See your rank among peers and track your progress." },
+    { name: "Profile & Submissions", desc: "Track your solved problems, submission history, login streaks, and customize your profile." },
+    { name: "Daily & Solo Challenges", desc: "Daily problem challenges and solo practice modes to build consistent habits." }
+  ],
 
   // Platform Features
   features: [
@@ -87,6 +97,19 @@ export function searchKnowledgeBase(query) {
   
   const normalizedQuery = query.toLowerCase().trim();
   
+  // Vision queries
+  if (normalizedQuery.includes('vision') || 
+      normalizedQuery.includes('what is your vision') ||
+      normalizedQuery.includes('company vision')) {
+    return `🌟 **TechMasterAI Vision**
+
+${TECHMASTERAI_KNOWLEDGE.company.vision}
+
+${TECHMASTERAI_KNOWLEDGE.company.mission}
+
+We're building the future of competitive programming! 🚀`;
+  }
+
   // Company & About queries
   if (normalizedQuery.includes('techmaster') || 
       normalizedQuery.includes('what is') || 
@@ -98,7 +121,30 @@ ${TECHMASTERAI_KNOWLEDGE.company.description}
 
 **Our Mission**: ${TECHMASTERAI_KNOWLEDGE.company.mission}
 
-Founded in ${TECHMASTERAI_KNOWLEDGE.company.founded} and headquartered in ${TECHMASTERAI_KNOWLEDGE.company.headquarters}, we're building the future of competitive programming!`;
+**Our Vision**: ${TECHMASTERAI_KNOWLEDGE.company.vision}
+
+Founded in ${TECHMASTERAI_KNOWLEDGE.company.founded} and headquartered in ${TECHMASTERAI_KNOWLEDGE.company.headquarters}. We're building the future of competitive programming!`;
+  }
+
+  // Platform functionality - what can users do
+  if (normalizedQuery.includes('functionality') || 
+      normalizedQuery.includes('what can i do') ||
+      normalizedQuery.includes('what can you do') ||
+      normalizedQuery.includes('what does the') ||
+      normalizedQuery.includes('how does the') ||
+      normalizedQuery.includes('platform') ||
+      normalizedQuery.includes('dsa practice') ||
+      normalizedQuery.includes('1v1') ||
+      normalizedQuery.includes('duel') ||
+      normalizedQuery.includes('type forge') ||
+      normalizedQuery.includes('leaderboard')) {
+    const funcList = TECHMASTERAI_KNOWLEDGE.functionality.map(f => `• **${f.name}**: ${f.desc}`).join('\n');
+    return `🎯 **TechMasterAI Platform Features**:
+
+${funcList}
+
+📧 Support: ${TECHMASTERAI_KNOWLEDGE.company.email}
+🌐 Visit techmasterai.in to get started!`;
   }
 
   // Founder/Team queries - generic response
@@ -123,12 +169,15 @@ TechMasterAI is built by a passionate team dedicated to empowering developers wo
   if (normalizedQuery.includes('feature') || 
       normalizedQuery.includes('what do you offer') ||
       normalizedQuery.includes('services') ||
-      normalizedQuery.includes('platform') ||
       normalizedQuery.includes('what can')) {
     const features = TECHMASTERAI_KNOWLEDGE.features.map(f => `${f.icon} **${f.name}**: ${f.description}`).join('\n\n');
+    const funcList = TECHMASTERAI_KNOWLEDGE.functionality.map(f => `• **${f.name}**: ${f.desc}`).join('\n');
     return `🎯 **TechMasterAI Platform Features**:
 
 ${features}
+
+**What You Can Do:**
+${funcList}
 
 Ready to level up your coding skills? Join thousands of developers already competing! 🏆`;
   }

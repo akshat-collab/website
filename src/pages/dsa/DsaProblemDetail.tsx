@@ -900,7 +900,22 @@ int main() {
         );
     }
 
-    if (!problem) return <div className="p-10 text-center">Problem not found</div>;
+    if (!problem) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center p-6">
+                <div className="text-center space-y-4 max-w-md">
+                    <AlertCircle className="h-12 w-12 text-amber-500 mx-auto" />
+                    <h2 className="text-lg font-semibold text-foreground">Problem not found</h2>
+                    <p className="text-sm text-muted-foreground">
+                        The problem you're looking for doesn't exist or may have been removed.
+                    </p>
+                    <Button onClick={() => navigate("/dsa/problems")} variant="default">
+                        Back to Problems
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-screen w-full flex flex-col bg-[#0B0F14] p-4 gap-4 relative">

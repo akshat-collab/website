@@ -76,9 +76,10 @@ const queryClient = new QueryClient({
 const ConditionalChatBot = () => {
   const location = useLocation();
   
-  // Hide chatbot on DSA problem pages
+  // Hide chatbot on DSA problem pages and problems list (avoids overlapping pagination Next button)
   const hideChatBot = location.pathname.startsWith('/dsa/problem/') || 
-                      location.pathname.startsWith('/dsa/duels/');
+                      location.pathname.startsWith('/dsa/duels/') ||
+                      location.pathname === '/dsa/problems';
   
   if (hideChatBot) return null;
   
@@ -144,16 +145,20 @@ const App = () => (
                 <Route path="register" element={<DsaRegister />} />
                 <Route path="dashboard" element={<DsaDashboard />} />
                 <Route path="problems" element={<DsaProblems />} />
+                <Route path="practice" element={<Navigate to="/dsa/problems" replace />} />
                 <Route path="problem/:id" element={<DsaProblemDetail />} />
                 <Route path="submissions" element={<DsaSubmissions />} />
                 {/* Shortcut redirects */}
                 <Route path="solo" element={<Navigate to="/dsa/duels/solo" replace />} />
                 <Route path="daily" element={<Navigate to="/dsa/duels/daily" replace />} />
+                <Route path="duel" element={<Navigate to="/dsa/duels" replace />} />
+                <Route path="arena" element={<Navigate to="/dsa/duels" replace />} />
                 {/* Duels: nested so /dsa/duels, /dsa/duels/solo, /dsa/duels/daily, /dsa/duels/room/:id work */}
                 <Route path="duels" element={<Outlet />}>
                   <Route index element={<DsaDuelsLobby />} />
                   <Route path="solo" element={<DsaSoloChallenge />} />
                   <Route path="daily" element={<DsaDailyChallenge />} />
+                  <Route path="room" element={<Navigate to="/dsa/duels" replace />} />
                   <Route path="room/:roomId" element={<DsaDuelRoom />} />
                 </Route>
                 <Route path="leaderboard" element={<DsaLeaderboard />} />

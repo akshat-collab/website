@@ -172,13 +172,25 @@
     @apply border-border;
   }
 
-  /* Page transition - smooth fade when switching routes */
+  /* Page transition - smooth, lightweight fade when switching routes */
   .page-transition-wrapper {
-    animation: page-fade-in 0.3s ease forwards;
+    animation: page-fade-in 0.2s ease-out forwards;
   }
   @keyframes page-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
+  }
+
+  /* Respect reduced motion preference for smoother, less jarring experience */
+  @media (prefers-reduced-motion: reduce) {
+    .page-transition-wrapper {
+      animation: none;
+    }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
   body {
@@ -205,16 +217,11 @@
     text-rendering: optimizeLegibility;
   }
   
-  /* Force GPU compositing for animated elements */
-  canvas,
-  [class*="floating"],
+  /* GPU compositing for key interactive elements - minimal for performance */
   [class*="cyber-grid"],
-  [class*="watermark"],
-  [class*="-card"],
-  [class*="button"] {
-    will-change: transform;
+  [class*="watermark"] {
+    will-change: auto;
     transform: translateZ(0);
-    backface-visibility: hidden;
   }
 
   /* Ensure chatbot is never hidden by overflow */
