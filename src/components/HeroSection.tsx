@@ -8,19 +8,6 @@ const TypingEffect = lazy(() => import('./TypingEffect'));
 const HeroSection = () => {
   return (
     <section className="hero-section relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-16 sm:py-20 overflow-hidden">
-      {/* Beta Highlight Banner */}
-      <div 
-        className="absolute top-6 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full border text-sm font-medium flex items-center gap-2"
-        style={{ 
-          background: 'rgba(0, 194, 255, 0.1)', 
-          borderColor: 'rgba(0, 194, 255, 0.4)',
-          color: 'var(--theme-accent)'
-        }}
-      >
-        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-        Beta Version — Perfect Launch Coming Soon
-      </div>
-
       {/* Subtle Background Grid */}
       <div className="absolute inset-0 cyber-grid" style={{ zIndex: 1 }} />
       
@@ -83,10 +70,21 @@ const HeroSection = () => {
         </div>
 
         {/* Trust micro-copy */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm px-4 mb-4" style={{ color: '#6B7280' }}>
+        <div className="flex flex-col items-center justify-center gap-3 text-xs sm:text-sm px-4 mb-4" style={{ color: '#6B7280' }}>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#00C2FF' }} />
             <span className="text-center">Join 500+ developers on the platform</span>
+          </div>
+          <div 
+            className="px-4 py-2 rounded-full border text-sm font-medium flex items-center gap-2"
+            style={{ 
+              background: 'rgba(0, 194, 255, 0.1)', 
+              borderColor: 'rgba(0, 194, 255, 0.4)',
+              color: 'var(--theme-accent)'
+            }}
+          >
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            Beta Version — Perfect Launch Coming Soon
           </div>
         </div>
       </div>
