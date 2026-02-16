@@ -1,13 +1,13 @@
 /**
- * STABLE HYBRID CHATBOT COMPONENT
- * - NEVER shows "Service Down" messages
- * - Always calls Netlify function for every message
- * - Clean error handling with no red console errors
- * - Mobile-responsive design
+ * Nova ChatBot - TechMasterAI Assistant
+ * Home page: Hardcoded responses from knowledge base (no API, instant)
+ * Other pages: Uses API with knowledge base fallback
  */
 
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { X, Send } from 'lucide-react';
+import { searchKnowledgeBase } from '@/data/knowledgeBase';
 
 // Message interface
 interface Message {
@@ -16,11 +16,16 @@ interface Message {
   source?: 'knowledge' | 'api' | 'fallback';
 }
 
+const HARDCODED_FALLBACK = "I'm Nova, your TechMasterAI assistant! Ask me about our company, team (Adarsh Kumar, Akshat Singh), features, vision, or how to join. I know everything about TechMasterAI! 🚀";
+
 const ChatBot = () => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { from: 'bot', text: "Hey there! 👋 I'm Nova, your TechMasterAI assistant!" },
-    { from: 'bot', text: "I know everything about TechMasterAI - our team, features, vision, and platform. Ask me about DSA Practice, 1v1 Duels, Type Forge, or how to join! 🚀" }
+    { from: 'bot', text: "I know everything about TechMasterAI - our company, team (Adarsh Kumar & Akshat Singh), features, vision, and platform. Ask me anything! 🚀" }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +56,7 @@ const ChatBot = () => {
     };
   };
 
-  // Handle sending message - ALWAYS calls Netlify function
+  // Handle sending message - Hardcoded on home page, API elsewhere
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -60,12 +65,18 @@ const ChatBot = () => {
     setInput('');
     setIsLoading(true);
 
-    try {
-      // Prepare conversation history (last 5 messages)
-      const conversationHistory = messages.slice(-5);
+    // Home page: Use hardcoded knowledge base only (no API, instant)
+    if (isHomePage) {
+      const reply = searchKnowledgeBase(userMessage) || HARDCODED_FALLBACK;
+      setMessages(prev => [...prev, { from: 'bot', text: reply, source: 'knowledge' }]);
+      setIsLoading(false);
+      return;
+    }
 
-      // Call Netlify function for EVERY message
-      const response = await fetch('/.netlify/functions/chat', {
+    // Other pages: Call API
+    try {
+      const conversationHistory = messages.slice(-5);
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,7 +88,6 @@ const ChatBot = () => {
 
       const data = await response.json();
 
-      // Handle response - always successful due to function design
       if (response.ok && data.response) {
         setMessages(prev => [...prev, { 
           from: 'bot', 
@@ -85,20 +95,12 @@ const ChatBot = () => {
           source: data.source || 'api'
         }]);
       } else {
-        // Fallback response if something goes wrong
-        setMessages(prev => [...prev, {
-          from: 'bot',
-          text: "I'm here to help! Try asking me about TechMasterAI, our features, team, or how to get started. What would you like to know? 🚀",
-          source: 'fallback'
-        }]);
+        const fallback = searchKnowledgeBase(userMessage) || HARDCODED_FALLBACK;
+        setMessages(prev => [...prev, { from: 'bot', text: fallback, source: 'fallback' }]);
       }
-    } catch (error) {
-      // Network error - provide helpful fallback
-      setMessages(prev => [...prev, {
-        from: 'bot',
-        text: "I'm Nova from TechMasterAI! 🤖 I'm having trouble connecting right now, but I'd love to help you learn about our competitive programming platform. Try asking me about our features or team!",
-        source: 'fallback'
-      }]);
+    } catch {
+      const fallback = searchKnowledgeBase(userMessage) || HARDCODED_FALLBACK;
+      setMessages(prev => [...prev, { from: 'bot', text: fallback, source: 'fallback' }]);
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +142,7 @@ const ChatBot = () => {
             </button>
           </div>
 
-          {/* Quick Action Buttons */}
+          {/* Quick Action Buttons - Company, Team, Features, Join */}
           <div className="px-3 py-2 border-b border-primary/30">
             <div className="flex flex-wrap gap-1">
               <button
@@ -150,10 +152,10 @@ const ChatBot = () => {
                 About
               </button>
               <button
-                onClick={() => setInput("What is your vision?")}
+                onClick={() => setInput("Who is the team?")}
                 className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
               >
-                Vision
+                Team
               </button>
               <button
                 onClick={() => setInput("What can I do on the platform?")}

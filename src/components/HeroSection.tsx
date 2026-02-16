@@ -8,6 +8,19 @@ const TypingEffect = lazy(() => import('./TypingEffect'));
 const HeroSection = () => {
   return (
     <section className="hero-section relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 py-16 sm:py-20 overflow-hidden">
+      {/* Beta Highlight Banner */}
+      <div 
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full border text-sm font-medium flex items-center gap-2"
+        style={{ 
+          background: 'rgba(0, 194, 255, 0.1)', 
+          borderColor: 'rgba(0, 194, 255, 0.4)',
+          color: 'var(--theme-accent)'
+        }}
+      >
+        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+        Beta Version — Perfect Launch Coming Soon
+      </div>
+
       {/* Subtle Background Grid */}
       <div className="absolute inset-0 cyber-grid" style={{ zIndex: 1 }} />
       

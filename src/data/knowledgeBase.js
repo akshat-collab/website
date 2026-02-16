@@ -75,6 +75,12 @@ export const TECHMASTERAI_KNOWLEDGE = {
     }
   ],
 
+  // Team - Leadership
+  team: [
+    { name: "Adarsh Kumar", role: "Founder & CFO", bio: "Driving vision and strategy for TechMasterAI." },
+    { name: "Akshat Singh", role: "Co-Founder & CEO", bio: "Leading product and engineering to build the future of competitive programming." }
+  ],
+
   // Contact Information
   contact: {
     email: "support@techmasterai.in",
@@ -97,6 +103,27 @@ export function searchKnowledgeBase(query) {
   
   const normalizedQuery = query.toLowerCase().trim();
   
+  // Greeting / overview - tell all about company and team
+  if (normalizedQuery.includes('hi') || normalizedQuery.includes('hello') || 
+      normalizedQuery.includes('hey') || normalizedQuery.includes('tell me') ||
+      normalizedQuery.includes('everything') || normalizedQuery.includes('overview') ||
+      normalizedQuery.includes('who are you') || normalizedQuery.includes('what do you know')) {
+    const teamList = TECHMASTERAI_KNOWLEDGE.team.map(t => `• **${t.name}** — ${t.role}`).join('\n');
+    const funcList = TECHMASTERAI_KNOWLEDGE.functionality.map(f => `• ${f.name}`).join(', ');
+    return `👋 **Hi! I'm Nova**, your TechMasterAI assistant.
+
+**About Us:** ${TECHMASTERAI_KNOWLEDGE.company.description}
+
+**Our Team:**
+${teamList}
+
+**What we offer:** ${funcList}
+
+**Vision:** ${TECHMASTERAI_KNOWLEDGE.company.vision}
+
+Ask me about our team, features, vision, or how to join! 🚀`;
+  }
+
   // Vision queries
   if (normalizedQuery.includes('vision') || 
       normalizedQuery.includes('what is your vision') ||
@@ -147,7 +174,7 @@ ${funcList}
 🌐 Visit techmasterai.in to get started!`;
   }
 
-  // Founder/Team queries - generic response
+  // Founder/Team queries - full team details
   if (normalizedQuery.includes('founder') || 
       normalizedQuery.includes('ceo') ||
       normalizedQuery.includes('team') ||
@@ -156,13 +183,19 @@ ${funcList}
       normalizedQuery.includes('staff') ||
       normalizedQuery.includes('who founded') ||
       normalizedQuery.includes('who started') ||
-      normalizedQuery.includes('who is ceo')) {
-    return `👥 **Our Team**
+      normalizedQuery.includes('who is ceo') ||
+      normalizedQuery.includes('who is the team') ||
+      normalizedQuery.includes('adarsh') ||
+      normalizedQuery.includes('akshat')) {
+    const teamList = TECHMASTERAI_KNOWLEDGE.team.map(t => `• **${t.name}** — ${t.role}: ${t.bio}`).join('\n');
+    return `👥 **TechMasterAI Team**
 
-TechMasterAI is built by a passionate team dedicated to empowering developers worldwide.
+${teamList}
+
+We're a passionate team building the future of competitive programming. Founded in ${TECHMASTERAI_KNOWLEDGE.company.founded}, headquartered in ${TECHMASTERAI_KNOWLEDGE.company.headquarters}.
 
 📧 Contact: ${TECHMASTERAI_KNOWLEDGE.company.email}
-🌐 Visit our website to learn more about us!`;
+🌐 ${TECHMASTERAI_KNOWLEDGE.company.website}`;
   }
 
   // Features queries
