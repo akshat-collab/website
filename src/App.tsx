@@ -15,6 +15,7 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => {
   );
 };
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { DevToolsBlocker } from "./components/DevToolsBlocker";
 import { DsaAuthProvider } from "./features/dsa/auth/DsaAuthContext";
 import { DsaLayout } from "./layouts/DsaLayout";
 import Index from "./pages/Index";
@@ -89,6 +90,7 @@ const ConditionalChatBot = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <DevToolsBlocker />
       <TooltipProvider>
         <Toaster />
         <Sonner />

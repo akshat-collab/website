@@ -6,12 +6,29 @@ import { Maximize2, Minimize2, Play, ChevronDown, ChevronUp, Code2 } from "lucid
 type FunDifficulty = "newbie" | "mid" | "pro";
 
 const PLATFORM_CONTENT: Record<FunDifficulty, string[]> = {
-  newbie: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"],
-  mid: ["cat", "dog", "run", "key", "code", "type", "fast", "test", "loop", "var", "let", "map", "get", "set"],
-  pro: ["function", "variable", "algorithm", "recursion", "polymorphism", "encapsulation", "implementation"],
+  newbie: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"],
+  mid: [
+    "cat", "dog", "run", "key", "code", "type", "fast", "test", "loop", "var", "let", "map", "get", "set",
+    "int", "str", "bool", "null", "void", "this", "else", "elif", "def", "class", "async", "await",
+    "push", "pop", "sort", "find", "join", "split", "trim", "slice", "index", "length", "parse", "stringify",
+  ],
+  pro: [
+    "function", "variable", "algorithm", "recursion", "polymorphism", "encapsulation", "implementation",
+    "constructor", "destructuring", "middleware", "prototype", "callback", "iterator", "generator",
+    "binarySearch", "quickSort", "mergeSort", "hashMap", "linkedList", "binaryTree", "depthFirst",
+    "breadthFirst", "dynamicProgramming", "memoization", "dependency", "injection", "serialization",
+    "authentication", "authorization", "cryptography", "virtualization", "containerization",
+    "console.log", "JSON.stringify", "Array.prototype", "Promise.all", "Object.keys",
+  ],
 };
 
 const SPEED: Record<FunDifficulty, number> = { newbie: 1.2, mid: 1.8, pro: 2.5 };
+
+const CODE_PRESETS: Record<FunDifficulty, string> = {
+  newbie: "console.log('Hello!');\nconsole.log(2 + 3);",
+  mid: "const arr = [1,2,3];\nconsole.log(arr.map(x => x * 2));\nconsole.log(JSON.stringify({a:1,b:2}));",
+  pro: "const fib = (n) => n <= 1 ? n : fib(n-1) + fib(n-2);\nconsole.log([0,1,2,3,4,5].map(fib));\nconsole.log('Big O:', fib(10));",
+};
 
 interface Platform {
   id: number;
@@ -37,7 +54,7 @@ export function BridgeJump({
   const [animating, setAnimating] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCodePanel, setShowCodePanel] = useState(false);
-  const [code, setCode] = useState("console.log('Hello!');\nconsole.log(2 + 3);");
+  const [code, setCode] = useState(CODE_PRESETS.newbie);
   const [codeOutput, setCodeOutput] = useState<string[]>([]);
   const [codeError, setCodeError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +89,10 @@ export function BridgeJump({
   useEffect(() => {
     initPlatforms();
   }, [initPlatforms]);
+
+  useEffect(() => {
+    setCode(CODE_PRESETS[difficulty]);
+  }, [difficulty]);
 
   useEffect(() => {
     if (isFullscreen) initPlatforms();
@@ -155,7 +176,7 @@ export function BridgeJump({
               size="sm"
               className="h-7 text-slate-400 hover:text-cyan-400"
               onClick={toggleFullscreen}
-              title={isFullscreen ? "Exit full screen" : "Full screen"}
+              title={isFullscreen ? "Exit full screen (ESC)" : "Full screen"}
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </Button>

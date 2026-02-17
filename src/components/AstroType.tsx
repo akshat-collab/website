@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2 } from "lucide-react";
+import { ChartContainer } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, Cell } from "recharts";
 import {
   Select,
   SelectContent,
@@ -56,19 +58,35 @@ interface Star {
 
 const EASY_WORDS = [
   "code", "type", "fast", "key", "run", "test", "bug", "fix", "app", "web",
-  "dev", "api", "css", "html", "json", "loop", "func", "var", "let", "const"
+  "dev", "api", "css", "html", "json", "loop", "func", "var", "let", "const",
+  "int", "str", "bool", "null", "void", "this", "new", "try", "catch", "else",
+  "if", "for", "map", "set", "get", "put", "add", "sub", "div", "mod"
 ];
 
 const MEDIUM_WORDS = [
   "function", "variable", "constant", "boolean", "string", "number", "object",
   "array", "method", "class", "import", "export", "return", "async", "await",
-  "promise", "callback", "closure", "scope", "module"
+  "promise", "callback", "closure", "scope", "module", "prototype", "constructor",
+  "destructuring", "spread", "rest", "arrow", "lambda", "iterator", "generator",
+  "middleware", "handler", "render", "component", "state", "props", "effect",
+  "memo", "ref", "context", "reducer", "dispatch", "selector", "observable"
 ];
 
 const HARD_WORDS = [
   "algorithm", "recursion", "iteration", "polymorphism", "encapsulation",
   "inheritance", "abstraction", "interface", "implementation", "optimization",
-  "refactoring", "debugging", "deployment", "architecture", "framework"
+  "refactoring", "debugging", "deployment", "architecture", "framework",
+  "dependency", "injection", "singleton", "factory", "observer", "decorator",
+  "serialization", "deserialization", "asynchronous", "concurrency", "mutex",
+  "semaphore", "deadlock", "racecondition", "microservice", "containerization",
+  "virtualization", "authentication", "authorization", "cryptography", "hashing"
+];
+
+const CODE_SNIPPETS = [
+  "console.log", "JSON.stringify", "Array.prototype", "Object.keys",
+  "Promise.all", "async/await", "useEffect", "useState", "useCallback",
+  "mapReduce", "binarySearch", "quickSort", "mergeSort", "hashMap",
+  "linkedList", "binaryTree", "depthFirst", "breadthFirst", "dynamicProgramming"
 ];
 
 interface AstroTypeProps {
@@ -102,6 +120,8 @@ export function AstroType({ difficulty: propDifficulty }: AstroTypeProps = {}) {
   const nextShotIdRef = useRef<number>(0);
   const playerFlashRef = useRef<boolean>(false);
   const playBoxRef = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     if (starsRef.current.length === 0) {
@@ -120,7 +140,7 @@ export function AstroType({ difficulty: propDifficulty }: AstroTypeProps = {}) {
     const difficulty = difficultyRef.current;
     let wordList = EASY_WORDS;
     if (propDifficulty === "pro" || difficulty > 10) {
-      wordList = [...EASY_WORDS, ...MEDIUM_WORDS, ...HARD_WORDS];
+      wordList = [...EASY_WORDS, ...MEDIUM_WORDS, ...HARD_WORDS, ...CODE_SNIPPETS];
     } else if (propDifficulty === "mid" || difficulty > 5) {
       wordList = [...EASY_WORDS, ...MEDIUM_WORDS];
     }
@@ -278,6 +298,22 @@ export function AstroType({ difficulty: propDifficulty }: AstroTypeProps = {}) {
   const endGame = useCallback(() => {
     setGameState("gameover");
   }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+    } else {
+      document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -545,7 +581,10 @@ export function AstroType({ difficulty: propDifficulty }: AstroTypeProps = {}) {
   }, [gameState, gameMode, wordsDestroyed, spawnAsteroid, endGame]);
 
   return (
-    <div className="relative w-full h-full min-h-[600px] bg-[#0B0F14] flex flex-col items-center justify-center p-4">
+    <div
+      ref={containerRef}
+      className={`relative w-full h-full min-h-[600px] bg-[#0B0F14] flex flex-col items-center justify-center p-4 ${isFullscreen ? "min-h-screen w-screen" : ""}`}
+    >
       <Button
         variant="ghost"
         size="icon"
@@ -555,6 +594,18 @@ export function AstroType({ difficulty: propDifficulty }: AstroTypeProps = {}) {
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
+      {(gameState === "playing" || gameState === "menu" || gameState === "gameover") && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4 z-20 text-gray-400 hover:text-[#00C2FF] hover:bg-[#00C2FF]/10"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Exit full screen (ESC)" : "Full screen"}
+          aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
+        >
+          {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+        </Button>
+      )}
       {gameState === "menu" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#0B0F14]/95">
           <h1 className="text-5xl font-bold text-[#00C2FF] mb-4">AstroType</h1>
@@ -609,26 +660,39 @@ export function AstroType({ difficulty: propDifficulty }: AstroTypeProps = {}) {
       )}
 
       {gameState === "gameover" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#0B0F14]/95">
+        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#0B0F14]/95 overflow-auto">
           <h2 className="text-4xl font-bold text-[#00C2FF] mb-4">Game Over</h2>
-          <div className="bg-[#1a1f2e] border border-[#00C2FF]/30 rounded-lg p-6 mb-8 min-w-[300px]">
-            <div className="grid grid-cols-2 gap-4 text-center">
-              <div>
-                <div className="text-gray-400 text-sm">Score</div>
-                <div className="text-2xl font-bold text-[#00C2FF]">{score}</div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-sm">WPM</div>
-                <div className="text-2xl font-bold text-[#00C2FF]">{wpm}</div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-sm">Accuracy</div>
-                <div className="text-2xl font-bold text-[#00C2FF]">{accuracy}%</div>
-              </div>
-              <div>
-                <div className="text-gray-400 text-sm">Words</div>
-                <div className="text-2xl font-bold text-[#00C2FF]">{wordsDestroyed}</div>
-              </div>
+          <div className="bg-[#1a1f2e] border border-[#00C2FF]/30 rounded-lg p-6 mb-6 min-w-[320px] max-w-[90vw]">
+            <div className="text-gray-400 text-sm mb-4 text-center">Results</div>
+            {(() => {
+              const chartData = [
+                { metric: "Score", value: score, fill: "#00C2FF" },
+                { metric: "WPM", value: wpm, fill: "#00FFB3" },
+                { metric: "Accuracy", value: accuracy, fill: "#FFB300" },
+                { metric: "Words", value: wordsDestroyed, fill: "#B366FF" },
+              ];
+              return (
+                <ChartContainer
+                  config={{ value: { label: "Value", color: "#00C2FF" } }}
+                  className="h-[200px] w-full"
+                >
+                  <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 60, bottom: 5 }}>
+                    <XAxis type="number" hide />
+                    <YAxis type="category" dataKey="metric" width={55} tick={{ fill: "#9AA4B2", fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]} label={{ position: "right", fill: "#fff", fontSize: 11 }}>
+                      {chartData.map((entry, i) => (
+                        <Cell key={i} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartContainer>
+              );
+            })()}
+            <div className="grid grid-cols-2 gap-3 mt-4 text-center text-sm">
+              <div><span className="text-gray-400">Score:</span> <span className="text-[#00C2FF] font-semibold">{score}</span></div>
+              <div><span className="text-gray-400">WPM:</span> <span className="text-[#00FFB3] font-semibold">{wpm}</span></div>
+              <div><span className="text-gray-400">Accuracy:</span> <span className="text-[#FFB300] font-semibold">{accuracy}%</span></div>
+              <div><span className="text-gray-400">Words:</span> <span className="text-[#B366FF] font-semibold">{wordsDestroyed}</span></div>
             </div>
           </div>
           <Button
