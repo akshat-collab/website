@@ -26,7 +26,7 @@ const PressKit = () => (
             <li>Logos and product screenshots</li>
             <li>Press releases and media coverage</li>
           </ul>
-          <p>For media inquiries, contact: <a href="mailto:support@techmasterai.in" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.in</a></p>
+          <p>For media inquiries, contact: <a href="mailto:support@techmasterai.org" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.org</a></p>
         </div>
       </div>
     </main>

@@ -141,7 +141,7 @@ const Footer = memo(() => {
               );
             })}
             <a
-              href="mailto:support@techmasterai.in"
+              href="mailto:support@techmasterai.org"
               className="footer-icon-button w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:scale-110 touch-manipulation"
               aria-label="Support"
             >

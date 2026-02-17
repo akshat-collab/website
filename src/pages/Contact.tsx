@@ -8,7 +8,7 @@ const Contact = () => (
   <div className="min-h-screen" style={{ background: 'var(--theme-bg-primary)' }}>
     <SeoHead
       title="Contact"
-      description="Get in touch with TechMasterAI. General inquiries, support, and business partnerships. Email: support@techmasterai.in"
+      description="Get in touch with TechMasterAI. General inquiries, support, and business partnerships. Email: support@techmasterai.org"
       path="/contact"
     />
     <Header />
@@ -25,9 +25,9 @@ const Contact = () => (
             We value open communication and timely engagement.
           </p>
           <div className="space-y-2">
-            <p><strong>General inquiries:</strong> <a href="mailto:support@techmasterai.in" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.in</a></p>
-            <p><strong>Support:</strong> <a href="mailto:support@techmasterai.in" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.in</a></p>
-            <p><strong>Business partnerships:</strong> <a href="mailto:support@techmasterai.in" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.in</a></p>
+            <p><strong>General inquiries:</strong> <a href="mailto:support@techmasterai.org" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.org</a></p>
+            <p><strong>Support:</strong> <a href="mailto:support@techmasterai.org" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.org</a></p>
+            <p><strong>Business partnerships:</strong> <a href="mailto:support@techmasterai.org" className="underline" style={{ color: 'var(--theme-accent)' }}>support@techmasterai.org</a></p>
           </div>
           <p>Our team aims to respond to all inquiries within standard business hours.</p>
         </div>

@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://techmasterai.in/sitemap.xml
+Sitemap: https://techmasterai.org/sitemap.xml

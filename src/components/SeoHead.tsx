@@ -4,7 +4,7 @@
 
 import { useEffect } from 'react';
 
-const SITE_URL = 'https://techmasterai.in';
+const SITE_URL = 'https://techmasterai.org';
 
 interface SeoHeadProps {
   title: string;

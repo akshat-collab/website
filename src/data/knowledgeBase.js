@@ -13,8 +13,8 @@ export const TECHMASTERAI_KNOWLEDGE = {
     vision: "To become the world's leading platform for competitive programming and developer skill development. We envision a future where every developer can sharpen their skills through practice, compete fairly in 1v1 duels, and climb leaderboards that recognize real talent.",
     founded: "2024",
     headquarters: "India",
-    website: "https://techmasterai.in",
-    email: "support@techmasterai.in"
+    website: "https://techmasterai.org",
+    email: "support@techmasterai.org"
   },
 
   // Platform Functionality (what users can do)
@@ -83,7 +83,7 @@ export const TECHMASTERAI_KNOWLEDGE = {
 
   // Contact Information
   contact: {
-    email: "support@techmasterai.in",
+    email: "support@techmasterai.org",
     phone: "+91-XXXX-XXXX-XX",
     address: "India",
     socialMedia: {
@@ -171,7 +171,7 @@ Founded in ${TECHMASTERAI_KNOWLEDGE.company.founded} and headquartered in ${TECH
 ${funcList}
 
 📧 Support: ${TECHMASTERAI_KNOWLEDGE.company.email}
-🌐 Visit techmasterai.in to get started!`;
+🌐 Visit techmasterai.org to get started!`;
   }
 
   // Founder/Team queries - full team details
