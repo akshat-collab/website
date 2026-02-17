@@ -2,9 +2,15 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { SeoHead } from '../components/SeoHead';
 
 const About = () => (
   <div className="min-h-screen" style={{ background: 'var(--theme-bg-primary)' }}>
+    <SeoHead
+      title="About Us"
+      description="TechMasterAI - Technology-driven organization focused on scalable, secure solutions. Mission: Empower businesses through reliable technology. Vision: Globally trusted platform for innovation."
+      path="/about"
+    />
     <Header />
     <main className="pt-32 pb-20">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">

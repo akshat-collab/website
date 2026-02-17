@@ -2,9 +2,15 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { SeoHead } from '../components/SeoHead';
 
 const Contact = () => (
   <div className="min-h-screen" style={{ background: 'var(--theme-bg-primary)' }}>
+    <SeoHead
+      title="Contact"
+      description="Get in touch with TechMasterAI. General inquiries, support, and business partnerships. Email: support@techmasterai.in"
+      path="/contact"
+    />
     <Header />
     <main className="pt-32 pb-20">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -6,6 +6,7 @@
 import { MapPin } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { SeoHead } from '../components/SeoHead';
 
 // Internship data - exact order as specified
 const internships = [
@@ -44,6 +45,11 @@ const JoinUs = () => {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--theme-bg-primary)' }}>
+      <SeoHead
+        title="Join Us - Internship Opportunities"
+        description="TechMasterAI internships in Bhopal: Full Stack, Python, Website, UI/UX, PR, Game Development. Apply now and build future-ready tech talent."
+        path="/join-us"
+      />
       <Header />
       
       {/* Main Content */}
