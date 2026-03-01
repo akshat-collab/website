@@ -17,7 +17,8 @@
     "test:watch": "vitest",
     "supabase:seed": "node supabase-seed.js",
     "supabase:seed:gen": "npx tsx scripts/generate-seed-data.mjs",
-    "generate:500": "node scripts/generate-500-problems.mjs"
+    "generate:500": "node scripts/generate-500-problems.mjs",
+    "generate:ctf": "node scripts/generate-ctf-challenges.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

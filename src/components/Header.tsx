@@ -109,6 +109,13 @@ const Header = memo(() => {
       show: true,
     },
     {
+      title: 'CTF',
+      action: () => {
+        navigate('/ctf');
+      },
+      show: true,
+    },
+    {
       title: 'Login',
       action: () => {
         navigate('/login');

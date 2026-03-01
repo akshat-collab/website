@@ -59,6 +59,9 @@ const DsaCalendar = lazy(() => import("./pages/dsa/DsaCalendar"));
 
 // TypeForge
 const TypeForgeLayout = lazy(() => import("./layouts/TypeForgeLayout"));
+const CtfLayout = lazy(() => import("./layouts/CtfLayout"));
+const CtfDashboard = lazy(() => import("./pages/ctf/CtfDashboard"));
+const CtfChallenge = lazy(() => import("./pages/ctf/CtfChallenge"));
 const TypeForgeCode = lazy(() => import("./pages/typeforge/TypeForgeCode"));
 const TypeForgeSpells = lazy(() => import("./pages/typeforge/TypeForgeSpells"));
 const TypeForgeFun = lazy(() => import("./pages/typeforge/TypeForgeFun"));
@@ -114,6 +117,11 @@ const App = () => (
               <Route path="/join-us" element={<JoinUs />} />
               <Route path="/typing-test" element={<TypingTest />} />
               <Route path="/astrotype" element={<AstroTypePage />} />
+              {/* CTF */}
+              <Route path="/ctf" element={<CtfLayout />}>
+                <Route index element={<CtfDashboard />} />
+                <Route path="challenge/:id" element={<CtfChallenge />} />
+              </Route>
               <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/contact" element={<Contact />} />
