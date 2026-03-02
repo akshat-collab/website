@@ -20,6 +20,7 @@ import {
   Calendar,
   Menu,
 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const SIDEBAR_WIDTH = 240;
 const TOP_BAR_HEIGHT = 56;
@@ -27,6 +28,7 @@ const TOP_BAR_HEIGHT = 56;
 export function TypeForgeLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const isTypeForge = location.pathname.startsWith("/typeforge");
   const [typeForgeOpen, setTypeForgeOpen] = useState(true);
 
@@ -34,6 +36,10 @@ export function TypeForgeLayout() {
   const isSpells = location.pathname === "/typeforge/spells";
   const isFun = location.pathname === "/typeforge/fun";
   const isLiveCoding = location.pathname === "/typeforge/live-coding";
+
+  const handleBack = () => {
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-[width] duration-150 font-sans">
@@ -45,15 +51,26 @@ export function TypeForgeLayout() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="p-1.5 rounded-lg transition-colors hover:opacity-80 text-foreground"
             aria-label="Back"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <span className="text-base font-semibold text-foreground">
-            Type Forge
-          </span>
+          <Link to="/typeforge" className="flex items-center gap-2 group">
+            <img
+              src={theme === "dark" ? "/tmai-logo.png" : "/tmai-logo-dark.png"}
+              alt="TechMasterAI"
+              className="h-7 w-7 rounded transition-all duration-300 group-hover:opacity-90"
+              style={{ objectFit: "contain" }}
+              onError={(e) => {
+                e.currentTarget.src = "/tmai-logo.png";
+              }}
+            />
+            <span className="text-base font-semibold text-foreground">
+              Type Forge
+            </span>
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           <button type="button" className="p-2 rounded-lg transition-colors hover:opacity-80 text-muted-foreground" aria-label="Theme">

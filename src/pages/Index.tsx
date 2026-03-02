@@ -2,6 +2,7 @@ import Header from '../components/Header';
 import HeroSection from '../components/HeroSection';
 import FeaturesSection from '../components/FeaturesSection';
 import Footer from '../components/Footer';
+import HoliBanner from '../components/HoliBanner';
 import { SeoHead } from '../components/SeoHead';
 
 const Index = () => {
@@ -13,6 +14,7 @@ const Index = () => {
         path="/"
       />
       <Header />
+      <HoliBanner />
       <main className="flex-1">
         <HeroSection />
         <FeaturesSection />

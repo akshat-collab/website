@@ -1,12 +1,22 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Flag, LayoutDashboard } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const TOP_BAR_HEIGHT = 56;
 
 export default function CtfLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+
+  const handleBack = () => {
+    if (location.pathname === "/ctf") {
+      navigate("/");
+    } else {
+      navigate("/ctf");
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
@@ -17,16 +27,30 @@ export default function CtfLayout() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="p-1.5 rounded-lg transition-colors hover:opacity-80 text-foreground"
             aria-label="Back"
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <span className="text-base font-semibold text-foreground flex items-center gap-2">
-            <Flag className="h-5 w-5 text-primary" />
-            CTF
-          </span>
+          <Link
+            to="/ctf"
+            className="flex items-center gap-2 group"
+          >
+            <img
+              src={theme === "dark" ? "/tmai-logo.png" : "/tmai-logo-dark.png"}
+              alt="TechMasterAI"
+              className="h-7 w-7 rounded transition-all duration-300 group-hover:opacity-90"
+              style={{ objectFit: "contain" }}
+              onError={(e) => {
+                e.currentTarget.src = "/tmai-logo.png";
+              }}
+            />
+            <span className="text-base font-semibold text-foreground flex items-center gap-1.5">
+              <Flag className="h-4 w-4 text-primary" />
+              CTF
+            </span>
+          </Link>
         </div>
         <Link
           to="/ctf"
