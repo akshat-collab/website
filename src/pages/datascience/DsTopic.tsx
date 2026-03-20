@@ -33,8 +33,9 @@ import {
   markTopicComplete,
   markExerciseComplete,
   isExerciseComplete,
+  setTrackCompletedAt,
 } from "@/features/datascience/dsStorage";
-import { getTopicProgress } from "@/features/datascience/dsProgress";
+import { getTopicProgress, isDataScienceTrackComplete } from "@/features/datascience/dsProgress";
 import { isTopicComplete } from "@/features/datascience/dsStorage";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -98,6 +99,9 @@ export default function DsTopic() {
   const handleMarkComplete = () => {
     if (!topicId || !progress?.canMarkComplete) return;
     markTopicComplete(topicId);
+    if (isDataScienceTrackComplete()) {
+      setTrackCompletedAt(Date.now());
+    }
     toast.success("Topic marked complete!");
     refreshProgress();
   };

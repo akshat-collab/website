@@ -163,6 +163,15 @@ export function getOverallProgress(): {
   };
 }
 
+export function isDataScienceTrackComplete(): boolean {
+  for (const level of DS_COURSE_OUTLINE.levels) {
+    for (const topic of level.topics) {
+      if (!isTopicComplete(topic.id)) return false;
+    }
+  }
+  return true;
+}
+
 export function getResumeTopic(): { levelOrder: number; topicId: string; topicTitle: string } | null {
   for (const level of DS_COURSE_OUTLINE.levels) {
     for (const topic of level.topics) {

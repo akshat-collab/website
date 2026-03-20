@@ -12,6 +12,8 @@ const SESSION_START = DS_PREFIX + "session_start";
 const TAB_SWITCH_COUNT = DS_PREFIX + "tab_switch";
 const BADGES_EARNED = DS_PREFIX + "badges";
 const CONCEPT_VIEWED = DS_PREFIX + "concept_viewed";
+const CERTIFICATE_DATA = DS_PREFIX + "certificate";
+const TRACK_COMPLETED_AT = DS_PREFIX + "track_completed_at";
 
 // ─── Topic completion (tick) ─────────────────────────────────────────────
 export function getCompletedTopics(): string[] {
@@ -194,4 +196,36 @@ export function awardBadge(badgeId: string): void {
 
 export function hasBadge(badgeId: string): boolean {
   return getEarnedBadges().includes(badgeId);
+}
+
+// ─── Certificate (name, date) ─────────────────────────────────────────────
+export interface CertificateData {
+  recipientName: string;
+  completionDate: string;
+}
+
+export function getCertificateData(): CertificateData | null {
+  try {
+    const raw = localStorage.getItem(CERTIFICATE_DATA);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setCertificateData(recipientName: string, completionDate: string): void {
+  localStorage.setItem(
+    CERTIFICATE_DATA,
+    JSON.stringify({ recipientName, completionDate })
+  );
+}
+
+/** Set when user completes all modules (last topic marked complete) */
+export function setTrackCompletedAt(timestamp: number): void {
+  localStorage.setItem(TRACK_COMPLETED_AT, String(timestamp));
+}
+
+export function getTrackCompletedAt(): number | null {
+  const raw = localStorage.getItem(TRACK_COMPLETED_AT);
+  return raw ? parseInt(raw, 10) : null;
 }
