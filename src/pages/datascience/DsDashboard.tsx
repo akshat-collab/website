@@ -1,164 +1,217 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, BookOpen, Trophy, Target, CheckCircle2 } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  Trophy,
+  Target,
+  CheckCircle2,
+  Play,
+  Clock,
+  ChevronRight,
+} from "lucide-react";
 import { DS_COURSE_OUTLINE, DS_BADGES } from "@/data/datascience";
-import { getOverallProgress } from "@/features/datascience/dsProgress";
+import {
+  getOverallProgress,
+  getResumeTopic,
+  getCurrentLevelStatus,
+  getSkillDistribution,
+} from "@/features/datascience/dsProgress";
 import { hasBadge } from "@/features/datascience/dsStorage";
 import { SeoHead } from "@/components/SeoHead";
-import { DsAnimatedChart } from "@/components/datascience/DsAnimatedChart";
-import { DsHeroVisual } from "@/components/datascience/DsHeroVisual";
+import { cn } from "@/lib/utils";
+
+const TOTAL_WEEKS = DS_COURSE_OUTLINE.levels.reduce((s, l) => s + (l.durationWeeks ?? 0), 0);
 
 export default function DsDashboard() {
   const progress = getOverallProgress();
+  const resume = getResumeTopic();
+  const currentLevel = getCurrentLevelStatus();
+  const skills = getSkillDistribution();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <SeoHead
         title="Professional Data Science | TechMasterAI"
         description="Complete Data Science track: Python → Analytics → Statistics → ML → Deployment. Certification-based, auto-gradable."
         path="/datascience"
       />
 
-      <div className="text-center space-y-4">
-        <div className="flex justify-center">
-          <DsHeroVisual />
+      {/* HERO SECTION */}
+      <section className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-purple-500/5 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-[url('/ds-logo.svg')] bg-center bg-no-repeat opacity-[0.03]" />
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-4">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3">
+              <img src="/ds-logo.svg" alt="" className="h-12 w-12" />
+              Professional Data Science Track
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-xl">
+              Master Python, Analytics, Machine Learning, and Real-world Projects
+            </p>
+            <div className="flex flex-wrap gap-4 text-sm">
+              <span className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                ~{TOTAL_WEEKS} weeks to complete
+              </span>
+              {currentLevel && (
+                <span className="flex items-center gap-2">
+                  <span
+                    className="w-2 h-2 rounded-full animate-pulse"
+                    style={{ background: DS_COURSE_OUTLINE.levels.find((l) => l.id === currentLevel.levelId)?.color ?? "#3b82f6" }}
+                  />
+                  Level {currentLevel.levelOrder}: {currentLevel.levelTitle} ({currentLevel.percent}%)
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {resume ? (
+                <Link to={`/datascience/level/${resume.levelOrder}/topic/${resume.topicId}`}>
+                  <Button size="lg" className="gap-2 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:scale-[1.02]">
+                    <Play className="h-4 w-4" />
+                    Resume Learning
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/datascience/curriculum">
+                  <Button size="lg" className="gap-2">
+                    <CheckCircle2 className="h-4 w-4" />
+                    View Curriculum
+                  </Button>
+                </Link>
+              )}
+              <Link to="/datascience/progress">
+                <Button variant="outline" size="lg" className="gap-2">
+                  View Progress
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <div className="flex flex-col gap-4 min-w-[200px]">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary">{progress.percent}%</div>
+              <p className="text-xs text-muted-foreground">Overall Complete</p>
+            </div>
+            <Progress value={progress.percent} className="h-2 rounded-full" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{progress.completedTopics} topics</span>
+              <span>{progress.earnedBadges.length}/4 badges</span>
+            </div>
+          </div>
         </div>
-        <h1 className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">
-          <img src="/ds-logo.svg" alt="" className="h-10 w-10" />
-          <BarChart3 className="h-8 w-8 text-primary" />
-          Professional Data Science
-        </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Python Foundations → Advanced Python → Data Analytics → Statistics → Graph Theory → Machine Learning → Advanced ML → Capstone & Certification
-        </p>
-        <div className="flex justify-center gap-6 text-sm flex-wrap">
-          <span className="text-muted-foreground">
-            <span className="font-semibold text-primary">8</span> Levels
-          </span>
-          <span className="text-muted-foreground">
-            <span className="font-semibold text-primary">{progress.completedTopics}/{progress.totalTopics}</span> Topics
-          </span>
-          <span className="text-muted-foreground">
-            <span className="font-semibold text-primary">{progress.earnedBadges.length}/4</span> Badges
-          </span>
-        </div>
-        <div className="max-w-xs mx-auto">
-          <Progress value={progress.percent} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-1">{progress.percent}% complete</p>
-        </div>
-      </div>
+      </section>
 
-      <Card className="overflow-hidden">
+      {/* SKILL DISTRIBUTION CHART */}
+      <Card className="overflow-hidden border-2 rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            Track Visualization
+            Skill Distribution
           </CardTitle>
-          <CardDescription>
-            Visual overview of the 8-level learning path
-          </CardDescription>
+          <CardDescription>Progress across learning domains</CardDescription>
         </CardHeader>
-        <CardContent className="pb-6">
-          <DsAnimatedChart />
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {skills.map((s, i) => (
+              <div
+                key={s.skill}
+                className="flex flex-col items-center gap-2 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+                style={{ animationDelay: `${i * 50}ms` }}
+              >
+                <div className="relative w-16 h-16">
+                  <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="text-muted/30"
+                    />
+                    <path
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke={s.color}
+                      strokeWidth="2"
+                      strokeDasharray={`${s.value} 100`}
+                      strokeLinecap="round"
+                      className="transition-all duration-700"
+                    />
+                  </svg>
+                  <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">{s.value}%</span>
+                </div>
+                <span className="text-xs font-medium text-center">{s.skill}</span>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {DS_COURSE_OUTLINE.levels.map((level) => (
-          <Link key={level.id} to={`/datascience/level/${level.order}`}>
-            <Card
-              className="transition-all hover:border-primary/50 hover:shadow-md h-full"
-              style={{ borderLeftWidth: 4, borderLeftColor: level.color }}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <span
-                        className="w-3 h-3 rounded-full shrink-0"
-                        style={{ background: level.color }}
-                      />
-                      Level {level.order}: {level.title}
-                    </CardTitle>
-                    <CardDescription className="mt-1 line-clamp-2">
-                      {level.description}
-                    </CardDescription>
-                  </div>
-                  <Badge variant="outline" className="shrink-0">
-                    {level.durationWeeks}w
-                  </Badge>
-                </div>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {level.topics.slice(0, 3).map((t) => (
-                    <Badge key={t.id} variant="secondary" className="text-xs">
-                      {t.title}
-                    </Badge>
-                  ))}
-                  {level.topics.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{level.topics.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              </CardHeader>
-            </Card>
-          </Link>
-        ))}
+      {/* QUICK LINKS: Curriculum + Projects + Badges */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <Link to="/datascience/curriculum">
+          <Card className="h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/30 cursor-pointer group">
+            <CardHeader>
+              <BookOpen className="h-8 w-8 text-primary mb-2 group-hover:scale-110 transition-transform" />
+              <CardTitle>Curriculum</CardTitle>
+              <CardDescription>8-level roadmap with timeline view</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link to="/datascience/projects">
+          <Card className="h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/30 cursor-pointer group">
+            <CardHeader>
+              <Target className="h-8 w-8 text-amber-500 mb-2 group-hover:scale-110 transition-transform" />
+              <CardTitle>Projects</CardTitle>
+              <CardDescription>Fraud Detection, Churn, Recommendations</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link to="/datascience/certifications">
+          <Card className="h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/30 cursor-pointer group">
+            <CardHeader>
+              <Trophy className="h-8 w-8 text-amber-500 mb-2 group-hover:scale-110 transition-transform" />
+              <CardTitle>Certifications</CardTitle>
+              <CardDescription>Badges & professional certificate</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-amber-500" />
-              Badges
-            </CardTitle>
-            <CardDescription>
-              Bronze (Python) → Silver (Analyst) → Gold (ML Engineer) → Platinum (Data Scientist)
-            </CardDescription>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {DS_BADGES.map((b) => (
-                <Badge
-                  key={b.id}
-                  variant={hasBadge(b.id) ? "default" : "outline"}
-                  className={hasBadge(b.id) ? "bg-amber-500/20 text-amber-600 border-amber-500/30" : ""}
-                >
-                  {hasBadge(b.id) && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                  {b.icon} {b.name}
-                </Badge>
-              ))}
-            </div>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-primary" />
-              Certification
-            </CardTitle>
-            <CardDescription>
-              Capstone project + Proctored exam. Certificate & digital badge on completion.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-
-      <Card>
+      {/* BADGES PREVIEW */}
+      <Card className="rounded-2xl border-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            Learning Philosophy
+            <Trophy className="h-5 w-5 text-amber-500" />
+            Badge Progression
           </CardTitle>
-          <CardDescription className="space-y-2">
-            <p>• Problem-solving first approach</p>
-            <p>• Case-study driven learning</p>
-            <p>• Code-first implementation</p>
-            <p>• Industry-aligned projects</p>
-            <p>• Portfolio-ready outputs</p>
-          </CardDescription>
+          <CardDescription>Beginner → Analyst → ML Engineer → Data Scientist</CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            {DS_BADGES.map((b) => {
+              const earned = hasBadge(b.id);
+              return (
+                <div
+                  key={b.id}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-xl border transition-all",
+                    earned
+                      ? "bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400"
+                      : "bg-muted/30 border-border text-muted-foreground opacity-75"
+                  )}
+                >
+                  {earned ? <CheckCircle2 className="h-4 w-4" /> : <span className="w-4 h-4 rounded-full border-2 border-muted-foreground" />}
+                  <span className="text-lg">{b.icon}</span>
+                  <span className="font-medium">{b.name}</span>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
       </Card>
     </div>
   );

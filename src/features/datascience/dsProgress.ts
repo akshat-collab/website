@@ -163,6 +163,49 @@ export function getOverallProgress(): {
   };
 }
 
+export function getResumeTopic(): { levelOrder: number; topicId: string; topicTitle: string } | null {
+  for (const level of DS_COURSE_OUTLINE.levels) {
+    for (const topic of level.topics) {
+      if (!isTopicComplete(topic.id)) {
+        return { levelOrder: level.order, topicId: topic.id, topicTitle: topic.title };
+      }
+    }
+  }
+  return null;
+}
+
+export function getCurrentLevelStatus(): { levelOrder: number; levelTitle: string; levelId: string; percent: number } | null {
+  for (const level of DS_COURSE_OUTLINE.levels) {
+    const prog = getLevelProgress(level.id);
+    if (prog.percent < 100 && prog.total > 0) {
+      return { levelOrder: level.order, levelTitle: level.title, levelId: level.id, percent: prog.percent };
+    }
+  }
+  return null;
+}
+
+export function getSkillDistribution(): { skill: string; value: number; color: string }[] {
+  const skills: { skill: string; levelIds: string[]; color: string }[] = [
+    { skill: "Python", levelIds: ["level-1", "level-2"], color: "#22c55e" },
+    { skill: "Data Analytics", levelIds: ["level-3"], color: "#3b82f6" },
+    { skill: "Statistics", levelIds: ["level-4"], color: "#ef4444" },
+    { skill: "Graph Theory", levelIds: ["level-5"], color: "#a855f7" },
+    { skill: "Machine Learning", levelIds: ["level-6", "level-7"], color: "#8b5cf6" },
+    { skill: "Capstone", levelIds: ["level-8"], color: "#f59e0b" },
+  ];
+  return skills.map((s) => {
+    let completed = 0;
+    let total = 0;
+    for (const level of DS_COURSE_OUTLINE.levels) {
+      if (s.levelIds.includes(level.id)) {
+        total += level.topics.length;
+        completed += level.topics.filter((t) => isTopicComplete(t.id)).length;
+      }
+    }
+    return { ...s, value: total ? Math.round((completed / total) * 100) : 0 };
+  });
+}
+
 function checkAndAwardBadges(): void {
   const completed = getCompletedTopics();
 

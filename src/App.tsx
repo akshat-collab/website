@@ -64,6 +64,10 @@ const CtfDashboard = lazy(() => import("./pages/ctf/CtfDashboard"));
 const CtfChallenge = lazy(() => import("./pages/ctf/CtfChallenge"));
 const DsLayout = lazy(() => import("./layouts/DsLayout"));
 const DsDashboard = lazy(() => import("./pages/datascience/DsDashboard"));
+const DsCurriculum = lazy(() => import("./pages/datascience/DsCurriculum"));
+const DsProjects = lazy(() => import("./pages/datascience/DsProjects"));
+const DsProgress = lazy(() => import("./pages/datascience/DsProgress"));
+const DsCertifications = lazy(() => import("./pages/datascience/DsCertifications"));
 const DsLevel = lazy(() => import("./pages/datascience/DsLevel"));
 const DsTopic = lazy(() => import("./pages/datascience/DsTopic"));
 const DsExercise = lazy(() => import("./pages/datascience/DsExercise"));
@@ -130,6 +134,10 @@ const App = () => (
               {/* Data Science */}
               <Route path="/datascience" element={<DsLayout />}>
                 <Route index element={<DsDashboard />} />
+                <Route path="curriculum" element={<DsCurriculum />} />
+                <Route path="projects" element={<DsProjects />} />
+                <Route path="progress" element={<DsProgress />} />
+                <Route path="certifications" element={<DsCertifications />} />
                 <Route path="level/:levelId" element={<DsLevel />} />
                 <Route path="level/:levelId/topic/:topicId" element={<DsTopic />} />
                 <Route path="level/:levelId/topic/:topicId/exercise/:exerciseId" element={<DsExercise />} />

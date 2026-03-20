@@ -15,6 +15,9 @@ import {
   CheckCircle2,
   Circle,
   AlertTriangle,
+  ChevronRight,
+  FileText,
+  Lock,
 } from "lucide-react";
 import { DS_COURSE_OUTLINE, DS_CONCEPT_CONTENT, DS_ALL_EXERCISES, DS_ALL_MCQS, DS_ALL_ASSIGNMENTS } from "@/data/datascience";
 import { SeoHead } from "@/components/SeoHead";
@@ -32,6 +35,8 @@ import {
   isExerciseComplete,
 } from "@/features/datascience/dsStorage";
 import { getTopicProgress } from "@/features/datascience/dsProgress";
+import { isTopicComplete } from "@/features/datascience/dsStorage";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export default function DsTopic() {
@@ -108,13 +113,76 @@ export default function DsTopic() {
 
   const assignSubmitted = assignment ? isAssignmentSubmitted(assignment.id) : true;
 
+  const topicPercent = progress
+    ? (() => {
+        const steps = [
+          progress.conceptViewed,
+          progress.exercisesTotal ? progress.exercisesCompleted >= progress.exercisesTotal : true,
+          progress.mcqsTotal ? progress.mcqsCorrect >= Math.ceil(progress.mcqsTotal * 0.6) : true,
+          assignment ? assignSubmitted : true,
+        ].filter(Boolean);
+        const total = 4;
+        return Math.round((steps.length / total) * 100);
+      })()
+    : 0;
+
+  const topicIdx = level.topics.findIndex((t) => t.id === topicId);
+  const nextTopic = topicIdx >= 0 && topicIdx < level.topics.length - 1 ? level.topics[topicIdx + 1] : null;
+  const nextTopicUnlocked = nextTopic ? isTopicComplete(topicId) : false;
+
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col lg:flex-row gap-6 -mx-4 sm:-mx-6 lg:-mx-8">
       <SeoHead
         title={`${topic.title} | Level ${level.order} | Data Science | TechMasterAI`}
         description={concept?.slice(0, 155) ?? topic.title}
         path={`/datascience/level/${level.order}/topic/${topic.id}`}
       />
+
+      {/* LEFT: Topic Explorer (file-tree style) */}
+      <aside className="lg:w-64 shrink-0 lg:sticky lg:top-24">
+        <div className="rounded-xl border border-border bg-card/50 p-3 overflow-hidden">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-2">Topics</p>
+          <nav className="space-y-0.5 max-h-[min(60vh,400px)] overflow-y-auto">
+            {level.topics.map((t, i) => {
+              const isCurrent = t.id === topicId;
+              const complete = isTopicComplete(t.id);
+              const prevComplete = i === 0 || isTopicComplete(level.topics[i - 1].id);
+              const unlocked = prevComplete;
+              return (
+                <Link
+                  key={t.id}
+                  to={unlocked ? `/datascience/level/${level.order}/topic/${t.id}` : "#"}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all",
+                    isCurrent && "bg-primary/15 text-primary font-medium",
+                    !isCurrent && unlocked && "hover:bg-muted/50 text-foreground",
+                    !unlocked && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  {complete ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> : unlocked ? <FileText className="h-4 w-4 shrink-0" /> : <Lock className="h-4 w-4 shrink-0" />}
+                  <span className="truncate">{t.title}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </aside>
+
+      {/* RIGHT: Content */}
+      <div className="flex-1 min-w-0 space-y-6">
+      {/* Sticky progress bar */}
+      <div className="sticky top-16 z-10 -mx-4 px-4 py-2 bg-background/95 backdrop-blur border-b border-border rounded-b-lg">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-sm text-muted-foreground">Topic progress</span>
+          <div className="flex-1 max-w-xs h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-500 rounded-full"
+              style={{ width: `${topicPercent}%` }}
+            />
+          </div>
+          <span className="text-sm font-medium tabular-nums">{topicPercent}%</span>
+        </div>
+      </div>
 
       <Button
         variant="ghost"
@@ -349,6 +417,25 @@ export default function DsTopic() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Next Topic */}
+      <div className="flex justify-end pt-4 border-t border-border">
+        {nextTopic && nextTopicUnlocked ? (
+          <Button asChild className="gap-2">
+            <Link to={`/datascience/level/${level.order}/topic/${nextTopic.id}`}>
+              Next Topic
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        ) : nextTopic ? (
+          <p className="text-sm text-muted-foreground">Complete this topic to unlock: {nextTopic.title}</p>
+        ) : (
+          <Button asChild variant="outline" className="gap-2">
+            <Link to={`/datascience/level/${level.order}`}>Back to Level</Link>
+          </Button>
+        )}
+      </div>
+      </div>
     </div>
   );
 }
