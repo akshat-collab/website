@@ -116,6 +116,13 @@ const Header = memo(() => {
       show: true,
     },
     {
+      title: 'Data Science',
+      action: () => {
+        navigate('/datascience');
+      },
+      show: true,
+    },
+    {
       title: 'Login',
       action: () => {
         navigate('/login');

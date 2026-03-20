@@ -62,6 +62,11 @@ const TypeForgeLayout = lazy(() => import("./layouts/TypeForgeLayout"));
 const CtfLayout = lazy(() => import("./layouts/CtfLayout"));
 const CtfDashboard = lazy(() => import("./pages/ctf/CtfDashboard"));
 const CtfChallenge = lazy(() => import("./pages/ctf/CtfChallenge"));
+const DsLayout = lazy(() => import("./layouts/DsLayout"));
+const DsDashboard = lazy(() => import("./pages/datascience/DsDashboard"));
+const DsLevel = lazy(() => import("./pages/datascience/DsLevel"));
+const DsTopic = lazy(() => import("./pages/datascience/DsTopic"));
+const DsExercise = lazy(() => import("./pages/datascience/DsExercise"));
 const TypeForgeCode = lazy(() => import("./pages/typeforge/TypeForgeCode"));
 const TypeForgeSpells = lazy(() => import("./pages/typeforge/TypeForgeSpells"));
 const TypeForgeFun = lazy(() => import("./pages/typeforge/TypeForgeFun"));
@@ -121,6 +126,13 @@ const App = () => (
               <Route path="/ctf" element={<CtfLayout />}>
                 <Route index element={<CtfDashboard />} />
                 <Route path="challenge/:id" element={<CtfChallenge />} />
+              </Route>
+              {/* Data Science */}
+              <Route path="/datascience" element={<DsLayout />}>
+                <Route index element={<DsDashboard />} />
+                <Route path="level/:levelId" element={<DsLevel />} />
+                <Route path="level/:levelId/topic/:topicId" element={<DsTopic />} />
+                <Route path="level/:levelId/topic/:topicId/exercise/:exerciseId" element={<DsExercise />} />
               </Route>
               <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
