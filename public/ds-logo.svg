@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="dsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="dsGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="28" fill="url(#dsGrad)" opacity="0.15"/>
+  <path d="M16 44 L24 32 L32 36 L40 24 L48 28" stroke="url(#dsGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="16" cy="44" r="3" fill="#3b82f6"/>
+  <circle cx="24" cy="32" r="3" fill="#6366f1"/>
+  <circle cx="32" cy="36" r="3" fill="#8b5cf6"/>
+  <circle cx="40" cy="24" r="3" fill="#a855f7"/>
+  <circle cx="48" cy="28" r="3" fill="#06b6d4"/>
+  <rect x="20" y="18" width="6" height="14" rx="1" fill="url(#dsGrad2)" opacity="0.8"/>
+  <rect x="30" y="22" width="6" height="10" rx="1" fill="url(#dsGrad2)" opacity="0.6"/>
+  <rect x="40" y="14" width="6" height="18" rx="1" fill="url(#dsGrad2)" opacity="0.9"/>
+</svg>

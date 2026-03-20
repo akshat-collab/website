@@ -52,17 +52,54 @@ export {
   LEVEL4_ALL_MCQS,
   LEVEL4_ALL_ASSIGNMENTS,
 } from "./level4Content";
+export {
+  LEVEL5_ALL_EXERCISES,
+  LEVEL5_ALL_MCQS,
+  LEVEL5_ALL_ASSIGNMENTS,
+} from "./level5Content";
+export {
+  LEVEL6_ALL_EXERCISES,
+  LEVEL6_ALL_MCQS,
+  LEVEL6_ALL_ASSIGNMENTS,
+} from "./level6Content";
+export {
+  LEVEL7_ALL_EXERCISES,
+  LEVEL7_ALL_MCQS,
+  LEVEL7_ALL_ASSIGNMENTS,
+} from "./level7Content";
 export { DS_CONCEPT_CONTENT } from "./concepts";
 
-// Combined: all exercises and MCQs across levels (Level 1 + 2 + 3 + 4)
+// Combined: all exercises and MCQs across levels (Level 1 through 7)
 import { LEVEL2_ALL_EXERCISES, LEVEL2_ALL_MCQS, LEVEL2_ALL_ASSIGNMENTS } from "./level2Content";
 import { LEVEL3_ALL_EXERCISES, LEVEL3_ALL_MCQS, LEVEL3_ALL_ASSIGNMENTS } from "./level3Content";
 import { LEVEL4_ALL_EXERCISES, LEVEL4_ALL_MCQS, LEVEL4_ALL_ASSIGNMENTS } from "./level4Content";
-export const DS_ALL_EXERCISES = [...LEVEL1_ALL_EXERCISES, ...LEVEL2_ALL_EXERCISES, ...LEVEL3_ALL_EXERCISES, ...LEVEL4_ALL_EXERCISES];
-export const DS_ALL_MCQS = [...LEVEL1_ALL_MCQS, ...LEVEL2_ALL_MCQS, ...LEVEL3_ALL_MCQS, ...LEVEL4_ALL_MCQS];
+import { LEVEL5_ALL_EXERCISES, LEVEL5_ALL_MCQS, LEVEL5_ALL_ASSIGNMENTS } from "./level5Content";
+import { LEVEL6_ALL_EXERCISES, LEVEL6_ALL_MCQS, LEVEL6_ALL_ASSIGNMENTS } from "./level6Content";
+import { LEVEL7_ALL_EXERCISES, LEVEL7_ALL_MCQS, LEVEL7_ALL_ASSIGNMENTS } from "./level7Content";
+export const DS_ALL_EXERCISES = [
+  ...LEVEL1_ALL_EXERCISES,
+  ...LEVEL2_ALL_EXERCISES,
+  ...LEVEL3_ALL_EXERCISES,
+  ...LEVEL4_ALL_EXERCISES,
+  ...LEVEL5_ALL_EXERCISES,
+  ...LEVEL6_ALL_EXERCISES,
+  ...LEVEL7_ALL_EXERCISES,
+];
+export const DS_ALL_MCQS = [
+  ...LEVEL1_ALL_MCQS,
+  ...LEVEL2_ALL_MCQS,
+  ...LEVEL3_ALL_MCQS,
+  ...LEVEL4_ALL_MCQS,
+  ...LEVEL5_ALL_MCQS,
+  ...LEVEL6_ALL_MCQS,
+  ...LEVEL7_ALL_MCQS,
+];
 export const DS_ALL_ASSIGNMENTS: Record<string, import("./level1ContentExtended").MiniAssignment> = {
   ...LEVEL1_ALL_ASSIGNMENTS,
   ...LEVEL2_ALL_ASSIGNMENTS,
   ...LEVEL3_ALL_ASSIGNMENTS,
   ...LEVEL4_ALL_ASSIGNMENTS,
+  ...LEVEL5_ALL_ASSIGNMENTS,
+  ...LEVEL6_ALL_ASSIGNMENTS,
+  ...LEVEL7_ALL_ASSIGNMENTS,
 };

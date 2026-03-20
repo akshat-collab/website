@@ -35,11 +35,12 @@ export const LEVEL4_TOPICS = [
 ];
 
 export const LEVEL5_TOPICS = [
-  { id: "t5-representations", title: "Graph Representations", exercises: 3, mcqs: 2 },
+  { id: "t5-representations", title: "Graph Representations", exercises: 4, mcqs: 2 },
   { id: "t5-bfs-dfs", title: "BFS & DFS", exercises: 4, mcqs: 2 },
   { id: "t5-dijkstra", title: "Dijkstra", exercises: 3, mcqs: 2 },
   { id: "t5-network", title: "Network Analysis", exercises: 3, mcqs: 2 },
   { id: "t5-pagerank", title: "PageRank", exercises: 2, mcqs: 2 },
+  { id: "t5-clustering", title: "Graph Clustering", exercises: 3, mcqs: 2 },
 ];
 
 export const LEVEL6_TOPICS = [
@@ -48,8 +49,9 @@ export const LEVEL6_TOPICS = [
   { id: "t6-knn", title: "KNN", exercises: 2, mcqs: 1 },
   { id: "t6-trees", title: "Decision Trees", exercises: 3, mcqs: 2 },
   { id: "t6-forest", title: "Random Forest", exercises: 2, mcqs: 2 },
-  { id: "t6-metrics", title: "Evaluation Metrics", exercises: 2, mcqs: 2 },
+  { id: "t6-metrics", title: "Evaluation Metrics", exercises: 4, mcqs: 2 },
   { id: "t6-kmeans", title: "K-Means", exercises: 2, mcqs: 1 },
+  { id: "t6-hierarchical", title: "Hierarchical Clustering", exercises: 2, mcqs: 2 },
   { id: "t6-pca", title: "PCA", exercises: 2, mcqs: 1 },
 ];
 

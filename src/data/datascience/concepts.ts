@@ -1124,6 +1124,18 @@ A page is important if important pages link to it.
 Iteratively assign scores. Each page distributes its score to its outlinks. Converges to steady state.
 \`\`\``,
 
+  "t5-clustering": `# Graph Clustering
+
+## Clustering Coefficient
+Measures how connected a node's neighbors are. High = tight local community.
+
+## Triangle Count
+Three nodes all connected = triangle. Count indicates clustering.
+
+## Community Detection
+Find densely connected groups (communities) in networks. Used in social networks, biology.
+\`\`\``,
+
   // ═══════════════════════════════════════════════════════════════
   // LEVEL 6: Machine Learning
   // ═══════════════════════════════════════════════════════════════
@@ -1234,6 +1246,20 @@ No labels. Clustering by similarity.
 from sklearn.cluster import KMeans
 kmeans = KMeans(n_clusters=3)
 labels = kmeans.fit_predict(X)
+\`\`\``,
+
+  "t6-hierarchical": `# Hierarchical Clustering
+
+## Agglomerative (Bottom-Up)
+Start with each point as its own cluster. Merge closest pairs until k clusters.
+
+## Linkage
+- **Single**: min distance between clusters
+- **Complete**: max distance
+- **Average**: mean distance
+
+## Dendrogram
+Tree showing merge order. Cut at height to get k clusters.
 \`\`\``,
 
   "t6-pca": `# PCA (Principal Component Analysis)

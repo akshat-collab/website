@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { BarChart3, BookOpen, Trophy, Target, CheckCircle2 } from "lucide-react";
@@ -7,6 +7,8 @@ import { DS_COURSE_OUTLINE, DS_BADGES } from "@/data/datascience";
 import { getOverallProgress } from "@/features/datascience/dsProgress";
 import { hasBadge } from "@/features/datascience/dsStorage";
 import { SeoHead } from "@/components/SeoHead";
+import { DsAnimatedChart } from "@/components/datascience/DsAnimatedChart";
+import { DsHeroVisual } from "@/components/datascience/DsHeroVisual";
 
 export default function DsDashboard() {
   const progress = getOverallProgress();
@@ -19,8 +21,12 @@ export default function DsDashboard() {
         path="/datascience"
       />
 
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-4">
+        <div className="flex justify-center">
+          <DsHeroVisual />
+        </div>
         <h1 className="text-3xl font-bold text-foreground flex items-center justify-center gap-2">
+          <img src="/ds-logo.svg" alt="" className="h-10 w-10" />
           <BarChart3 className="h-8 w-8 text-primary" />
           Professional Data Science
         </h1>
@@ -43,6 +49,21 @@ export default function DsDashboard() {
           <p className="text-xs text-muted-foreground mt-1">{progress.percent}% complete</p>
         </div>
       </div>
+
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Track Visualization
+          </CardTitle>
+          <CardDescription>
+            Visual overview of the 8-level learning path
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pb-6">
+          <DsAnimatedChart />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {DS_COURSE_OUTLINE.levels.map((level) => (

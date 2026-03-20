@@ -27,12 +27,12 @@ export default function DsLayout() {
           </button>
           <Link to="/datascience" className="flex items-center gap-2 group">
             <img
-              src={theme === "dark" ? "/tmai-logo.png" : "/tmai-logo-dark.png"}
-              alt="TechMasterAI"
-              className="h-7 w-7 rounded transition-all duration-300 group-hover:opacity-90"
+              src="/ds-logo.svg"
+              alt="Data Science"
+              className="h-8 w-8 rounded transition-all duration-300 group-hover:scale-105"
               style={{ objectFit: "contain" }}
               onError={(e) => {
-                e.currentTarget.src = "/tmai-logo.png";
+                e.currentTarget.src = theme === "dark" ? "/tmai-logo.png" : "/tmai-logo-dark.png";
               }}
             />
             <span className="text-base font-semibold text-foreground flex items-center gap-1.5">
