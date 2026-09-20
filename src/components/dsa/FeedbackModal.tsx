@@ -50,10 +50,10 @@ export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1f2e] border-white/10 max-w-md">
+      <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white">Share Your Feedback</DialogTitle>
-          <DialogDescription className="text-slate-400">
+          <DialogTitle className="text-foreground">Share Your Feedback</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Help us improve this problem and the platform
           </DialogDescription>
         </DialogHeader>
@@ -61,7 +61,7 @@ export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModal
         <div className="space-y-4 py-2">
           {/* Star Rating */}
           <div>
-            <label className="text-xs text-slate-400 mb-2 block">Rating (optional)</label>
+            <label className="text-xs text-muted-foreground mb-2 block">Rating (optional)</label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -85,15 +85,15 @@ export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModal
 
           {/* Feedback Text */}
           <div>
-            <label className="text-xs text-slate-400 mb-2 block">Your feedback</label>
+            <label className="text-xs text-muted-foreground mb-2 block">Your feedback</label>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="What did you think about this problem? Any suggestions?"
-              className="w-full h-32 bg-[#0f1419] text-sm text-white placeholder:text-slate-500 rounded-xl p-3 border border-white/10 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all resize-none"
+              className="w-full h-32 bg-muted text-sm text-foreground placeholder:text-muted-foreground rounded-xl p-3 border border-border focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all resize-none"
               maxLength={2000}
             />
-            <div className="text-xs text-slate-500 text-right mt-1">
+            <div className="text-xs text-muted-foreground text-right mt-1">
               {text.length}/2000
             </div>
           </div>
@@ -103,7 +103,7 @@ export function FeedbackModal({ open, onOpenChange, problemSlug }: FeedbackModal
           <Button
             onClick={() => onOpenChange(false)}
             variant="outline"
-            className="bg-transparent border-white/20 text-slate-300 hover:bg-white/10"
+            className="bg-transparent border-border text-muted-foreground hover:bg-muted"
           >
             Cancel
           </Button>

@@ -12,16 +12,22 @@ export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-slate-700 bg-slate-900/50 p-1.5 backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
+    <div
+      className={cn(
+        "flex items-center gap-1 rounded-full border p-1.5 backdrop-blur-sm transition-colors",
+        "border-border bg-muted/60"
+      )}
+    >
       {themes.map(({ value, label, icon: Icon }) => (
         <button
           key={value}
+          type="button"
           onClick={() => setTheme(value)}
           className={cn(
             "h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300",
-            theme === value 
-              ? "bg-cyan-400 text-slate-900 shadow-[0_0_15px_rgba(34,211,238,0.5)] dark:bg-cyan-500 dark:text-white" 
-              : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
+            theme === value
+              ? "bg-cyan-500 text-white shadow-[0_0_15px_rgba(34,211,238,0.45)]"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent"
           )}
           aria-label={`${label} theme`}
           title={label}

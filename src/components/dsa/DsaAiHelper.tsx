@@ -209,9 +209,9 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
   };
 
   return (
-    <div className="flex flex-col h-full bg-black/20 backdrop-blur-xl">
+    <div className="flex flex-col h-full bg-muted/50 backdrop-blur-xl">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-white/10 shrink-0">
+      <div className="flex items-center justify-between p-3 border-b border-border shrink-0">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-cyan-400" />
           <h2 className="font-semibold text-sm text-foreground/90">DSA Buddy</h2>
@@ -224,13 +224,13 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
           {notesCount > 0 && (
             <button
               onClick={downloadNotes}
-              className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+              className="h-7 w-7 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
               title={`Download ${notesCount} notes`}
             >
               <Download className="h-3.5 w-3.5 text-cyan-400" />
             </button>
           )}
-          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-white/10">
+          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-muted">
             <Sparkles className="h-3.5 w-3.5 text-purple-400" />
           </Button>
         </div>
@@ -242,17 +242,17 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
           <div className="space-y-6">
             {/* Welcome */}
             <div className="flex justify-center py-3">
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-b from-cyan-500/20 to-purple-500/20 flex items-center justify-center border border-white/10 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
+              <div className="relative w-24 h-24 rounded-full bg-gradient-to-b from-cyan-500/20 to-purple-500/20 flex items-center justify-center border border-border shadow-[0_0_30px_rgba(6,182,212,0.2)]">
                 <Bot className="h-12 w-12 text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]" />
                 <div className="absolute inset-0 rounded-full bg-cyan-400/10 animate-pulse" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-[#1e293b]/80 to-[#0f172a]/90 backdrop-blur-md p-4 rounded-2xl border border-white/10 shadow-lg">
+            <div className="bg-gradient-to-br from-muted to-card backdrop-blur-md p-4 rounded-2xl border border-border shadow-lg">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-bold text-cyan-400 uppercase tracking-widest">DSA Buddy</span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 Hey! I'm your coding coach. I can help you identify bugs, suggest approaches, and guide your thinking — but I won't give you the full answer. That's your job!
               </p>
               <div className="flex items-center gap-2 mt-3 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
@@ -272,7 +272,7 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
                 <button
                   key={i}
                   onClick={() => handleQuickAction(action)}
-                  className="w-full text-left px-4 py-2.5 rounded-xl bg-white/5 hover:bg-cyan-500/10 border border-white/5 hover:border-cyan-500/30 text-sm text-slate-300 hover:text-cyan-300 transition-all duration-300"
+                  className="w-full text-left px-4 py-2.5 rounded-xl bg-muted/80 hover:bg-cyan-500/10 border border-border/60 hover:border-cyan-500/30 text-sm text-muted-foreground hover:text-cyan-300 transition-all duration-300"
                 >
                   {action}
                 </button>
@@ -289,7 +289,7 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
                 className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                   msg.role === 'user'
                     ? 'bg-cyan-500/20 text-cyan-100 border border-cyan-500/20'
-                    : 'bg-[#1e293b]/80 text-slate-200 border border-white/10'
+                    : 'bg-muted text-foreground/90 border border-border'
                 }`}
               >
                 {msg.role === 'assistant' && (
@@ -300,14 +300,14 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
                 )}
                 <div className="whitespace-pre-wrap">{msg.content}</div>
                 {msg.role === 'assistant' && (
-                  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/5">
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/60">
                     <button
                       onClick={() => saveToNotes(msg)}
                       disabled={msg.saved}
                       className={`flex items-center gap-1 text-[10px] transition-colors ${
                         msg.saved
                           ? 'text-green-400 cursor-default'
-                          : 'text-slate-500 hover:text-cyan-400 cursor-pointer'
+                          : 'text-muted-foreground hover:text-cyan-400 cursor-pointer'
                       }`}
                       title="Save to notes"
                     >
@@ -324,7 +324,7 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-[#1e293b]/80 rounded-2xl px-4 py-3 border border-white/10">
+            <div className="bg-muted rounded-2xl px-4 py-3 border border-border">
               <div className="flex items-center gap-2">
                 <Bot className="h-3 w-3 text-cyan-400" />
                 <div className="flex gap-1">
@@ -339,7 +339,7 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-white/10 bg-black/20 shrink-0">
+      <div className="p-3 border-t border-border bg-muted/50 shrink-0">
         <div className="relative">
           <input
             ref={inputRef}
@@ -349,13 +349,13 @@ export function DsaAiHelper({ problemContext, userCode, language, problemId }: D
             onKeyDown={handleKeyDown}
             placeholder="Ask DSA Buddy..."
             disabled={isLoading}
-            className="w-full bg-[#0B0F19] text-sm text-white placeholder:text-slate-500 rounded-xl pl-4 pr-20 py-3 border border-white/10 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all disabled:opacity-50"
+            className="w-full bg-background text-sm text-foreground placeholder:text-muted-foreground rounded-xl pl-4 pr-20 py-3 border border-border focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 transition-all disabled:opacity-50"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
             {notesCount > 0 && (
               <button
                 onClick={downloadNotes}
-                className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-white/10 transition-colors"
+                className="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-cyan-400 hover:bg-muted transition-colors"
                 title={`${notesCount} notes saved`}
               >
                 <span className="text-[10px] border border-current rounded px-1 font-mono">{notesCount}</span>

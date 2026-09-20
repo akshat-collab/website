@@ -19,12 +19,12 @@ export function ProblemEngagementBar({
   };
 
   return (
-    <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t border-white/10 bg-[#1a1f2e]">
+    <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t border-border bg-card">
       {/* Reactions */}
       <div className="flex items-center gap-3">
         <button
           onClick={onComment}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200"
           title="Comments"
         >
           <MessageSquare className="h-4 w-4" />
@@ -37,7 +37,7 @@ export function ProblemEngagementBar({
             "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all duration-200",
             isFavorited
               ? "bg-amber-500/15 text-amber-400"
-              : "text-slate-400 hover:text-white hover:bg-white/5"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
           )}
           title={isFavorited ? "Remove from favorites" : "Add to favorites"}
         >

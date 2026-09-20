@@ -61,6 +61,7 @@ import { FeedbackModal } from "@/components/dsa/FeedbackModal";
 import { analyzeComplexity, getComplexityBadgeClass } from "@/utils/codeComplexity";
 import { useTimerStopwatch } from "@/hooks/useTimerStopwatch";
 import { difficultyBadgeClass } from "@/lib/difficultyColors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const STORAGE_KEY = (id: string) => `dsa_code_${id}`;
 
@@ -136,6 +137,7 @@ const LANGUAGES = [
 export default function DsaProblemDetailNew() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { theme } = useTheme();
     const [problem, setProblem] = useState<DsaQuestionDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [language, setLanguage] = useState("javascript");
@@ -876,7 +878,7 @@ int main() {
             <div className="h-screen w-full flex items-center justify-center">
                 <div className="text-center space-y-4">
                     <Loader2 className="h-12 w-12 animate-spin text-cyan-500 mx-auto" />
-                    <p className="text-slate-300">Loading problem...</p>
+                    <p className="text-muted-foreground">Loading problem...</p>
                 </div>
             </div>
         );
@@ -920,7 +922,7 @@ int main() {
     }
 
     return (
-        <div className="h-screen w-full flex flex-col bg-[#0B0F14] p-4 gap-4 relative">
+        <div className="h-screen w-full flex flex-col bg-background p-4 gap-4 relative">
             {/* Top Navigation */}
             <div className="flex items-center justify-end">
                 {focusMode && (
@@ -940,22 +942,22 @@ int main() {
                 {!focusMode && layoutMode !== 'code-only' && (
                     <>
                         <div 
-                            className={`flex flex-col bg-[#1a1f2e] rounded-[14px] shadow-lg overflow-hidden transition-all duration-300 ${
+                            className={`flex flex-col bg-card rounded-[14px] shadow-lg overflow-hidden transition-all duration-300 ${
                                 layoutMode === 'split-vertical' ? 'w-full h-[40%]' : ''
                             }`}
                             style={layoutMode !== 'split-vertical' ? { width: `${problemPanelWidth}%` } : {}}
                         >
                         {/* Header */}
-                        <div className="p-5 border-b border-white/10">
+                        <div className="p-5 border-b border-border">
                             <div className="flex items-start justify-between mb-3">
-                                <h1 className="text-xl font-bold text-white leading-tight flex-1">{problem.title}</h1>
+                                <h1 className="text-xl font-bold text-foreground leading-tight flex-1">{problem.title}</h1>
                                 <Badge className={`ml-3 rounded-full px-[10px] py-1 text-xs font-bold ${difficultyBadgeClass(problem.difficulty)}`}>
                                     {problem.difficulty}
                                 </Badge>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {problem.tags.map((tag, idx) => (
-                                    <Badge key={idx} variant="secondary" className="bg-white/10 text-slate-300 border-none text-xs">
+                                    <Badge key={idx} variant="secondary" className="bg-muted text-muted-foreground border-none text-xs">
                                         {tag}
                                     </Badge>
                                 ))}
@@ -964,17 +966,17 @@ int main() {
 
                         {/* Scrollable Content */}
                         <div className="flex-1 overflow-y-auto p-5 space-y-4 custom-scrollbar">
-                            <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{problem.description}</p>
+                            <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">{problem.description}</p>
 
                             {/* Examples */}
                             {problem.examples.map((example, idx) => (
-                                <div key={idx} className="bg-[#0f1419] rounded-[10px] p-3 shadow-inner">
-                                    <h3 className="text-white font-semibold text-sm mb-2">Example {idx + 1}:</h3>
+                                <div key={idx} className="bg-muted rounded-[10px] p-3 shadow-inner">
+                                    <h3 className="text-foreground font-semibold text-sm mb-2">Example {idx + 1}:</h3>
                                     <div className="font-mono text-xs space-y-1">
-                                        <div><span className="text-slate-400">Input:</span> <span className="text-slate-200">{example.input}</span></div>
-                                        <div><span className="text-slate-400">Output:</span> <span className="text-slate-200">{example.output}</span></div>
+                                        <div><span className="text-muted-foreground">Input:</span> <span className="text-foreground/90">{example.input}</span></div>
+                                        <div><span className="text-muted-foreground">Output:</span> <span className="text-foreground/90">{example.output}</span></div>
                                         {example.explanation && (
-                                            <div><span className="text-slate-400">Explanation:</span> <span className="text-slate-200">{example.explanation}</span></div>
+                                            <div><span className="text-muted-foreground">Explanation:</span> <span className="text-foreground/90">{example.explanation}</span></div>
                                         )}
                                     </div>
                                 </div>
@@ -983,8 +985,8 @@ int main() {
                             {/* Constraints */}
                             {problem.constraints && problem.constraints.length > 0 && (
                                 <div className="mt-4">
-                                    <h3 className="text-white font-semibold text-sm mb-2">Constraints:</h3>
-                                    <ul className="list-disc pl-5 space-y-1 text-slate-300 text-xs">
+                                    <h3 className="text-foreground font-semibold text-sm mb-2">Constraints:</h3>
+                                    <ul className="list-disc pl-5 space-y-1 text-muted-foreground text-xs">
                                         {problem.constraints.map((constraint, idx) => (
                                             <li key={idx}>{constraint}</li>
                                         ))}
@@ -1025,7 +1027,7 @@ int main() {
                             onMouseDown={handleHorizontalResizeStart}
                         >
                             <div className={`h-12 w-1 rounded-full transition-all ${
-                                isResizingHorizontal ? 'bg-cyan-400 scale-110' : 'bg-white/20 group-hover:bg-cyan-400 group-hover:scale-110'
+                                isResizingHorizontal ? 'bg-cyan-400 scale-110' : 'bg-accent group-hover:bg-cyan-400 group-hover:scale-110'
                             }`} />
                         </div>
                     )}
@@ -1045,14 +1047,14 @@ int main() {
                 >
                     {/* Editor Card */}
                     <div 
-                        className="flex flex-col bg-[#1a1f2e] rounded-[14px] shadow-lg"
+                        className="flex flex-col bg-card rounded-[14px] shadow-lg"
                         style={{ height: `calc(100% - ${bottomPanelHeight}px - 8px)` }}
                     >
                         {/* Top Toolbar */}
-                        <div className="h-12 flex items-center justify-between px-4 border-b border-white/10 shrink-0">
+                        <div className="h-12 flex items-center justify-between px-4 border-b border-border shrink-0">
                             <div className="flex items-center gap-3">
                                 <Select value={language} onValueChange={handleLanguageChange}>
-                                    <SelectTrigger className="h-8 w-[120px] rounded-full border-white/20 bg-white/5 text-xs font-semibold">
+                                    <SelectTrigger className="h-8 w-[120px] rounded-full border-border bg-muted/80 text-xs font-semibold">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -1072,17 +1074,17 @@ int main() {
                                 {/* Button 1: Format Code */}
                                 <button
                                     onClick={handleFormatCode}
-                                    className="h-[34px] w-[34px] rounded-full flex items-center justify-center hover:bg-white/10 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group"
+                                    className="h-[34px] w-[34px] rounded-full flex items-center justify-center hover:bg-muted hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group"
                                     title="Format Code"
                                 >
-                                    <Wand2 className="h-4 w-4 text-slate-400 group-hover:text-white" />
+                                    <Wand2 className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                                 </button>
 
                                 {/* Button 2: Timer */}
                                 <button
                                     onClick={() => timerActive ? handleStopTimer() : setShowTimerModal(true)}
                                     className={`h-[34px] w-[34px] rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group ${
-                                        timerActive ? 'bg-cyan-500/20 shadow-lg shadow-cyan-500/30' : 'hover:bg-white/10'
+                                        timerActive ? 'bg-cyan-500/20 shadow-lg shadow-cyan-500/30' : 'hover:bg-muted'
                                     }`}
                                     title={timerActive ? "Stop Timer" : "Timer / Stopwatch"}
                                 >
@@ -1092,23 +1094,23 @@ int main() {
                                 {/* Button 3: Reset Code */}
                                 <button
                                     onClick={() => setShowResetModal(true)}
-                                    className="h-[34px] w-[34px] rounded-full flex items-center justify-center hover:bg-white/10 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group"
+                                    className="h-[34px] w-[34px] rounded-full flex items-center justify-center hover:bg-muted hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group"
                                     title="Reset Code"
                                 >
-                                    <RotateCcw className="h-4 w-4 text-slate-400 group-hover:text-white" />
+                                    <RotateCcw className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                                 </button>
 
                                 {/* Button 4: Layout Switcher */}
                                 <div className="relative layout-menu-container">
                                     <button
                                         onClick={() => setShowLayoutMenu(!showLayoutMenu)}
-                                        className="h-[34px] w-[34px] rounded-full flex items-center justify-center hover:bg-white/10 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group"
+                                        className="h-[34px] w-[34px] rounded-full flex items-center justify-center hover:bg-muted hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group"
                                         title="Change Layout"
                                     >
-                                        <LayoutGrid className="h-4 w-4 text-slate-400 group-hover:text-white" />
+                                        <LayoutGrid className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                                     </button>
                                     {showLayoutMenu && (
-                                        <div className="absolute right-0 top-12 bg-[#1a1f2e] border border-white/10 rounded-lg shadow-xl p-2 w-52 z-50">
+                                        <div className="absolute right-0 top-12 bg-card border border-border rounded-lg shadow-xl p-2 w-52 z-50">
                                             {[
                                                 { mode: 'layout-a' as LayoutMode, label: 'Competitive (Code top, Q + AI below)' },
                                                 { mode: 'layout-b' as LayoutMode, label: 'Advanced (Code right, AI floating popup)' },
@@ -1120,8 +1122,8 @@ int main() {
                                                 <button
                                                     key={mode}
                                                     onClick={() => handleLayoutChange(mode)}
-                                                    className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-white/10 transition-colors ${
-                                                        layoutMode === mode ? 'text-cyan-400 bg-cyan-500/10' : 'text-slate-300'
+                                                    className={`w-full text-left px-3 py-2 rounded text-sm hover:bg-muted transition-colors ${
+                                                        layoutMode === mode ? 'text-cyan-400 bg-cyan-500/10' : 'text-muted-foreground'
                                                     }`}
                                                 >
                                                     {label}
@@ -1135,11 +1137,11 @@ int main() {
                                 <button
                                     onClick={handleToggleFocusMode}
                                     className={`h-[34px] w-[34px] rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer group ${
-                                        focusMode ? 'bg-purple-500/20 shadow-lg shadow-purple-500/30' : 'hover:bg-white/10'
+                                        focusMode ? 'bg-purple-500/20 shadow-lg shadow-purple-500/30' : 'hover:bg-muted'
                                     }`}
                                     title="Focus Mode"
                                 >
-                                    <Maximize className={`h-4 w-4 ${focusMode ? 'text-purple-400' : 'text-slate-400 group-hover:text-white'}`} />
+                                    <Maximize className={`h-4 w-4 ${focusMode ? 'text-purple-400' : 'text-muted-foreground group-hover:text-foreground'}`} />
                                 </button>
                             </div>
                         </div>
@@ -1152,8 +1154,8 @@ int main() {
                                 value={code}
                                 onChange={handleCodeChange}
                                 onMount={(editor) => setEditorRef(editor)}
-                                theme="vs-dark"
-                                loading={<div className="flex items-center justify-center h-full text-slate-400">Loading editor...</div>}
+                                theme={theme === "light" ? "light" : "vs-dark"}
+                                loading={<div className="flex items-center justify-center h-full text-muted-foreground">Loading editor...</div>}
                                 options={{
                                     // Basic settings
                                     minimap: { enabled: false },
@@ -1251,13 +1253,13 @@ int main() {
                         </div>
 
                         {/* Run & Submit Buttons - Sticky at bottom */}
-                        <div className="shrink-0 p-4 border-t border-white/10 flex items-center justify-between bg-[#1a1f2e] sticky bottom-0 z-10">
+                        <div className="shrink-0 p-4 border-t border-border flex items-center justify-between bg-card sticky bottom-0 z-10">
                             {/* Left side - Run & Submit */}
                             <div className="flex items-center gap-3">
                                 <Button
                                     onClick={handleRun}
                                     disabled={judgeStatus === 'running'}
-                                    className="rounded-lg px-[18px] py-2 font-semibold text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                                    className="rounded-lg px-[18px] py-2 font-semibold text-sm bg-muted hover:bg-accent text-foreground border border-border hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                                 >
                                     {judgeStatus === 'running' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Play className="h-4 w-4 mr-2 fill-current" />}
                                     Run
@@ -1276,7 +1278,7 @@ int main() {
                                 {!focusMode && (
                                     <button
                                         onClick={() => setShowFeedbackModal(true)}
-                                        className="h-[36px] px-3 rounded-lg flex items-center gap-2 bg-white/10 hover:bg-white/15 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer group text-slate-400 hover:text-white text-sm font-medium"
+                                        className="h-[36px] px-3 rounded-lg flex items-center gap-2 bg-muted hover:bg-muted hover:-translate-y-0.5 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer group text-muted-foreground hover:text-foreground text-sm font-medium"
                                         title="Submit feedback"
                                     >
                                         <MessageSquare className="h-4 w-4" />
@@ -1286,10 +1288,10 @@ int main() {
                                 {!focusMode && layoutMode !== 'code-only' && (
                                     <button
                                         onClick={() => setShowAiHelper(!showAiHelper)}
-                                        className="h-[36px] w-[36px] rounded-lg flex items-center justify-center bg-white/10 hover:bg-white/15 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer group"
+                                        className="h-[36px] w-[36px] rounded-lg flex items-center justify-center bg-muted hover:bg-muted hover:-translate-y-0.5 hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer group"
                                         title={showAiHelper ? "Hide AI Helper" : "Open AI Helper"}
                                     >
-                                        <Bot className={`h-5 w-5 transition-colors ${showAiHelper ? 'text-cyan-400' : 'text-slate-400 group-hover:text-white'}`} />
+                                        <Bot className={`h-5 w-5 transition-colors ${showAiHelper ? 'text-cyan-400' : 'text-muted-foreground group-hover:text-foreground'}`} />
                                     </button>
                                 )}
                             </div>
@@ -1304,13 +1306,13 @@ int main() {
                         onMouseDown={handleResizeStart}
                     >
                         <div className={`w-12 h-1 rounded-full transition-all ${
-                            isResizing ? 'bg-cyan-400 scale-110' : 'bg-white/20 group-hover:bg-cyan-400 group-hover:scale-110'
+                            isResizing ? 'bg-cyan-400 scale-110' : 'bg-accent group-hover:bg-cyan-400 group-hover:scale-110'
                         }`} />
                     </div>
 
                     {/* Results Panel */}
                     <div 
-                        className="bg-[#1a1f2e] rounded-[14px] shadow-lg overflow-hidden flex flex-col"
+                        className="bg-card rounded-[14px] shadow-lg overflow-hidden flex flex-col"
                         style={{ 
                             height: `${bottomPanelHeight}px`,
                             minHeight: `${MIN_HEIGHT}px`,
@@ -1318,7 +1320,7 @@ int main() {
                         }}
                     >
                         {/* Top Tab Bar */}
-                        <div className="flex items-center border-b border-white/10 px-2">
+                        <div className="flex items-center border-b border-border px-2">
                             {/* Tabs */}
                             <div className="flex">
                                 <button
@@ -1326,7 +1328,7 @@ int main() {
                                     className={`px-4 py-2.5 text-xs font-medium transition-colors flex items-center gap-2 ${
                                         activeResultsTab === 'output'
                                             ? 'text-cyan-400 border-b-2 border-cyan-400'
-                                            : 'text-slate-400 hover:text-white'
+                                            : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <FileText className="h-3.5 w-3.5" />
@@ -1337,7 +1339,7 @@ int main() {
                                     className={`px-4 py-2.5 text-xs font-medium transition-colors flex items-center gap-2 ${
                                         activeResultsTab === 'results'
                                             ? 'text-cyan-400 border-b-2 border-cyan-400'
-                                            : 'text-slate-400 hover:text-white'
+                                            : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
                                     <Activity className="h-3.5 w-3.5" />
@@ -1359,11 +1361,11 @@ int main() {
                                         </span>
                                     </div>
                                 )}
-                                <button className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
+                                <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
                                     <FileText className="h-3.5 w-3.5" />
                                     <span className="text-xs font-medium">Solutions</span>
                                 </button>
-                                <button className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors">
+                                <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
                                     <History className="h-3.5 w-3.5" />
                                     <span className="text-xs font-medium">Submissions</span>
                                 </button>
@@ -1377,7 +1379,7 @@ int main() {
                                 <div className="h-full flex flex-col">
                                     {/* Case Selector */}
                                     {testCases.length > 0 && (
-                                        <div className="flex gap-2 px-4 py-2 border-b border-white/5">
+                                        <div className="flex gap-2 px-4 py-2 border-b border-border/60">
                                             {testCases.map((tc, idx) => (
                                                 <button
                                                     key={tc.id}
@@ -1387,7 +1389,7 @@ int main() {
                                                             ? tc.passed 
                                                                 ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                                                                 : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                                            : 'bg-transparent border border-white/20 text-slate-300 hover:border-cyan-500/50'
+                                                            : 'bg-transparent border border-border text-muted-foreground hover:border-cyan-500/50'
                                                     }`}
                                                 >
                                                     <span className={tc.passed ? 'text-green-400' : 'text-red-400'}>
@@ -1405,25 +1407,25 @@ int main() {
                                             {testCases[activeCase] && (
                                                 <div className="space-y-4">
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <div className="bg-[#0f1419] rounded-lg p-3">
-                                                            <div className="text-xs text-slate-400 mb-2 flex items-center gap-1">
+                                                        <div className="bg-muted rounded-lg p-3">
+                                                            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                                                                 <span className="text-cyan-400">📥</span> Input
                                                             </div>
-                                                            <div className="text-xs text-slate-200 font-mono whitespace-pre-wrap break-all">
+                                                            <div className="text-xs text-foreground/90 font-mono whitespace-pre-wrap break-all">
                                                                 {testCases[activeCase].input}
                                                             </div>
                                                         </div>
-                                                        <div className="bg-[#0f1419] rounded-lg p-3">
-                                                            <div className="text-xs text-slate-400 mb-2 flex items-center gap-1">
+                                                        <div className="bg-muted rounded-lg p-3">
+                                                            <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                                                                 <span className="text-yellow-400">📤</span> Expected Output
                                                             </div>
-                                                            <div className="text-xs text-slate-200 font-mono whitespace-pre-wrap break-all">
+                                                            <div className="text-xs text-foreground/90 font-mono whitespace-pre-wrap break-all">
                                                                 {testCases[activeCase].expectedOutput}
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className="bg-[#0f1419] rounded-lg p-3">
-                                                        <div className="text-xs text-slate-400 mb-2 flex items-center gap-1">
+                                                    <div className="bg-muted rounded-lg p-3">
+                                                        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
                                                             <span className="text-purple-400">👤</span> Your Output
                                                         </div>
                                                         <div className={`text-xs font-mono whitespace-pre-wrap break-all ${
@@ -1445,8 +1447,8 @@ int main() {
                                         <div className="flex-1 flex items-center justify-center">
                                             <div className="text-center">
                                                 <FileText className="h-12 w-12 text-slate-600 mx-auto mb-3" />
-                                                <p className="text-slate-400 text-sm">No output yet.</p>
-                                                <p className="text-slate-500 text-xs">Run code to see results</p>
+                                                <p className="text-muted-foreground text-sm">No output yet.</p>
+                                                <p className="text-muted-foreground text-xs">Run code to see results</p>
                                             </div>
                                         </div>
                                     )}
@@ -1461,19 +1463,19 @@ int main() {
                                             {/* Main Metrics Cards */}
                                             <div className="grid grid-cols-2 gap-4">
                                                 {/* Runtime Card */}
-                                                <div className="bg-[#0f1419] rounded-xl p-4 border border-white/5">
+                                                <div className="bg-muted rounded-xl p-4 border border-border/60">
                                                     <div className="flex items-center justify-between mb-3">
                                                         <div className="flex items-center gap-2">
                                                             <div className="h-8 w-8 rounded-lg bg-cyan-500/10 flex items-center justify-center">
                                                                 <Cpu className="h-4 w-4 text-cyan-400" />
                                                             </div>
                                                             <div>
-                                                                <div className="text-xs text-slate-400">Runtime</div>
-                                                                <div className="text-lg font-bold text-white">{runMetrics.runtime} <span className="text-xs text-slate-500 font-normal">ms</span></div>
+                                                                <div className="text-xs text-muted-foreground">Runtime</div>
+                                                                <div className="text-lg font-bold text-foreground">{runMetrics.runtime} <span className="text-xs text-muted-foreground font-normal">ms</span></div>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="text-xs text-slate-400">Beats</div>
+                                                            <div className="text-xs text-muted-foreground">Beats</div>
                                                             <div className="text-sm font-semibold text-green-400">{runMetrics.runtimePercentile}%</div>
                                                         </div>
                                                     </div>
@@ -1486,19 +1488,19 @@ int main() {
                                                 </div>
                                                 
                                                 {/* Memory Card */}
-                                                <div className="bg-[#0f1419] rounded-xl p-4 border border-white/5">
+                                                <div className="bg-muted rounded-xl p-4 border border-border/60">
                                                     <div className="flex items-center justify-between mb-3">
                                                         <div className="flex items-center gap-2">
                                                             <div className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
                                                                 <HardDrive className="h-4 w-4 text-purple-400" />
                                                             </div>
                                                             <div>
-                                                                <div className="text-xs text-slate-400">Memory</div>
-                                                                <div className="text-lg font-bold text-white">{runMetrics.memory} <span className="text-xs text-slate-500 font-normal">MB</span></div>
+                                                                <div className="text-xs text-muted-foreground">Memory</div>
+                                                                <div className="text-lg font-bold text-foreground">{runMetrics.memory} <span className="text-xs text-muted-foreground font-normal">MB</span></div>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
-                                                            <div className="text-xs text-slate-400">Beats</div>
+                                                            <div className="text-xs text-muted-foreground">Beats</div>
                                                             <div className="text-sm font-semibold text-green-400">{runMetrics.memoryPercentile}%</div>
                                                         </div>
                                                     </div>
@@ -1512,10 +1514,10 @@ int main() {
                                             </div>
                                             
                                             {/* Performance Distribution Chart */}
-                                            <div className="bg-[#0f1419] rounded-xl p-4 border border-white/5">
+                                            <div className="bg-muted rounded-xl p-4 border border-border/60">
                                                 <div className="flex items-center gap-2 mb-3">
                                                     <TrendingUp className="h-4 w-4 text-cyan-400" />
-                                                    <span className="text-xs font-medium text-slate-300">Performance Distribution</span>
+                                                    <span className="text-xs font-medium text-muted-foreground">Performance Distribution</span>
                                                 </div>
                                                 <ChartContainer
                                                     config={{
@@ -1549,17 +1551,17 @@ int main() {
                                             </div>
                                             
                                             {/* Complexity Analysis Card */}
-                                            <div className="bg-[#0f1419] rounded-xl p-4 border border-white/5">
+                                            <div className="bg-muted rounded-xl p-4 border border-border/60">
                                                 <div className="flex items-center gap-2 mb-3">
                                                     <Activity className="h-4 w-4 text-cyan-400" />
-                                                    <span className="text-xs font-medium text-slate-300">Complexity Analysis</span>
+                                                    <span className="text-xs font-medium text-muted-foreground">Complexity Analysis</span>
                                                 </div>
                                                 {(() => {
                                                     const complexity = analyzeComplexity(code);
                                                     return (
                                                         <div className="space-y-3">
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-xs text-slate-400">Estimated Complexity</span>
+                                                                <span className="text-xs text-muted-foreground">Estimated Complexity</span>
                                                                 <span className={`text-sm font-bold px-3 py-1 rounded-full border ${getComplexityBadgeClass(complexity.estimatedComplexity)}`}>
                                                                     {complexity.estimatedComplexity}
                                                                 </span>
@@ -1574,7 +1576,7 @@ int main() {
                                                                     ))}
                                                                 </div>
                                                             )}
-                                                            <div className="flex items-center gap-4 text-xs text-slate-500 pt-2 border-t border-white/5">
+                                                            <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t border-border/60">
                                                                 <span className={complexity.hasLoops ? 'text-cyan-400' : ''}>
                                                                     {complexity.hasLoops ? '● Loops detected' : '○ No loops'}
                                                                 </span>
@@ -1588,8 +1590,8 @@ int main() {
                                             </div>
                                             
                                             {/* Additional Info */}
-                                            <div className="flex items-center justify-between text-xs text-slate-500 pt-2">
-                                                <span>Language: <span className="text-slate-300 capitalize">{language}</span></span>
+                                            <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
+                                                <span>Language: <span className="text-muted-foreground capitalize">{language}</span></span>
                                                 <span>Executed: {runMetrics.timestamp.toLocaleTimeString()}</span>
                                             </div>
                                         </div>
@@ -1597,8 +1599,8 @@ int main() {
                                         <div className="flex-1 flex items-center justify-center">
                                             <div className="text-center">
                                                 <Activity className="h-12 w-12 text-slate-600 mx-auto mb-3" />
-                                                <p className="text-slate-400 text-sm">No results yet.</p>
-                                                <p className="text-slate-500 text-xs">Run or submit code to see metrics</p>
+                                                <p className="text-muted-foreground text-sm">No results yet.</p>
+                                                <p className="text-muted-foreground text-xs">Run or submit code to see metrics</p>
                                             </div>
                                         </div>
                                     )}
@@ -1631,11 +1633,11 @@ int main() {
                                 className={`w-2 flex items-center justify-center cursor-col-resize group hover:bg-purple-500/20 transition-colors ${isResizingAiPanel ? 'bg-purple-500/30' : ''}`}
                                 onMouseDown={handleAiPanelResizeStart}
                             >
-                                <div className={`h-12 w-1 rounded-full transition-all ${isResizingAiPanel ? 'bg-purple-400 scale-110' : 'bg-white/20 group-hover:bg-purple-400 group-hover:scale-110'}`} />
+                                <div className={`h-12 w-1 rounded-full transition-all ${isResizingAiPanel ? 'bg-purple-400 scale-110' : 'bg-accent group-hover:bg-purple-400 group-hover:scale-110'}`} />
                             </div>
                         )}
                         <div 
-                            className={`bg-[#1a1f2e] rounded-[14px] shadow-lg overflow-hidden transition-all duration-300 ${layoutMode === 'split-vertical' ? 'w-[30%]' : ''}`}
+                            className={`bg-card rounded-[14px] shadow-lg overflow-hidden transition-all duration-300 ${layoutMode === 'split-vertical' ? 'w-[30%]' : ''}`}
                             style={layoutMode !== 'split-vertical' ? { width: `${aiPanelWidth}%` } : {}}
                         >
                             <DsaAiHelper
@@ -1663,27 +1665,27 @@ int main() {
 
             {/* Timer / Stopwatch Modal */}
             <Dialog open={showTimerModal} onOpenChange={setShowTimerModal}>
-                <DialogContent className="bg-[#1a1f2e] border-white/10">
+                <DialogContent className="bg-card border-border">
                     <DialogHeader>
-                        <DialogTitle className="text-white">Timer & Stopwatch</DialogTitle>
-                        <DialogDescription className="text-slate-400">
+                        <DialogTitle className="text-foreground">Timer & Stopwatch</DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
                             Count down (timer) or count up (stopwatch). Timer runs while you code; when time ends you get a warning only.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
-                        <div className="flex items-center gap-2 text-slate-300 text-sm font-medium">⏳ Count-down timer</div>
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">⏳ Count-down timer</div>
                         <div className="grid grid-cols-2 gap-3">
                             {[15, 30, 45, 60].map((minutes) => (
                                 <Button
                                     key={minutes}
                                     onClick={() => handleStartTimer(minutes)}
-                                    className="h-14 text-base font-semibold bg-white/10 hover:bg-cyan-500/20 hover:text-cyan-400 border border-white/20 hover:border-cyan-500/50 transition-all"
+                                    className="h-14 text-base font-semibold bg-muted hover:bg-cyan-500/20 hover:text-cyan-400 border border-border hover:border-cyan-500/50 transition-all"
                                 >
                                     {minutes} min
                                 </Button>
                             ))}
                         </div>
-                        <div className="flex items-center gap-2 text-slate-300 text-sm font-medium pt-2">⏱ Stopwatch (count-up)</div>
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium pt-2">⏱ Stopwatch (count-up)</div>
                         <Button
                             onClick={handleStartStopwatch}
                             className="w-full h-14 text-base font-semibold bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/50 transition-all"
@@ -1698,13 +1700,13 @@ int main() {
 
             {/* Reset Confirmation Modal */}
             <Dialog open={showResetModal} onOpenChange={setShowResetModal}>
-                <DialogContent className="bg-[#1a1f2e] border-white/10">
+                <DialogContent className="bg-card border-border">
                     <DialogHeader>
-                        <DialogTitle className="text-white flex items-center gap-2">
+                        <DialogTitle className="text-foreground flex items-center gap-2">
                             <AlertCircle className="h-5 w-5 text-yellow-500" />
                             Reset to Default Boilerplate?
                         </DialogTitle>
-                        <DialogDescription className="text-slate-400">
+                        <DialogDescription className="text-muted-foreground">
                             This will erase your current code and restore boilerplate. Continue?
                         </DialogDescription>
                     </DialogHeader>
@@ -1712,7 +1714,7 @@ int main() {
                         <Button
                             onClick={() => setShowResetModal(false)}
                             variant="outline"
-                            className="bg-transparent border-white/20 text-slate-300 hover:bg-white/10"
+                            className="bg-transparent border-border text-muted-foreground hover:bg-muted"
                         >
                             Cancel
                         </Button>
