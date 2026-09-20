@@ -17,368 +17,363 @@ import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
  * Global layout for DSA Practice section: Custom Header, Sidebar, Main Content.
  */
 export function DsaLayout() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user: dsaUser, authUser, logout: dsaLogout } = useDsaAuth();
+ const location = useLocation();
+ const navigate = useNavigate();
+ const { user: dsaUser, authUser, logout: dsaLogout } = useDsaAuth();
 
-  useEffect(() => {
-    recordActivity("dsa_visit");
-  }, []);
-  const [legacyUser, setLegacyUser] = useState<{ name: string; email: string; photo?: string } | null>(null);
+ useEffect(() => {
+ recordActivity("dsa_visit");
+ }, []);
+ const [legacyUser, setLegacyUser] = useState<{ name: string; email: string; photo?: string } | null>(null);
 
-  useEffect(() => {
-    const userStr = localStorage.getItem('techmasterai_user');
-    if (userStr) {
-      try {
-        setLegacyUser(JSON.parse(userStr));
-      } catch {
-        setLegacyUser(null);
-      }
-    } else {
-      setLegacyUser(null);
-    }
-    const onStorage = () => {
-      const s = localStorage.getItem('techmasterai_user');
-      if (!s) {
-        setLegacyUser(null);
-        return;
-      }
-      try {
-        setLegacyUser(JSON.parse(s));
-      } catch {
-        setLegacyUser(null);
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
+ useEffect(() => {
+ const userStr = localStorage.getItem('techmasterai_user');
+ if (userStr) {
+ try {
+ setLegacyUser(JSON.parse(userStr));
+ } catch {
+ setLegacyUser(null);
+ }
+ } else {
+ setLegacyUser(null);
+ }
+ const onStorage = () => {
+ const s = localStorage.getItem('techmasterai_user');
+ if (!s) {
+ setLegacyUser(null);
+ return;
+ }
+ try {
+ setLegacyUser(JSON.parse(s));
+ } catch {
+ setLegacyUser(null);
+ }
+ };
+ window.addEventListener('storage', onStorage);
+ return () => window.removeEventListener('storage', onStorage);
+ }, []);
 
-  const currentUser = dsaUser
-    ? { name: dsaUser.username, email: dsaUser.email, photo: undefined }
-    : legacyUser;
+ const currentUser = dsaUser
+ ? { name: dsaUser.username, email: dsaUser.email, photo: undefined }
+ : legacyUser;
 
-  const handleLogout = async () => {
-    localStorage.removeItem('techmasterai_admin');
-    localStorage.removeItem('techmasterai_user');
-    await dsaLogout();
-    toast.success('Logged out successfully');
-    navigate('/');
-  };
-  
-  // Sample notifications - replace with real data
-  // Set to empty array to show "no notifications" state
-  const [notifications, setNotifications] = useState<Array<{
-    id: number;
-    title: string;
-    message: string;
-    time: string;
-    read: boolean;
-  }>>([
-    // Uncomment below to see notifications
-    // { id: 1, title: "New Contest Available", message: "Weekly coding contest starts in 2 hours", time: "2h ago", read: false },
-    // { id: 2, title: "Achievement Unlocked", message: "You've solved 50 problems!", time: "1d ago", read: false },
-  ]);
+ const handleLogout = async () => {
+ localStorage.removeItem('techmasterai_admin');
+ localStorage.removeItem('techmasterai_user');
+ await dsaLogout();
+ toast.success('Logged out successfully');
+ navigate('/');
+ };
+ 
+ // Sample notifications - replace with real data
+ // Set to empty array to show "no notifications" state
+ const [notifications, setNotifications] = useState<Array<{
+ id: number;
+ title: string;
+ message: string;
+ time: string;
+ read: boolean;
+ }>>([
+ // Uncomment below to see notifications
+ // { id: 1, title: "New Contest Available", message: "Weekly coding contest starts in 2 hours", time: "2h ago", read: false },
+ // { id: 2, title: "Achievement Unlocked", message: "You've solved 50 problems!", time: "1d ago", read: false },
+ ]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const profilePhoto = currentUser
-    ? (getProfilePhoto() || (authUser as { profile_photo_url?: string })?.profile_photo_url || currentUser.photo)
-    : null;
+ const unreadCount = notifications.filter(n => !n.read).length;
+ const profilePhoto = currentUser
+ ? (getProfilePhoto() || (authUser as { profile_photo_url?: string })?.profile_photo_url || currentUser.photo)
+ : null;
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
-  };
+ const markAllAsRead = () => {
+ setNotifications(notifications.map(n => ({ ...n, read: true })));
+ };
 
 
-  return (
-    <DsaFilterProvider>
-      <div className={cn(
-        "min-h-screen max-h-screen flex flex-col overflow-hidden relative selection:bg-cyan-500/30 selection:text-cyan-200 transition-colors duration-300",
-        "bg-slate-50 dark:bg-[#0B0F19]"
-      )}>
-        {/* Galaxy/Cyber Background - visible only in dark mode */}
-        <div className="fixed inset-0 z-0 pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-300">
-          <div className="absolute inset-0 bg-[#0B0F19] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0B0F19] to-black" />
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
-          <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-purple-500/10 blur-[120px]" />
-          <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-cyan-500/10 blur-[120px]" />
-        </div>
+ return (
+ <DsaFilterProvider>
+ <div className={cn(
+ "min-h-screen max-h-screen flex flex-col overflow-hidden relative selection:bg-foreground/20 selection:text-foreground transition-colors duration-300",
+ "bg-slate-50 dark:bg-black"
+ )}>
+ {/* Pure black dark backdrop */}
+ <div className="fixed inset-0 z-0 pointer-events-none opacity-0 dark:opacity-100 transition-opacity duration-300 bg-black" />
 
-        <div className="relative z-10 flex flex-col h-screen overflow-hidden">
-          {/* New Top Header Matching Design */}
-          <header className={cn(
-            "h-16 flex items-center justify-between px-6 border-b shrink-0 transition-colors duration-300 backdrop-blur-sm",
-"border-slate-200 dark:border-white/10 bg-white/80 dark:bg-[#0B0F19]"
-          )}>
-             <div className="flex items-center gap-4">
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => navigate(-1)}
-                    className={cn(
-                        "text-muted-foreground transition-colors",
-                         "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
-                    )}
-                >
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <h2 className={cn(
-                    "text-xl font-semibold tracking-tight transition-colors",
-                    "text-slate-900 dark:text-white"
-                )}>DSA Practice</h2>
-             </div>
-             
-             <div className="flex items-center gap-4">
-                <ThemeSelector />
-                {/* Notification Bell with Popover */}
-                <Popover>
-                    <PopoverTrigger asChild>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className={cn(
-                                "text-muted-foreground relative transition-colors",
-                                "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
-                            )}
-                        >
-                            <Bell className="h-5 w-5" />
-                            {unreadCount > 0 && (
-                                <span className={cn(
-                                      "absolute top-2 right-2 h-2 w-2 rounded-full border animate-pulse",
-                                      "bg-red-500 border-white dark:border-[#0B0F19]"
-                                )} />
-                            )}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent 
-                        className={cn(
-                            "w-80 p-0 mr-4",
-                            "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/10"
-                        )}
-                        align="end"
-                    >
-                        <div className={cn(
-                            "flex items-center justify-between p-4 border-b",
-                            "border-slate-200 dark:border-white/10"
-                        )}>
-                            <h3 className={cn(
-                                "font-semibold text-sm",
-                                "text-slate-900 dark:text-white"
-                            )}>
-                                Notifications {unreadCount > 0 && `(${unreadCount})`}
-                            </h3>
-                            {unreadCount > 0 && (
-                                <button 
-                                    onClick={markAllAsRead}
-                                    className={cn(
-                                        "text-xs font-medium transition-colors",
-                                        "text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300"
-                                    )}
-                                >
-                                    Mark all read
-                                </button>
-                            )}
-                        </div>
-                        
-                        <div className="max-h-[400px] overflow-y-auto">
-                            {notifications.length === 0 ? (
-                                <div className="p-8 text-center">
-                                    <Bell className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-                                    <p className="text-sm text-muted-foreground">No notifications yet</p>
-                                </div>
-                            ) : (
-                                notifications.map((notification) => (
-                                    <div 
-                                        key={notification.id}
-                                        className={cn(
-                                            "p-4 border-b transition-colors cursor-pointer",
-                                            "border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5",
-                                            !notification.read && "bg-cyan-50/50 dark:bg-cyan-500/5"
-                                        )}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            {!notification.read && (
-                                                <div className={cn(
-                                                    "h-2 w-2 rounded-full mt-1.5 shrink-0",
-                                                    "bg-cyan-500"
-                                                )} />
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <p className={cn(
-                                                    "text-sm font-medium mb-1",
-                                                    "text-slate-900 dark:text-white"
-                                                )}>
-                                                    {notification.title}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground mb-1">
-                                                    {notification.message}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground opacity-60">
-                                                    {notification.time}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </PopoverContent>
-                </Popover>
-                
-                {/* User Profile Dropdown */}
-                <Popover>
-                    <PopoverTrigger asChild>
-                        {currentUser ? (
-                            <button className="h-9 w-9 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 p-[2px] cursor-pointer hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all">
-                                {profilePhoto ? (
-                                    <img 
-                                        src={profilePhoto} 
-                                        alt={currentUser.name}
-                                        className="h-full w-full rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <div className={cn(
-                                        "h-full w-full rounded-full flex items-center justify-center",
-                                        "bg-[#0B0F19]"
-                                    )}>
-                                        <span className={cn(
-                                            "text-xs font-bold",
-                                            "text-white"
-                                        )}>
-                                            {currentUser.name.charAt(0).toUpperCase()}
-                                        </span>
-                                    </div>
-                                )}
-                            </button>
-                        ) : (
-                            <button className="h-9 w-9 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 p-[1px] cursor-pointer hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-shadow">
-                                <div className="h-full w-full rounded-full bg-[#0B0F19] flex items-center justify-center">
-                                    <User className="h-4 w-4 text-white" />
-                                </div>
-                            </button>
-                        )}
-                    </PopoverTrigger>
-                    <PopoverContent 
-                        className={cn(
-                            "w-64 p-0 mr-4",
-                            "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/10"
-                        )}
-                        align="end"
-                    >
-                        {currentUser ? (
-                            <>
-                                {/* User Info */}
-                                <div className={cn(
-                                    "p-4 border-b",
-                                    "border-slate-200 dark:border-white/10"
-                                )}>
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 p-[2px]">
-                                            {profilePhoto ? (
-                                                <img 
-                                                    src={profilePhoto} 
-                                                    alt={currentUser.name}
-                                                    className="h-full w-full rounded-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className={cn(
-                                                    "h-full w-full rounded-full flex items-center justify-center",
-                                                    "bg-[#0B0F19]"
-                                                )}>
-                                                    <span className={cn(
-                                                        "text-lg font-bold",
-                                                        "text-white"
-                                                    )}>
-                                                        {currentUser.name.charAt(0).toUpperCase()}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className={cn(
-                                                "font-semibold text-sm truncate",
-                                                "text-slate-900 dark:text-white"
-                                            )}>
-                                                {currentUser.name}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground truncate">
-                                                {currentUser.email}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
+ <div className="relative z-10 flex flex-col h-screen overflow-hidden">
+ {/* New Top Header Matching Design */}
+ <header className={cn(
+ "h-16 flex items-center justify-between px-6 border-b shrink-0 transition-colors duration-300 backdrop-blur-sm",
+"border-slate-200 dark:border-white/10 bg-white/80 dark:bg-black"
+ )}>
+ <div className="flex items-center gap-4">
+ <Button 
+ variant="ghost" 
+ size="icon" 
+ onClick={() => navigate(-1)}
+ className={cn(
+ "text-muted-foreground transition-colors",
+ "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+ )}
+ >
+ <ChevronLeft className="h-6 w-6" />
+ </Button>
+ <h2 className={cn(
+ "text-xl font-semibold tracking-tight transition-colors",
+ "text-slate-900 dark:text-white"
+ )}>DSA Practice</h2>
+ </div>
+ 
+ <div className="flex items-center gap-4">
+ <ThemeSelector />
+ {/* Notification Bell with Popover */}
+ <Popover>
+ <PopoverTrigger asChild>
+ <Button 
+ variant="ghost" 
+ size="icon" 
+ className={cn(
+ "text-muted-foreground relative transition-colors",
+ "hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+ )}
+ >
+ <Bell className="h-5 w-5" />
+ {unreadCount > 0 && (
+ <span className={cn(
+ "absolute top-2 right-2 h-2 w-2 rounded-full border animate-pulse",
+ "bg-red-500 border-white dark:border-[#000000]"
+ )} />
+ )}
+ </Button>
+ </PopoverTrigger>
+ <PopoverContent 
+ className={cn(
+ "w-80 p-0 mr-4",
+ "bg-white dark:bg-[#0a0a0a] border-slate-200 dark:border-white/10"
+ )}
+ align="end"
+ >
+ <div className={cn(
+ "flex items-center justify-between p-4 border-b",
+ "border-slate-200 dark:border-white/10"
+ )}>
+ <h3 className={cn(
+ "font-semibold text-sm",
+ "text-slate-900 dark:text-white"
+ )}>
+ Notifications {unreadCount > 0 && `(${unreadCount})`}
+ </h3>
+ {unreadCount > 0 && (
+ <button 
+ onClick={markAllAsRead}
+ className={cn(
+ "text-xs font-medium transition-colors",
+ "text-foreground dark:text-foreground hover:text-foreground dark:hover:text-foreground"
+ )}
+ >
+ Mark all read
+ </button>
+ )}
+ </div>
+ 
+ <div className="max-h-[400px] overflow-y-auto">
+ {notifications.length === 0 ? (
+ <div className="p-8 text-center">
+ <Bell className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
+ <p className="text-sm text-muted-foreground">No notifications yet</p>
+ </div>
+ ) : (
+ notifications.map((notification) => (
+ <div 
+ key={notification.id}
+ className={cn(
+ "p-4 border-b transition-colors cursor-pointer",
+ "border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5",
+ !notification.read && "bg-neutral-100 dark:bg-foreground/5 dark:bg-foreground/5"
+ )}
+ >
+ <div className="flex items-start gap-3">
+ {!notification.read && (
+ <div className={cn(
+ "h-2 w-2 rounded-full mt-1.5 shrink-0",
+ "bg-foreground"
+ )} />
+ )}
+ <div className="flex-1 min-w-0">
+ <p className={cn(
+ "text-sm font-medium mb-1",
+ "text-slate-900 dark:text-white"
+ )}>
+ {notification.title}
+ </p>
+ <p className="text-xs text-muted-foreground mb-1">
+ {notification.message}
+ </p>
+ <p className="text-xs text-muted-foreground opacity-60">
+ {notification.time}
+ </p>
+ </div>
+ </div>
+ </div>
+ ))
+ )}
+ </div>
+ </PopoverContent>
+ </Popover>
+ 
+ {/* User Profile Dropdown */}
+ <Popover>
+ <PopoverTrigger asChild>
+ {currentUser ? (
+ <button className="h-9 w-9 rounded-full bg-foreground p-[2px] cursor-pointer hover:shadow-none transition-all">
+ {profilePhoto ? (
+ <img 
+ src={profilePhoto} 
+ alt={currentUser.name}
+ className="h-full w-full rounded-full object-cover"
+ />
+ ) : (
+ <div className={cn(
+ "h-full w-full rounded-full flex items-center justify-center",
+ "bg-[#000000]"
+ )}>
+ <span className={cn(
+ "text-xs font-bold",
+ "text-white"
+ )}>
+ {currentUser.name.charAt(0).toUpperCase()}
+ </span>
+ </div>
+ )}
+ </button>
+ ) : (
+ <button className="h-9 w-9 rounded-full bg-foreground p-[1px] cursor-pointer hover:shadow-none transition-shadow">
+ <div className="h-full w-full rounded-full bg-[#000000] flex items-center justify-center">
+ <User className="h-4 w-4 text-white" />
+ </div>
+ </button>
+ )}
+ </PopoverTrigger>
+ <PopoverContent 
+ className={cn(
+ "w-64 p-0 mr-4",
+ "bg-white dark:bg-[#0a0a0a] border-slate-200 dark:border-white/10"
+ )}
+ align="end"
+ >
+ {currentUser ? (
+ <>
+ {/* User Info */}
+ <div className={cn(
+ "p-4 border-b",
+ "border-slate-200 dark:border-white/10"
+ )}>
+ <div className="flex items-center gap-3">
+ <div className="h-12 w-12 rounded-full bg-foreground p-[2px]">
+ {profilePhoto ? (
+ <img 
+ src={profilePhoto} 
+ alt={currentUser.name}
+ className="h-full w-full rounded-full object-cover"
+ />
+ ) : (
+ <div className={cn(
+ "h-full w-full rounded-full flex items-center justify-center",
+ "bg-[#000000]"
+ )}>
+ <span className={cn(
+ "text-lg font-bold",
+ "text-white"
+ )}>
+ {currentUser.name.charAt(0).toUpperCase()}
+ </span>
+ </div>
+ )}
+ </div>
+ <div className="flex-1 min-w-0">
+ <p className={cn(
+ "font-semibold text-sm truncate",
+ "text-slate-900 dark:text-white"
+ )}>
+ {currentUser.name}
+ </p>
+ <p className="text-xs text-muted-foreground truncate">
+ {currentUser.email}
+ </p>
+ </div>
+ </div>
+ </div>
 
-                                {/* Menu Items */}
-                                <div className="py-2">
-                                    <button
-                                        onClick={() => navigate('/dsa/profile')}
-                                        className={cn(
-                                            "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
-                                            "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
-                                        )}
-                                    >
-                                        <User className="h-4 w-4" />
-                                        <span>View Profile</span>
-                                    </button>
-                                </div>
+ {/* Menu Items */}
+ <div className="py-2">
+ <button
+ onClick={() => navigate('/dsa/profile')}
+ className={cn(
+ "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors",
+ "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
+ )}
+ >
+ <User className="h-4 w-4" />
+ <span>View Profile</span>
+ </button>
+ </div>
 
-                                {/* Logout */}
-                                <div className={cn(
-                                    "border-t py-2",
-                                    "border-slate-200 dark:border-white/10"
-                                )}>
-                                    <button
-                                        onClick={handleLogout}
-                                        className={cn(
-                                            "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-red-600 dark:text-red-400",
-                                            "hover:bg-red-50 dark:hover:bg-red-500/10"
-                                        )}
-                                    >
-                                        <LogOut className="h-4 w-4" />
-                                        <span>Logout</span>
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="p-4">
-                                <p className="text-sm text-muted-foreground mb-4">Sign in to access your profile</p>
-                                <div className="space-y-2">
-                                    <Button 
-                                        onClick={() => navigate('/login')}
-                                        className="w-full"
-                                        size="sm"
-                                    >
-                                        Login
-                                    </Button>
-                                    <Button 
-                                        onClick={() => navigate('/signup')}
-                                        variant="outline"
-                                        className="w-full"
-                                        size="sm"
-                                    >
-                                        Sign Up
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </PopoverContent>
-                </Popover>
-             </div>
-          </header>
+ {/* Logout */}
+ <div className={cn(
+ "border-t py-2",
+ "border-slate-200 dark:border-white/10"
+ )}>
+ <button
+ onClick={handleLogout}
+ className={cn(
+ "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-red-600 dark:text-red-400",
+ "hover:bg-red-50 dark:hover:bg-red-500/10"
+ )}
+ >
+ <LogOut className="h-4 w-4" />
+ <span>Logout</span>
+ </button>
+ </div>
+ </>
+ ) : (
+ <div className="p-4">
+ <p className="text-sm text-muted-foreground mb-4">Sign in to access your profile</p>
+ <div className="space-y-2">
+ <Button 
+ onClick={() => navigate('/login')}
+ className="w-full"
+ size="sm"
+ >
+ Login
+ </Button>
+ <Button 
+ onClick={() => navigate('/signup')}
+ variant="outline"
+ className="w-full"
+ size="sm"
+ >
+ Sign Up
+ </Button>
+ </div>
+ </div>
+ )}
+ </PopoverContent>
+ </Popover>
+ </div>
+ </header>
 
-          <div className="flex flex-1 min-h-0 overflow-hidden">
-            {!location.pathname.startsWith("/dsa/problem/") && <DsaSidebar />}
-            <main className={cn(
-              "flex-1 flex flex-col min-w-0 min-h-0 overflow-y-auto overflow-x-hidden",
-              !location.pathname.startsWith("/dsa/problem/") && "ml-72"
-            )}>
-              <div className="flex-1 flex flex-col min-h-[60vh] w-full">
-                <Outlet />
-              </div>
-            </main>
-          </div>
-          
-        </div>
-      </div>
-    </DsaFilterProvider>
-  );
+ <div className="flex flex-1 min-h-0 overflow-hidden">
+ {!location.pathname.startsWith("/dsa/problem/") && <DsaSidebar />}
+ <main className={cn(
+ "flex-1 flex flex-col min-w-0 min-h-0 overflow-y-auto overflow-x-hidden",
+ !location.pathname.startsWith("/dsa/problem/") && "ml-72"
+ )}>
+ <div className="flex-1 flex flex-col min-h-[60vh] w-full">
+ <Outlet />
+ </div>
+ </main>
+ </div>
+ 
+ </div>
+ </div>
+ </DsaFilterProvider>
+ );
 }

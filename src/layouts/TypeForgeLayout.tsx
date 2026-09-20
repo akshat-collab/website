@@ -6,13 +6,11 @@ import {
   Clock,
   ChevronRight,
   ChevronDown,
-  Users,
-  Keyboard,
+   Keyboard,
   Code2,
   Sparkles,
   Gamepad2,
-  Play,
-  ArrowLeft,
+   ArrowLeft,
   Sun,
   Bell,
   User,
@@ -35,8 +33,7 @@ export function TypeForgeLayout() {
   const isCode = location.pathname === "/typeforge" || location.pathname === "/typeforge/code";
   const isSpells = location.pathname === "/typeforge/spells";
   const isFun = location.pathname === "/typeforge/fun";
-  const isLiveCoding = location.pathname === "/typeforge/live-coding";
-
+ 
   const handleBack = () => {
     navigate("/");
   };
@@ -124,17 +121,6 @@ export function TypeForgeLayout() {
                 <ChevronRight className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
               </Link>
 
-              <Link
-                to="/dsa/duels"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 mb-1.5",
-                  location.pathname.startsWith("/dsa/duels") ? "bg-muted text-primary" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Users className="h-4 w-4 shrink-0" />
-                <span>1v1 Code Arena</span>
-              </Link>
-
               <div className="mb-1.5">
                 <button
                   type="button"
@@ -187,17 +173,6 @@ export function TypeForgeLayout() {
                   </div>
                 )}
               </div>
-
-              <Link
-                to="/typeforge/live-coding"
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150",
-                  isLiveCoding ? "bg-muted text-primary" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Play className="h-4 w-4 shrink-0" />
-                <span>Live Coding</span>
-              </Link>
             </nav>
           </div>
 

@@ -2,18 +2,11 @@ import { Link } from "react-router-dom";
 
 const CHALLENGES = [
   {
-    title: "1v1 CodeArena",
-    status: "Live",
-    category: "Duels",
-    prize: "Rating + badges",
-    href: "/dsa/duels",
-  },
-  {
-    title: "Daily DSA Challenge",
+    title: "DSA Practice",
     status: "Open",
     category: "Practice",
-    prize: "Streak XP",
-    href: "/dsa/duels/daily",
+    prize: "Skill growth",
+    href: "/dsa/problems",
   },
   {
     title: "CTF Capture the Flag",
@@ -23,18 +16,18 @@ const CHALLENGES = [
     href: "/ctf",
   },
   {
-    title: "Solo Speed Round",
-    status: "Open",
-    category: "Timed",
-    prize: "Leaderboard climb",
-    href: "/dsa/duels/solo",
-  },
-  {
-    title: "Data Science Capstone",
+    title: "Data Science Track",
     status: "Track",
     category: "ML",
     prize: "Certificate",
     href: "/datascience",
+  },
+  {
+    title: "Type Forge",
+    status: "Open",
+    category: "Typing",
+    prize: "Speed & accuracy",
+    href: "/typeforge",
   },
 ];
 
@@ -63,15 +56,7 @@ export function LandingChallenges() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg sm:text-xl font-semibold tracking-tight">{c.title}</h3>
                   <p className="mt-1 text-sm text-[var(--tm-muted)]">
-                    <span
-                      className={
-                        c.status === "Live"
-                          ? "text-[var(--tm-live)] font-medium"
-                          : undefined
-                      }
-                    >
-                      {c.status}
-                    </span>
+                    <span>{c.status}</span>
                     <span className="mx-2 text-[var(--tm-border)]">·</span>
                     {c.category}
                   </p>

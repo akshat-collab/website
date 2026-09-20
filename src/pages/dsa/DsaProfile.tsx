@@ -3,10 +3,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Trophy, Activity, Flame, Swords, Camera, LogIn } from "lucide-react";
+import { User, Trophy, Activity, Flame, Camera, LogIn } from "lucide-react";
 import { useDuelUser } from "@/features/dsa/duels/useDuelUser";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
-import { getDuelRating } from "@/features/dsa/duels/duelRating";
 import { getCurrentStreak, getLongestStreak } from "@/features/dsa/streak/dsaActivityStore";
 import { getApiUrl } from "@/lib/api";
 import {
@@ -69,7 +68,6 @@ export default function DsaProfile() {
   const currentStreak = getCurrentStreak();
   const longestStreak = getLongestStreak();
   const loginStreak = getLoginStreak();
-  const duelRating = getDuelRating();
 
   useEffect(() => {
     if (user) recordLoginDay();
@@ -190,35 +188,7 @@ export default function DsaProfile() {
           </div>
         </div>
 
-        {/* Profile settings: gender (for 1v1 bot) */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Profile settings</CardTitle>
-            <CardDescription>
-              Used for 1v1 duels: your opponent replies as the opposite gender (male → female name, female → male name). Set at login; change here if needed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <Button
-                variant={gender === "male" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleGenderSelect("male")}
-              >
-                Male
-              </Button>
-              <Button
-                variant={gender === "female" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleGenderSelect("female")}
-              >
-                Female
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stats: 1v1 ranking, problems, streaks */}
+        {/* Stats: problems, streaks */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -226,18 +196,11 @@ export default function DsaProfile() {
               Stats & ranking
             </CardTitle>
             <CardDescription>
-              Your 1v1 duel rank, practice streaks, and problem stats.
+              Your practice streaks and problem stats.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Swords className="h-3.5 w-3.5" />
-                  1v1 Duel ranking
-                </p>
-                <p className="text-xl font-bold tabular-nums mt-0.5">{duelRating}</p>
-              </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Problems solved</p>
                 <p className="text-xl font-bold tabular-nums mt-0.5">{totalSolved}</p>

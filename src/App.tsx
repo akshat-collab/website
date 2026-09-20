@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 // Page transition wrapper - smooth fade when switching routes
 const PageTransition = ({ children }: { children: React.ReactNode }) => {
@@ -51,10 +51,6 @@ const DsaProblemDetail = lazy(() => import("./pages/dsa/DsaProblemDetail"));
 const DsaSubmissions = lazy(() => import("./pages/dsa/DsaSubmissions"));
 const DsaLeaderboard = lazy(() => import("./pages/dsa/DsaLeaderboard"));
 const DsaProfile = lazy(() => import("./pages/dsa/DsaProfile"));
-const DsaDuelsLobby = lazy(() => import("./pages/dsa/DsaDuelsLobby"));
-const DsaDuelRoom = lazy(() => import("./pages/dsa/DsaDuelRoom"));
-const DsaSoloChallenge = lazy(() => import("./pages/dsa/DsaSoloChallenge"));
-const DsaDailyChallenge = lazy(() => import("./pages/dsa/DsaDailyChallenge"));
 const DsaCalendar = lazy(() => import("./pages/dsa/DsaCalendar"));
 
 // TypeForge
@@ -74,7 +70,6 @@ const DsExercise = lazy(() => import("./pages/datascience/DsExercise"));
 const TypeForgeCode = lazy(() => import("./pages/typeforge/TypeForgeCode"));
 const TypeForgeSpells = lazy(() => import("./pages/typeforge/TypeForgeSpells"));
 const TypeForgeFun = lazy(() => import("./pages/typeforge/TypeForgeFun"));
-const TypeForgeLiveCoding = lazy(() => import("./pages/typeforge/TypeForgeLiveCoding"));
 
 // Student Corner
 const StudentCornerLayout = lazy(() => import("./layouts/StudentCornerLayout"));
@@ -100,8 +95,7 @@ const ConditionalChatBot = () => {
   const location = useLocation();
   
   // Hide chatbot on DSA problem pages and problems list (avoids overlapping pagination Next button)
-  const hideChatBot = location.pathname.startsWith('/dsa/problem/') || 
-                      location.pathname.startsWith('/dsa/duels/') ||
+  const hideChatBot = location.pathname.startsWith('/dsa/problem/') ||
                       location.pathname === '/dsa/problems';
   
   if (hideChatBot) return null;
@@ -178,7 +172,7 @@ const App = () => (
                 <Route path="code" element={<TypeForgeCode />} />
                 <Route path="spells" element={<TypeForgeSpells />} />
                 <Route path="fun" element={<TypeForgeFun />} />
-                <Route path="live-coding" element={<TypeForgeLiveCoding />} />
+                <Route path="live-coding" element={<Navigate to="/typeforge/code" replace />} />
               </Route>
 
               {/* DSA Practice section */}
@@ -198,24 +192,17 @@ const App = () => (
                 <Route path="practice" element={<Navigate to="/dsa/problems" replace />} />
                 <Route path="problem/:id" element={<DsaProblemDetail />} />
                 <Route path="submissions" element={<DsaSubmissions />} />
-                {/* Shortcut redirects */}
-                <Route path="solo" element={<Navigate to="/dsa/duels/solo" replace />} />
-                <Route path="daily" element={<Navigate to="/dsa/duels/daily" replace />} />
-                <Route path="duel" element={<Navigate to="/dsa/duels" replace />} />
-                <Route path="arena" element={<Navigate to="/dsa/duels" replace />} />
-                {/* Duels: nested so /dsa/duels, /dsa/duels/solo, /dsa/duels/daily, /dsa/duels/room/:id work */}
-                <Route path="duels" element={<Outlet />}>
-                  <Route index element={<DsaDuelsLobby />} />
-                  <Route path="solo" element={<DsaSoloChallenge />} />
-                  <Route path="daily" element={<DsaDailyChallenge />} />
-                  <Route path="room" element={<Navigate to="/dsa/duels" replace />} />
-                  <Route path="room/:roomId" element={<DsaDuelRoom />} />
-                </Route>
-                <Route path="leaderboard" element={<DsaLeaderboard />} />
-                <Route path="profile" element={<DsaProfile />} />
-                <Route path="live" element={<ComingSoon />} />
+                {/* Removed 1v1 / live — keep redirects so old links don't 404 */}
+                <Route path="solo" element={<Navigate to="/dsa/problems" replace />} />
+                <Route path="daily" element={<Navigate to="/dsa/problems" replace />} />
+                <Route path="duel" element={<Navigate to="/dsa/problems" replace />} />
+                <Route path="arena" element={<Navigate to="/dsa/problems" replace />} />
+                <Route path="duels/*" element={<Navigate to="/dsa/problems" replace />} />
+                <Route path="live" element={<Navigate to="/dsa/problems" replace />} />
                 <Route path="contest" element={<ComingSoon />} />
                 <Route path="discuss" element={<ComingSoon />} />
+                <Route path="leaderboard" element={<DsaLeaderboard />} />
+                <Route path="profile" element={<DsaProfile />} />
                 <Route path="calendar" element={<DsaCalendar />} />
               </Route>
 

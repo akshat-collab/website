@@ -47,29 +47,31 @@
     --sidebar-ring: 0 0% 100%;
   }
 
-  /* Dark Theme — Tesla style */
+  /* Dark Theme — pure black (no blue) */
   [data-theme="dark"] {
     --background: 0 0% 0%;
-    --foreground: 240 5% 96%;
-    --card: 240 4% 6%;
-    --card-foreground: 240 5% 96%;
-    --popover: 240 4% 6%;
-    --popover-foreground: 240 5% 96%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 96%;
     --primary: 0 0% 100%;
     --primary-foreground: 0 0% 0%;
-    --secondary: 240 3% 12%;
-    --secondary-foreground: 240 5% 96%;
-    --muted: 240 3% 12%;
-    --muted-foreground: 240 4% 56%;
-    --accent: 240 3% 14%;
-    --accent-foreground: 240 5% 96%;
-    --border: 240 3% 16%;
-    --input: 240 3% 12%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 0 0% 14%;
+    --input: 0 0% 10%;
     --ring: 0 0% 100%;
 
     --theme-bg-primary: #000000;
-    --theme-bg-secondary: #0e0e10;
-    --theme-bg-tertiary: #141416;
+    --theme-bg-secondary: #0a0a0a;
+    --theme-bg-tertiary: #111111;
     
     --theme-text-primary: #f5f5f7;
     --theme-text-secondary: #a1a1a6;
@@ -81,15 +83,15 @@
     --theme-accent: #f5f5f7;
     --theme-accent-secondary: #ffffff;
     
-    --theme-glass-bg: rgba(14, 14, 16, 0.75);
+    --theme-glass-bg: rgba(10, 10, 10, 0.75);
     --theme-glass-border: rgba(42, 42, 46, 0.9);
     
-    --theme-card-bg: rgba(14, 14, 16, 0.95);
+    --theme-card-bg: rgba(10, 10, 10, 0.95);
     --theme-card-hover-bg: rgba(255, 255, 255, 0.06);
     
-    --theme-glow-primary: rgba(255, 255, 255, 0.12);
-    --theme-glow-secondary: rgba(255, 255, 255, 0.08);
-    --theme-glow-tertiary: rgba(255, 255, 255, 0.05);
+    --theme-glow-primary: rgba(255, 255, 255, 0.1);
+    --theme-glow-secondary: rgba(255, 255, 255, 0.06);
+    --theme-glow-tertiary: rgba(255, 255, 255, 0.04);
     
     --theme-shadow-primary: rgba(0, 0, 0, 0.5);
     --theme-shadow-secondary: rgba(0, 0, 0, 0.35);
@@ -97,8 +99,8 @@
     --theme-grid-color: #2a2a2e;
     --theme-grid-opacity: 0.12;
     
-    --theme-floating-lines-color: rgba(245, 245, 247, 0.15);
-    --theme-floating-lines-opacity: 0.35;
+    --theme-floating-lines-color: rgba(245, 245, 247, 0.12);
+    --theme-floating-lines-opacity: 0.3;
     --theme-floating-lines-blur: 1px;
   }
 

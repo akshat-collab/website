@@ -42,8 +42,8 @@ export function LandingHero() {
       </p>
 
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <Link to="/dsa/duels" className="tm-btn tm-btn-primary">
-          Join a challenge
+        <Link to="/dsa/problems" className="tm-btn tm-btn-primary">
+          Start practicing
         </Link>
         <a href="#leaderboard" className="tm-btn tm-btn-secondary">
           See the leaderboard

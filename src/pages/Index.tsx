@@ -74,7 +74,7 @@ export default function Index() {
     <div className="tm-landing" data-sidebar-collapsed={collapsed ? "true" : "false"}>
       <SeoHead
         title="TechMaster — Master Code. Win Competitions."
-        description="Showcase your skills, compete in real-world coding challenges, and get hired. DSA, 1v1 duels, CTF, and more."
+        description="Showcase your skills, practice DSA, solve CTF challenges, and grow your career."
         path="/"
       />
 

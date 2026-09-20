@@ -18,7 +18,6 @@ import {
 import { Trophy, Loader2 } from "lucide-react";
 import { useDsaAuth } from "@/features/dsa/auth/DsaAuthContext";
 import { getSolvedProblemIds } from "@/features/dsa/profile/dsaProfileStore";
-import { getDuelRating, getDuelStats } from "@/features/dsa/duels/duelRating";
 import * as localAuth from "@/lib/localAuth";
 
 interface LeaderboardRow {
@@ -38,14 +37,10 @@ export default function DsaLeaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Local leaderboard: show current user with duel rating (from wins vs AI)
     const session = localAuth.getSession();
     const solved = getSolvedProblemIds();
-    const duelRating = getDuelRating();
-    const duelStats = getDuelStats();
     if (session) {
-      // Use duel rating when user has wins; otherwise fallback to problems-based
-      const rating = duelStats.wins > 0 ? duelRating : 1000 + solved.length * 5;
+      const rating = 1000 + solved.length * 5;
       setItems([
         {
           rank: 1,

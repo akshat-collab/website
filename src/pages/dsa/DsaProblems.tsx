@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+ Table,
+ TableBody,
+ TableCell,
+ TableHead,
+ TableHeader,
+ TableRow,
 } from "@/components/ui/table";
 import { Search, CheckCircle2, Circle, Mic, Flame, Star, ChevronDown, Minus, Sparkles } from "lucide-react";
 import { fetchDsaQuestions } from "@/features/dsa/api/questions";
@@ -17,481 +17,481 @@ import { cn } from "@/lib/utils";
 import { difficultyBadgeClass } from "@/lib/difficultyColors";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
-  getRecommendedProblems, 
-  getUserActivityWithProblems,
-  calculateSkillLevel,
-  getRecommendedDistribution 
+ getRecommendedProblems, 
+ getUserActivityWithProblems,
+ calculateSkillLevel,
+ getRecommendedDistribution 
 } from "@/utils/recommendationEngine";
 
 type Difficulty = "Easy" | "Medium" | "Hard";
 
 interface ProblemRow {
-  id: string;
-  title: string;
-  difficulty: Difficulty;
-  acceptance: number;
-  tags: string[];
+ id: string;
+ title: string;
+ difficulty: Difficulty;
+ acceptance: number;
+ tags: string[];
 }
 
 export default function DsaProblems() {
-  const navigate = useNavigate();
-  const { 
-    search, setSearch, 
-    difficulty,
-    status,
-    tags,
-  } = useDsaFilter();
-  const PAGE_SIZE = 50;
-  const [page, setPage] = useState(1);
-  const [activeTab, setActiveTab] = useState<"All" | "Favorite" | "Recommended">("Recommended");
-  const [favorites, setFavorites] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('dsa_favorites');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
-  const [problems, setProblems] = useState<ProblemRow[]>([]);
-  const [recommendedProblems, setRecommendedProblems] = useState<ProblemRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [useFallbackList, setUseFallbackList] = useState(false);
-  const [userSkillLevel, setUserSkillLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
-  
-  // Load solved problems from localStorage
-  const [solvedProblems, setSolvedProblems] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('dsa_solved_problems');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
+ const navigate = useNavigate();
+ const { 
+ search, setSearch, 
+ difficulty,
+ status,
+ tags,
+ } = useDsaFilter();
+ const PAGE_SIZE = 50;
+ const [page, setPage] = useState(1);
+ const [activeTab, setActiveTab] = useState<"All" | "Favorite" | "Recommended">("Recommended");
+ const [favorites, setFavorites] = useState<Set<string>>(() => {
+ try {
+ const saved = localStorage.getItem('dsa_favorites');
+ return saved ? new Set(JSON.parse(saved)) : new Set();
+ } catch {
+ return new Set();
+ }
+ });
+ const [problems, setProblems] = useState<ProblemRow[]>([]);
+ const [recommendedProblems, setRecommendedProblems] = useState<ProblemRow[]>([]);
+ const [loading, setLoading] = useState(true);
+ const [error, setError] = useState<string | null>(null);
+ const [useFallbackList, setUseFallbackList] = useState(false);
+ const [userSkillLevel, setUserSkillLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+ 
+ // Load solved problems from localStorage
+ const [solvedProblems, setSolvedProblems] = useState<Set<string>>(() => {
+ try {
+ const saved = localStorage.getItem('dsa_solved_problems');
+ return saved ? new Set(JSON.parse(saved)) : new Set();
+ } catch {
+ return new Set();
+ }
+ });
 
-  // Load attempted problems from localStorage
-  const [attemptedProblems, setAttemptedProblems] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem('dsa_attempted_problems');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch {
-      return new Set();
-    }
-  });
+ // Load attempted problems from localStorage
+ const [attemptedProblems, setAttemptedProblems] = useState<Set<string>>(() => {
+ try {
+ const saved = localStorage.getItem('dsa_attempted_problems');
+ return saved ? new Set(JSON.parse(saved)) : new Set();
+ } catch {
+ return new Set();
+ }
+ });
 
-  // Fetch problems (hardcoded list with full test cases)
-  const loadProblems = useCallback(async (isRetry = false) => {
-    setLoading(true);
-    if (isRetry) setError(null);
-    try {
-      const { items, source } = await fetchDsaQuestions();
-      setProblems(items);
-      const userActivity = getUserActivityWithProblems(items);
-      setUserSkillLevel(calculateSkillLevel(userActivity));
-      setRecommendedProblems(getRecommendedProblems(items, userActivity, 20));
-      setUseFallbackList(source === "hardcoded");
-      setError(null);
-    } catch (err) {
-      console.error("Failed to fetch problems:", err);
-      setError(err instanceof Error ? err.message : "Failed to load");
-      setUseFallbackList(true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+ // Fetch problems (hardcoded list with full test cases)
+ const loadProblems = useCallback(async (isRetry = false) => {
+ setLoading(true);
+ if (isRetry) setError(null);
+ try {
+ const { items, source } = await fetchDsaQuestions();
+ setProblems(items);
+ const userActivity = getUserActivityWithProblems(items);
+ setUserSkillLevel(calculateSkillLevel(userActivity));
+ setRecommendedProblems(getRecommendedProblems(items, userActivity, 20));
+ setUseFallbackList(source === "hardcoded");
+ setError(null);
+ } catch (err) {
+ console.error("Failed to fetch problems:", err);
+ setError(err instanceof Error ? err.message : "Failed to load");
+ setUseFallbackList(true);
+ } finally {
+ setLoading(false);
+ }
+ }, []);
 
-  useEffect(() => {
-    loadProblems();
-  }, [loadProblems]);
+ useEffect(() => {
+ loadProblems();
+ }, [loadProblems]);
 
-  // When in fallback mode, retry API on tab focus so full list loads when backend comes up
-  useEffect(() => {
-    if (!useFallbackList) return;
-    const onFocus = () => loadProblems(true);
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [useFallbackList, loadProblems]);
+ // When in fallback mode, retry API on tab focus so full list loads when backend comes up
+ useEffect(() => {
+ if (!useFallbackList) return;
+ const onFocus = () => loadProblems(true);
+ window.addEventListener('focus', onFocus);
+ return () => window.removeEventListener('focus', onFocus);
+ }, [useFallbackList, loadProblems]);
 
-  // Recalculate recommendations when solved/attempted problems change
-  useEffect(() => {
-    if (problems.length > 0) {
-      const userActivity = getUserActivityWithProblems(problems);
-      const skillLevel = calculateSkillLevel(userActivity);
-      setUserSkillLevel(skillLevel);
-      
-      const recommended = getRecommendedProblems(problems, userActivity, 20);
-      setRecommendedProblems(recommended);
-    }
-  }, [solvedProblems, attemptedProblems, problems]);
+ // Recalculate recommendations when solved/attempted problems change
+ useEffect(() => {
+ if (problems.length > 0) {
+ const userActivity = getUserActivityWithProblems(problems);
+ const skillLevel = calculateSkillLevel(userActivity);
+ setUserSkillLevel(skillLevel);
+ 
+ const recommended = getRecommendedProblems(problems, userActivity, 20);
+ setRecommendedProblems(recommended);
+ }
+ }, [solvedProblems, attemptedProblems, problems]);
 
-  // Listen for storage changes to update solved problems in real-time
-  useEffect(() => {
-    const handleStorageChange = () => {
-      try {
-        const saved = localStorage.getItem('dsa_solved_problems');
-        if (saved) setSolvedProblems(new Set(JSON.parse(saved)));
-      } catch {
-        /* ignore */
-      }
-      try {
-        const attempted = localStorage.getItem('dsa_attempted_problems');
-        if (attempted) setAttemptedProblems(new Set(JSON.parse(attempted)));
-      } catch {
-        /* ignore */
-      }
-      try {
-        const favs = localStorage.getItem('dsa_favorites');
-        if (favs) setFavorites(new Set(JSON.parse(favs)));
-      } catch {
-        /* ignore */
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+ // Listen for storage changes to update solved problems in real-time
+ useEffect(() => {
+ const handleStorageChange = () => {
+ try {
+ const saved = localStorage.getItem('dsa_solved_problems');
+ if (saved) setSolvedProblems(new Set(JSON.parse(saved)));
+ } catch {
+ /* ignore */
+ }
+ try {
+ const attempted = localStorage.getItem('dsa_attempted_problems');
+ if (attempted) setAttemptedProblems(new Set(JSON.parse(attempted)));
+ } catch {
+ /* ignore */
+ }
+ try {
+ const favs = localStorage.getItem('dsa_favorites');
+ if (favs) setFavorites(new Set(JSON.parse(favs)));
+ } catch {
+ /* ignore */
+ }
+ };
+ 
+ window.addEventListener('storage', handleStorageChange);
+ return () => window.removeEventListener('storage', handleStorageChange);
+ }, []);
 
-  const toggleFavorite = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Prevent row click navigation
-    setFavorites(prev => {
-        const next = new Set(prev);
-        if (next.has(id)) {
-            next.delete(id);
-        } else {
-            next.add(id);
-        }
-        // Save to localStorage
-        localStorage.setItem('dsa_favorites', JSON.stringify(Array.from(next)));
-        return next;
-    });
-  };
+ const toggleFavorite = (e: React.MouseEvent, id: string) => {
+ e.stopPropagation(); // Prevent row click navigation
+ setFavorites(prev => {
+ const next = new Set(prev);
+ if (next.has(id)) {
+ next.delete(id);
+ } else {
+ next.add(id);
+ }
+ // Save to localStorage
+ localStorage.setItem('dsa_favorites', JSON.stringify(Array.from(next)));
+ return next;
+ });
+ };
 
-  // Remove the toggle function - problems should only be marked as solved through actual submission
-  // const toggleSolved = (e: React.MouseEvent, id: string) => {
-  //   e.stopPropagation();
-  //   setSolvedProblems(prev => {
-  //       const next = new Set(prev);
-  //       if (next.has(id)) {
-  //           next.delete(id);
-  //       } else {
-  //           next.add(id);
-  //       }
-  //       return next;
-  //   });
-  // };
+ // Remove the toggle function - problems should only be marked as solved through actual submission
+ // const toggleSolved = (e: React.MouseEvent, id: string) => {
+ // e.stopPropagation();
+ // setSolvedProblems(prev => {
+ // const next = new Set(prev);
+ // if (next.has(id)) {
+ // next.delete(id);
+ // } else {
+ // next.add(id);
+ // }
+ // return next;
+ // });
+ // };
 
-  const filtered = useMemo(() => {
-    // Use recommended problems for Recommended tab
-    const sourceList = activeTab === "Recommended" ? recommendedProblems : problems;
-    
-    let list = sourceList.filter((p) => {
-      const isFav = favorites.has(p.id);
-      const isSolved = solvedProblems.has(p.id);
-      const isAttempted = attemptedProblems.has(p.id);
-      const currentStatus: "solved" | "attempted" | "unsolved" = isSolved ? "solved" : isAttempted ? "attempted" : "unsolved";
-      
-      const matchSearch =
-        !search ||
-        p.title.toLowerCase().includes(search.toLowerCase());
-      const matchDiff = difficulty === "all" || p.difficulty === difficulty;
-      const matchStatus =
-        status === "all" ||
-        (status === "solved" && currentStatus === "solved") ||
-        (status === "unsolved" && currentStatus === "unsolved") ||
-        (status === "attempted" && currentStatus === "attempted");
+ const filtered = useMemo(() => {
+ // Use recommended problems for Recommended tab
+ const sourceList = activeTab === "Recommended" ? recommendedProblems : problems;
+ 
+ let list = sourceList.filter((p) => {
+ const isFav = favorites.has(p.id);
+ const isSolved = solvedProblems.has(p.id);
+ const isAttempted = attemptedProblems.has(p.id);
+ const currentStatus: "solved" | "attempted" | "unsolved" = isSolved ? "solved" : isAttempted ? "attempted" : "unsolved";
+ 
+ const matchSearch =
+ !search ||
+ p.title.toLowerCase().includes(search.toLowerCase());
+ const matchDiff = difficulty === "all" || p.difficulty === difficulty;
+ const matchStatus =
+ status === "all" ||
+ (status === "solved" && currentStatus === "solved") ||
+ (status === "unsolved" && currentStatus === "unsolved") ||
+ (status === "attempted" && currentStatus === "attempted");
 
-      const matchTag = tags.length === 0 || tags.some(t => p.tags.includes(t));
-      
-      // Tab filtering
-      let matchTab = true;
-      if (activeTab === "Favorite") matchTab = isFav;
-      
-      return matchSearch && matchDiff && matchStatus && matchTag && matchTab;
-    });
-    return list;
-  }, [search, difficulty, status, tags, activeTab, favorites, solvedProblems, problems, recommendedProblems]);
+ const matchTag = tags.length === 0 || tags.some(t => p.tags.includes(t));
+ 
+ // Tab filtering
+ let matchTab = true;
+ if (activeTab === "Favorite") matchTab = isFav;
+ 
+ return matchSearch && matchDiff && matchStatus && matchTag && matchTab;
+ });
+ return list;
+ }, [search, difficulty, status, tags, activeTab, favorites, solvedProblems, problems, recommendedProblems]);
 
-  const paginatedFiltered = useMemo(() => {
-    return filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  }, [filtered, page]);
+ const paginatedFiltered = useMemo(() => {
+ return filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+ }, [filtered, page]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+ const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [search, difficulty, status, tags, activeTab]);
+ // Reset to page 1 when filters change
+ useEffect(() => {
+ setPage(1);
+ }, [search, difficulty, status, tags, activeTab]);
 
-  const difficultyColor = (d: Difficulty) => difficultyBadgeClass(d);
+ const difficultyColor = (d: Difficulty) => difficultyBadgeClass(d);
 
-  if (loading) {
-    return (
-      <div className={cn(
-        "h-full flex items-center justify-center",
-        "bg-white dark:bg-[#0B0F19]"
-      )}>
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
-          <p className="text-muted-foreground">Loading problems...</p>
-        </div>
-      </div>
-    );
-  }
+ if (loading) {
+ return (
+ <div className={cn(
+ "h-full flex items-center justify-center",
+ "bg-white dark:bg-[#000000]"
+ )}>
+ <div className="text-center space-y-4">
+ <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
+ <p className="text-muted-foreground">Loading problems...</p>
+ </div>
+ </div>
+ );
+ }
 
-  return (
-    <div className={cn(
-        "h-full flex flex-col overflow-hidden transition-colors duration-300",
-        "bg-white dark:bg-[#0B0F19]" 
-    )}>
-      {/* Fixed Header Section */}
-      <div className="shrink-0 p-6 pb-2 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div className="space-y-1">
-                <h1 className={cn(
-                    "text-3xl font-bold tracking-tight mb-1 transition-colors",
-                    "text-slate-900 dark:text-white"
-                )}>Problems</h1>
-                <p className="text-sm text-muted-foreground">
-                  {problems.length > 0
-                    ? `Search your practice problems here. ${problems.length.toLocaleString()} questions available.`
-                    : 'Search your practice problems here and get started.'}
-                </p>
-            </div>
-            
-            {/* Skill Level Badge */}
-            {activeTab === "Recommended" && (
-              <div className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl border transition-all",
-                "bg-cyan-500/10 border-cyan-500/20"
-              )}>
-                <Sparkles className={cn(
-                  "h-4 w-4",
-                  "text-cyan-400"
-                )} />
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Skill Level: </span>
-                  <span className={cn(
-                    "font-semibold capitalize",
-                    "text-cyan-400"
-                  )}>
-                    {userSkillLevel}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground ml-2">
-                  ({solvedProblems.size} solved)
-                </div>
-              </div>
-            )}
-        </div>
+ return (
+ <div className={cn(
+ "h-full flex flex-col overflow-hidden transition-colors duration-300",
+ "bg-white dark:bg-[#000000]" 
+ )}>
+ {/* Fixed Header Section */}
+ <div className="shrink-0 p-6 pb-2 space-y-4">
+ <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+ <div className="space-y-1">
+ <h1 className={cn(
+ "text-3xl font-bold tracking-tight mb-1 transition-colors",
+ "text-slate-900 dark:text-white"
+ )}>Problems</h1>
+ <p className="text-sm text-muted-foreground">
+ {problems.length > 0
+ ? `Search your practice problems here. ${problems.length.toLocaleString()} questions available.`
+ : 'Search your practice problems here and get started.'}
+ </p>
+ </div>
+ 
+ {/* Skill Level Badge */}
+ {activeTab === "Recommended" && (
+ <div className={cn(
+ "flex items-center gap-2 px-4 py-2 rounded-xl border transition-all",
+ "bg-foreground/10 border-border"
+ )}>
+ <Sparkles className={cn(
+ "h-4 w-4",
+ "text-foreground"
+ )} />
+ <div className="text-sm">
+ <span className="text-muted-foreground">Skill Level: </span>
+ <span className={cn(
+ "font-semibold capitalize",
+ "text-foreground"
+ )}>
+ {userSkillLevel}
+ </span>
+ </div>
+ <div className="text-xs text-muted-foreground ml-2">
+ ({solvedProblems.size} solved)
+ </div>
+ </div>
+ )}
+ </div>
 
-        {/* Tabs */}
-        <div className={cn(
-            "pt-4 flex items-center gap-6 border-b mt-2 transition-colors",
-            "border-slate-200 dark:border-white/50"
-        )}>
-            {["All Questions", "Favorite Questions", "Recommended"].map((tab) => {
-                const tabKey = tab.split(" ")[0] as "All" | "Favorite" | "Recommended";
-                const isActive = activeTab === tabKey;
-                return (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tabKey)}
-                        className={cn(
-                            "pb-2 text-sm font-medium transition-all relative flex items-center gap-2",
-                            isActive 
-                                ? "text-cyan-600 dark:text-cyan-400" 
-                                : cn("text-muted-foreground", "hover:text-slate-900 dark:hover:text-white")
-                        )}
-                    >
-                        {tabKey === "Recommended" && <Sparkles className="h-3.5 w-3.5" />}
-                        {tab}
-                        {isActive && (
-                            <div className={cn(
-                                "absolute bottom-0 left-0 w-full h-0.5 rounded-t-full",
-                                "bg-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
-                            )} />
-                        )}
-                    </button>
-                )
-            })}
-        </div>
+ {/* Tabs */}
+ <div className={cn(
+ "pt-4 flex items-center gap-6 border-b mt-2 transition-colors",
+ "border-slate-200 dark:border-white/50"
+ )}>
+ {["All Questions", "Favorite Questions", "Recommended"].map((tab) => {
+ const tabKey = tab.split(" ")[0] as "All" | "Favorite" | "Recommended";
+ const isActive = activeTab === tabKey;
+ return (
+ <button
+ key={tab}
+ onClick={() => setActiveTab(tabKey)}
+ className={cn(
+ "pb-2 text-sm font-medium transition-all relative flex items-center gap-2",
+ isActive 
+ ? "text-foreground dark:text-foreground" 
+ : cn("text-muted-foreground", "hover:text-slate-900 dark:hover:text-white")
+ )}
+ >
+ {tabKey === "Recommended" && <Sparkles className="h-3.5 w-3.5" />}
+ {tab}
+ {isActive && (
+ <div className={cn(
+ "absolute bottom-0 left-0 w-full h-0.5 rounded-t-full",
+ "bg-foreground shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+ )} />
+ )}
+ </button>
+ )
+ })}
+ </div>
 
-        {/* Recommendation Info Banner */}
-        {activeTab === "Recommended" && (
-          <div className={cn(
-            "mt-2 p-3 rounded-xl border text-sm flex items-start gap-3",
-            "bg-cyan-500/5 border-cyan-500/20 text-cyan-700 dark:text-cyan-300"
-          )}>
-            <Sparkles className={cn(
-              "h-4 w-4 mt-0.5 shrink-0",
-              "text-cyan-500"
-            )} />
-            <div>
-              <p className="font-medium mb-1">Smart Recommendations</p>
-              <p className="text-xs opacity-80">
-                {userSkillLevel === "beginner" && "Starting with easier problems to build your foundation. Keep solving to unlock harder challenges!"}
-                {userSkillLevel === "intermediate" && "Balanced mix of problems to strengthen your skills. You're making great progress!"}
-                {userSkillLevel === "advanced" && "Challenging problems tailored for your skill level. Keep pushing your limits!"}
-              </p>
-            </div>
-          </div>
-        )}
+ {/* Recommendation Info Banner */}
+ {activeTab === "Recommended" && (
+ <div className={cn(
+ "mt-2 p-3 rounded-xl border text-sm flex items-start gap-3",
+ "bg-foreground/5 border-border text-foreground dark:text-foreground"
+ )}>
+ <Sparkles className={cn(
+ "h-4 w-4 mt-0.5 shrink-0",
+ "text-foreground"
+ )} />
+ <div>
+ <p className="font-medium mb-1">Smart Recommendations</p>
+ <p className="text-xs opacity-80">
+ {userSkillLevel === "beginner" && "Starting with easier problems to build your foundation. Keep solving to unlock harder challenges!"}
+ {userSkillLevel === "intermediate" && "Balanced mix of problems to strengthen your skills. You're making great progress!"}
+ {userSkillLevel === "advanced" && "Challenging problems tailored for your skill level. Keep pushing your limits!"}
+ </p>
+ </div>
+ </div>
+ )}
 
-        {/* Search Bar */}
-        <div className="relative group ">
-            <Search className={cn(
-                "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors",
-                "group-focus-within:text-cyan-600 dark:group-focus-within:text-cyan-400"
-            )} />
-            <Input
-            placeholder="Search Problems"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={cn(
-                "pl-11 pr-10 h-10 border-[1.5px] rounded-xl transition-all text-sm",
-                "bg-white dark:bg-[#111625] border-slate-200 dark:border-white/50 focus-visible:ring-cyan-500/20 focus-visible:border-cyan-500/50 text-slate-900 dark:text-white placeholder:text-muted-foreground/50"
-            )}
-            />
-            <Mic className={cn(
-                "absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground cursor-pointer transition-colors",
-                "hover:text-slate-900 dark:hover:text-white"
-            )} />
-        </div>
-      </div>
+ {/* Search Bar */}
+ <div className="relative group ">
+ <Search className={cn(
+ "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors",
+ "group-focus-within:text-foreground dark:group-focus-within:text-foreground"
+ )} />
+ <Input
+ placeholder="Search Problems"
+ value={search}
+ onChange={(e) => setSearch(e.target.value)}
+ className={cn(
+ "pl-11 pr-10 h-10 border-[1.5px] rounded-xl transition-all text-sm",
+ "bg-white dark:bg-[#0a0a0a] border-slate-200 dark:border-white/50 focus-visible:ring-foreground/20 focus-visible:border-foreground/30 text-slate-900 dark:text-white placeholder:text-muted-foreground/50"
+ )}
+ />
+ <Mic className={cn(
+ "absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground cursor-pointer transition-colors",
+ "hover:text-slate-900 dark:hover:text-white"
+ )} />
+ </div>
+ </div>
 
-      {/* Scrollable Table Section */}
-      <div className="flex-1 overflow-hidden px-6 pb-6">
-        <div className={cn(
-            "h-full rounded-2xl border-[1.5px] overflow-hidden flex flex-col",
-            "border-slate-200 dark:border-white/50 bg-slate-50 dark:bg-[#111625]/50"
-        )}>
-            {/* Table Header Fixed */}
-            <div className={cn(
-                "border-[1.5px] backdrop-blur-sm z-10",
-                "bg-white/80 dark:bg-[#111625]/80 border-slate-200 dark:border-white/50"
-            )}>
-                <Table>
-                    <TableHeader>
-                        <TableRow className="border-none hover:bg-transparent">
-                            <TableHead className="w-16 text-muted-foreground font-medium pl-6 text-xs h-10">Status</TableHead>
-                            <TableHead className="w-[200px] text-muted-foreground font-medium text-xs h-10">Title</TableHead>
-                            <TableHead className="w-40 pl-8 text-muted-foreground font-medium text-left text-xs h-10">Difficulty Level</TableHead>
-                            <TableHead className="w-32 pl-8 text-left text-muted-foreground font-medium text-xs h-10">Success Rate</TableHead>
-                            <TableHead className="w-32 text-right text-muted-foreground font-medium pr-10 text-xs h-10">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                </Table>
-            </div>
-            
-            {/* Scrollable Body */}
-            <ScrollArea className="flex-1 ">
-                <Table>
-                    <TableBody>
-                        {paginatedFiltered.map((row) => {
-                        const isFavorite = favorites.has(row.id);
-                        const isSolved = solvedProblems.has(row.id);
-                        const isAttempted = attemptedProblems.has(row.id);
+ {/* Scrollable Table Section */}
+ <div className="flex-1 overflow-hidden px-6 pb-6">
+ <div className={cn(
+ "h-full rounded-2xl border-[1.5px] overflow-hidden flex flex-col",
+ "border-slate-200 dark:border-white/50 bg-slate-50 dark:bg-[#0a0a0a]/50"
+ )}>
+ {/* Table Header Fixed */}
+ <div className={cn(
+ "border-[1.5px] backdrop-blur-sm z-10",
+ "bg-white/80 dark:bg-[#0a0a0a]/80 border-slate-200 dark:border-white/50"
+ )}>
+ <Table>
+ <TableHeader>
+ <TableRow className="border-none hover:bg-transparent">
+ <TableHead className="w-16 text-muted-foreground font-medium pl-6 text-xs h-10">Status</TableHead>
+ <TableHead className="w-[200px] text-muted-foreground font-medium text-xs h-10">Title</TableHead>
+ <TableHead className="w-40 pl-8 text-muted-foreground font-medium text-left text-xs h-10">Difficulty Level</TableHead>
+ <TableHead className="w-32 pl-8 text-left text-muted-foreground font-medium text-xs h-10">Success Rate</TableHead>
+ <TableHead className="w-32 text-right text-muted-foreground font-medium pr-10 text-xs h-10">Action</TableHead>
+ </TableRow>
+ </TableHeader>
+ </Table>
+ </div>
+ 
+ {/* Scrollable Body */}
+ <ScrollArea className="flex-1 ">
+ <Table>
+ <TableBody>
+ {paginatedFiltered.map((row) => {
+ const isFavorite = favorites.has(row.id);
+ const isSolved = solvedProblems.has(row.id);
+ const isAttempted = attemptedProblems.has(row.id);
 
-                        return (
-                        <TableRow
-                            key={row.id}
-                            className={cn(
-                                "cursor-pointer border-[1.5px] transition-all duration-300 group h-12",
-                                isSolved
-                                    ? "bg-green-500/5 dark:bg-green-500/10 border-green-500/20 border-l-2 border-l-green-500/40"
-                                    : "border-slate-200 dark:border-white/50 hover:bg-cyan-500/10 hover:border-l-4 hover:border-l-cyan-400 hover:shadow-[0_0_20px_rgba(34,211,238,0.1)] border-l-2 border-l-transparent dark:hover:bg-cyan-500/10"
-                            )}
-                            onClick={() => navigate(`/dsa/problem/${row.id}`)}
-                        >
-                            <TableCell className="pl-6 w-16 py-2">
-                                <div className="focus:outline-none pointer-events-none">
-                                    {isSolved ? (
-                                        <CheckCircle2 className="h-4 w-4 text-green-500 fill-green-500/10" />
-                                    ) : isAttempted ? (
-                                        <div className="h-4 w-4 rounded-full bg-yellow-500/20 border-2 border-yellow-500 flex items-center justify-center">
-                                            <Minus className="h-2.5 w-2.5 text-yellow-500" strokeWidth={3} />
-                                        </div>
-                                    ) : (
-                                        <div className={cn(
-                                            "h-4 w-4 rounded-full border-2 border-muted-foreground/30 transition-colors",
-                                            "group-hover:border-cyan-400/50"
-                                        )} />
-                                    )}
-                                </div>
-                            </TableCell>
-                            <TableCell className="py-2 w-[90px]">
-                                <div className="flex items-center gap-3">
-                                    <button 
-                                        onClick={(e) => toggleFavorite(e, row.id)}
-                                        className="focus:outline-none"
-                                    >
-                                        <Star 
-                                            className={cn(
-                                                "h-3.5 w-3.5 transition-colors", 
-                                                isFavorite ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground hover:text-yellow-500"
-                                            )} 
-                                        />
-                                    </button>
-                                    <span className={cn(
-                                        "font-medium text-sm transition-colors",
-                                        "text-slate-700 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white"
-                                    )}>
-                                        {row.title}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-center w-40 py-2">
-                            <span className={cn("inline-flex items-left gap-1.5 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border", difficultyColor(row.difficulty))}>
-                                {row.difficulty === "Medium" ? "Med." : row.difficulty}
-                            </span>
-                            </TableCell>
-                            <TableCell className="text-center text-muted-foreground w-32 py-2 text-sm">
-                                {row.acceptance}%
-                            </TableCell>
-                            <TableCell className="text-right pr-6 w-32 py-2">
-                                <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    className={cn(
-                                        "h-7 text-xs px-3 rounded-full transition-all bg-transparent",
-                                        "border-cyan-500/20 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-400 hover:text-white dark:hover:text-[#0B0F19]"
-                                    )}
-                                >
-                                    Solve
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                        )})}
-                    </TableBody>
-                </Table>
-            </ScrollArea>
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-white/50 shrink-0">
-                <p className="text-sm text-muted-foreground">
-                  Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
-        </div>
-      </div>
-    </div>
-  );
+ return (
+ <TableRow
+ key={row.id}
+ className={cn(
+ "cursor-pointer border-[1.5px] transition-all duration-300 group h-12",
+ isSolved
+ ? "bg-green-500/5 dark:bg-green-500/10 border-green-500/20 border-l-2 border-l-green-500/40"
+ : "border-slate-200 dark:border-white/50 hover:bg-foreground/10 hover:border-l-4 hover:border-l-foreground hover:shadow-none border-l-2 border-l-transparent dark:hover:bg-foreground/10"
+ )}
+ onClick={() => navigate(`/dsa/problem/${row.id}`)}
+ >
+ <TableCell className="pl-6 w-16 py-2">
+ <div className="focus:outline-none pointer-events-none">
+ {isSolved ? (
+ <CheckCircle2 className="h-4 w-4 text-green-500 fill-green-500/10" />
+ ) : isAttempted ? (
+ <div className="h-4 w-4 rounded-full bg-yellow-500/20 border-2 border-yellow-500 flex items-center justify-center">
+ <Minus className="h-2.5 w-2.5 text-yellow-500" strokeWidth={3} />
+ </div>
+ ) : (
+ <div className={cn(
+ "h-4 w-4 rounded-full border-2 border-muted-foreground/30 transition-colors",
+ "group-hover:border-foreground/50"
+ )} />
+ )}
+ </div>
+ </TableCell>
+ <TableCell className="py-2 w-[90px]">
+ <div className="flex items-center gap-3">
+ <button 
+ onClick={(e) => toggleFavorite(e, row.id)}
+ className="focus:outline-none"
+ >
+ <Star 
+ className={cn(
+ "h-3.5 w-3.5 transition-colors", 
+ isFavorite ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground hover:text-yellow-500"
+ )} 
+ />
+ </button>
+ <span className={cn(
+ "font-medium text-sm transition-colors",
+ "text-slate-700 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white"
+ )}>
+ {row.title}
+ </span>
+ </div>
+ </TableCell>
+ <TableCell className="text-center w-40 py-2">
+ <span className={cn("inline-flex items-left gap-1.5 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border", difficultyColor(row.difficulty))}>
+ {row.difficulty === "Medium" ? "Med." : row.difficulty}
+ </span>
+ </TableCell>
+ <TableCell className="text-center text-muted-foreground w-32 py-2 text-sm">
+ {row.acceptance}%
+ </TableCell>
+ <TableCell className="text-right pr-6 w-32 py-2">
+ <Button 
+ size="sm" 
+ variant="outline"
+ className={cn(
+ "h-7 text-xs px-3 rounded-full transition-all bg-transparent",
+ "border-border text-foreground dark:text-foreground hover:bg-foreground hover:text-white dark:hover:text-[#000000]"
+ )}
+ >
+ Solve
+ </Button>
+ </TableCell>
+ </TableRow>
+ )})}
+ </TableBody>
+ </Table>
+ </ScrollArea>
+ {totalPages > 1 && (
+ <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-white/50 shrink-0">
+ <p className="text-sm text-muted-foreground">
+ Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+ </p>
+ <div className="flex gap-2">
+ <Button
+ variant="outline"
+ size="sm"
+ disabled={page <= 1}
+ onClick={() => setPage((p) => Math.max(1, p - 1))}
+ >
+ Previous
+ </Button>
+ <Button
+ variant="outline"
+ size="sm"
+ disabled={page >= totalPages}
+ onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+ >
+ Next
+ </Button>
+ </div>
+ </div>
+ )}
+ </div>
+ </div>
+ </div>
+ );
 }

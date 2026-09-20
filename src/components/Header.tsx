@@ -102,13 +102,6 @@ const Header = memo(() => {
       show: true,
     },
     {
-      title: '1v1 Duels',
-      action: () => {
-        navigate('/dsa/duels');
-      },
-      show: true,
-    },
-    {
       title: 'CTF',
       action: () => {
         navigate('/ctf');
