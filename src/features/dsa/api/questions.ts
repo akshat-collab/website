@@ -32,13 +32,38 @@ export class DsaApiError extends Error {
   }
 }
 
+function safeJsonArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (value == null || value === "") return [];
+  try {
+    const parsed = JSON.parse(String(value));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function mapRowToListItem(row: Record<string, unknown>): DsaQuestionListItem {
+  const tagsRaw = row.tags;
+  let tags: string[] = [];
+  if (Array.isArray(tagsRaw)) tags = tagsRaw.map(String);
+  else if (typeof tagsRaw === "string" && tagsRaw.trim()) {
+    try {
+      const parsed = JSON.parse(tagsRaw);
+      tags = Array.isArray(parsed) ? parsed.map(String) : [];
+    } catch {
+      tags = tagsRaw.split(",").map((t) => t.trim()).filter(Boolean);
+    }
+  }
+  const difficulty = row.difficulty === "Easy" || row.difficulty === "Hard" || row.difficulty === "Medium"
+    ? row.difficulty
+    : "Medium";
   return {
-    id: String(row.slug ?? row.id),
-    title: String(row.title ?? ""),
-    difficulty: (row.difficulty as Difficulty) ?? "Medium",
-    acceptance: Math.round(Number(row.acceptance_rate ?? 0)),
-    tags: Array.isArray(row.tags) ? (row.tags as string[]) : (row.tags ? JSON.parse(String(row.tags || "[]")) : []),
+    id: String(row.slug ?? row.id ?? ""),
+    title: String(row.title ?? "Untitled"),
+    difficulty,
+    acceptance: Math.round(Number(row.acceptance_rate ?? row.acceptance ?? 0)) || 0,
+    tags,
   };
 }
 
@@ -55,25 +80,17 @@ function normalizeTestCase(tc: unknown): { input: unknown; expected: unknown } {
 
 function mapRowToDetail(row: Record<string, unknown>): DsaQuestionDetail {
   const list = mapRowToListItem(row);
-  let rawTestCases: unknown[] = [];
-  if (Array.isArray(row.test_cases)) rawTestCases = row.test_cases;
-  else if (row.test_cases) {
-    try {
-      rawTestCases = JSON.parse(String(row.test_cases || "[]"));
-    } catch {
-      rawTestCases = [];
-    }
-  }
+  const rawTestCases = safeJsonArray(row.test_cases);
   const testCases = rawTestCases.map(normalizeTestCase);
   return {
     ...list,
     description: String(row.description ?? ""),
-    examples: Array.isArray(row.examples) ? row.examples as DsaQuestionDetail["examples"] : (row.examples ? JSON.parse(String(row.examples || "[]")) : []),
-    constraints: Array.isArray(row.constraints) ? row.constraints as string[] : (row.constraints ? JSON.parse(String(row.constraints || "[]")) : []),
+    examples: safeJsonArray(row.examples) as DsaQuestionDetail["examples"],
+    constraints: safeJsonArray(row.constraints).map(String),
     testCases,
     isPremium: Boolean(row.is_premium ?? false),
-    likes: Number(row.likes ?? 0),
-    dislikes: Number(row.dislikes ?? 0),
+    likes: Number(row.likes ?? 0) || 0,
+    dislikes: Number(row.dislikes ?? 0) || 0,
   };
 }
 

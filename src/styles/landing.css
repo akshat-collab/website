@@ -1,0 +1,182 @@
+/**
+ * Apple + Tesla inspired landing page styles
+ * Scoped under .tm-landing so product routes keep their own look.
+ */
+
+.tm-landing {
+  --tm-bg: #ffffff;
+  --tm-bg-alt: #f5f5f7;
+  --tm-text: #1d1d1f;
+  --tm-muted: #6e6e73;
+  --tm-border: #d2d2d7;
+  --tm-accent: #0071e3;
+  --tm-btn: #0071e3;
+  --tm-btn-text: #ffffff;
+  --tm-btn-secondary-bg: transparent;
+  --tm-btn-secondary-text: #1d1d1f;
+  --tm-btn-secondary-border: #d2d2d7;
+  --tm-live: #e82127;
+  --tm-tile: #ffffff;
+  --tm-tile-dark: #0e0e10;
+  --tm-sidebar-w: 248px;
+  --tm-sidebar-collapsed: 76px;
+  --tm-glass: rgba(255, 255, 255, 0.72);
+  --tm-glass-border: rgba(210, 210, 215, 0.8);
+  --tm-focus: #0071e3;
+
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+  background: var(--tm-bg);
+  color: var(--tm-text);
+  min-height: 100vh;
+}
+
+[data-theme="dark"] .tm-landing {
+  --tm-bg: #000000;
+  --tm-bg-alt: #0e0e10;
+  --tm-text: #f5f5f7;
+  --tm-muted: #8e8e93;
+  --tm-border: #2a2a2e;
+  --tm-accent: #f5f5f7;
+  --tm-btn: #ffffff;
+  --tm-btn-text: #000000;
+  --tm-btn-secondary-bg: transparent;
+  --tm-btn-secondary-text: #f5f5f7;
+  --tm-btn-secondary-border: #2a2a2e;
+  --tm-live: #e82127;
+  --tm-tile: #0e0e10;
+  --tm-tile-dark: #000000;
+  --tm-glass: rgba(14, 14, 16, 0.72);
+  --tm-glass-border: rgba(42, 42, 46, 0.9);
+  --tm-focus: #ffffff;
+}
+
+.tm-landing h1,
+.tm-landing h2,
+.tm-landing h3 {
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--tm-text);
+}
+
+.tm-landing .tm-wordmark {
+  letter-spacing: -0.055em;
+  font-weight: 600;
+  line-height: 0.95;
+}
+
+.tm-landing .tm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 980px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.tm-landing .tm-btn:hover {
+  opacity: 0.88;
+}
+
+.tm-landing .tm-btn:active {
+  transform: scale(0.98);
+}
+
+.tm-landing .tm-btn:focus-visible {
+  outline: 2px solid var(--tm-focus);
+  outline-offset: 3px;
+}
+
+.tm-landing .tm-btn-primary {
+  background: var(--tm-btn);
+  color: var(--tm-btn-text);
+}
+
+.tm-landing .tm-btn-secondary {
+  background: var(--tm-btn-secondary-bg);
+  color: var(--tm-btn-secondary-text);
+  border-color: var(--tm-btn-secondary-border);
+}
+
+.tm-landing .tm-btn-secondary:hover {
+  border-color: var(--tm-text);
+}
+
+.tm-landing .tm-divider {
+  border: none;
+  border-top: 1px solid var(--tm-border);
+  margin: 0;
+}
+
+.tm-landing .tm-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tm-live);
+  box-shadow: 0 0 0 0 rgba(232, 33, 39, 0.5);
+  animation: tm-live-pulse 1.8s ease-out infinite;
+}
+
+@keyframes tm-live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(232, 33, 39, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(232, 33, 39, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 33, 39, 0);
+  }
+}
+
+.tm-landing .tm-hero-in {
+  animation: tm-fade-blur-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tm-fade-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-landing .tm-hero-in,
+  .tm-landing .tm-live-dot {
+    animation: none !important;
+  }
+  .tm-landing .tm-btn {
+    transition: none;
+  }
+}
+
+.tm-landing a:focus-visible,
+.tm-landing button:focus-visible {
+  outline: 2px solid var(--tm-focus);
+  outline-offset: 3px;
+}
+
+.tm-landing .tm-main {
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 820px) {
+  .tm-landing .tm-main {
+    margin-left: var(--tm-sidebar-w);
+  }
+  .tm-landing[data-sidebar-collapsed="true"] .tm-main {
+    margin-left: var(--tm-sidebar-collapsed);
+  }
+}

@@ -47,9 +47,9 @@ import {
     Clock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { recordActivity } from "@/features/dsa/streak/dsaActivityStore";
+import { recordActivity as recordStreakActivity } from "@/features/dsa/streak/dsaActivityStore";
 import { addSolvedProblem, addAttemptedProblem, syncSolvedToBackend } from "@/features/dsa/profile/dsaProfileStore";
-import { recordActivity } from "@/lib/activityTracker";
+import { recordActivity as recordAdminActivity } from "@/lib/activityTracker";
 import { fetchDsaQuestionById, DsaApiError } from "@/features/dsa/api/questions";
 import type { DsaQuestionDetail } from "@/features/dsa/api/questions";
 import { executeCode } from "@/services/codeExecutionService";
@@ -60,6 +60,7 @@ import { ProblemFeedback } from "@/components/dsa/ProblemFeedback";
 import { FeedbackModal } from "@/components/dsa/FeedbackModal";
 import { analyzeComplexity, getComplexityBadgeClass } from "@/utils/codeComplexity";
 import { useTimerStopwatch } from "@/hooks/useTimerStopwatch";
+import { difficultyBadgeClass } from "@/lib/difficultyColors";
 
 const STORAGE_KEY = (id: string) => `dsa_code_${id}`;
 
@@ -255,7 +256,7 @@ export default function DsaProblemDetailNew() {
                     testCases: formattedResults,
                     timestamp: new Date(),
                 });
-                recordActivity();
+                recordStreakActivity();
                 if (id) {
                     addSolvedProblem(id);
                     syncSolvedToBackend(id, {
@@ -263,6 +264,7 @@ export default function DsaProblemDetailNew() {
                         runtime_ms: result.totalExecutionTime ?? undefined,
                         memory_mb: result.averageMemory ?? undefined,
                     }).catch(() => {});
+                    recordAdminActivity("dsa_solve", id);
                 }
                 toast.success('✓ Submission successful! All test cases passed.');
             } else if (result.overallStatus === 'compilation_error') {
@@ -809,7 +811,7 @@ int main() {
             
             const entryPoint = getEntryPoint(id, problemTestCases);
             const result = await executeCode(code, language, problemTestCases, false, entryPoint);
-            recordActivity("dsa_run", id);
+            recordAdminActivity("dsa_run", id);
 
             if (result.overallStatus === 'compilation_error') {
                 setJudgeStatus('error');
@@ -947,11 +949,7 @@ int main() {
                         <div className="p-5 border-b border-white/10">
                             <div className="flex items-start justify-between mb-3">
                                 <h1 className="text-xl font-bold text-white leading-tight flex-1">{problem.title}</h1>
-                                <Badge className={`ml-3 rounded-full px-[10px] py-1 text-xs font-bold ${
-                                    problem.difficulty === "Easy" ? "bg-green-500/20 text-green-400" :
-                                    problem.difficulty === "Medium" ? "bg-yellow-500/20 text-yellow-400" :
-                                    "bg-red-500/20 text-red-400"
-                                }`}>
+                                <Badge className={`ml-3 rounded-full px-[10px] py-1 text-xs font-bold ${difficultyBadgeClass(problem.difficulty)}`}>
                                     {problem.difficulty}
                                 </Badge>
                             </div>

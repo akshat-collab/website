@@ -14,6 +14,7 @@ import { Search, CheckCircle2, Circle, Mic, Flame, Star, ChevronDown, Minus, Spa
 import { fetchDsaQuestions } from "@/features/dsa/api/questions";
 import { useDsaFilter } from "@/contexts/DsaFilterContext";
 import { cn } from "@/lib/utils";
+import { difficultyBadgeClass } from "@/lib/difficultyColors";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   getRecommendedProblems, 
@@ -221,10 +222,7 @@ export default function DsaProblems() {
     setPage(1);
   }, [search, difficulty, status, tags, activeTab]);
 
-  const difficultyColor = (d: Difficulty) =>
-    d === "Easy" ? "text-green-400 bg-green-400/10 border-green-400/20" : 
-    d === "Medium" ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" : 
-    "text-red-400 bg-red-400/10 border-red-400/20";
+  const difficultyColor = (d: Difficulty) => difficultyBadgeClass(d);
 
   if (loading) {
     return (

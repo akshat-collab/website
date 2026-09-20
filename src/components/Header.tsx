@@ -123,6 +123,13 @@ const Header = memo(() => {
       show: true,
     },
     {
+      title: 'Student Corner',
+      action: () => {
+        navigate('/student-corner');
+      },
+      show: true,
+    },
+    {
       title: 'Login',
       action: () => {
         navigate('/login');
@@ -161,18 +168,17 @@ const Header = memo(() => {
           <div className="flex-1 flex justify-start">
             <Link
               to="/"
-              className="flex items-center gap-2 group pointer-events-auto z-50"
+              className="flex items-center gap-2.5 group pointer-events-auto z-50"
             >
               <img
-                src={theme === 'dark' ? '/tmai-logo.png' : '/tmai-logo-dark.png'}
-                alt="TechMasterAI Logo"
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded transition-all duration-300 logo-hover"
+                src={theme === 'dark' ? '/logo.png' : '/tmai-logo-dark.png'}
+                alt="TechMaster"
+                className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-contain transition-all duration-300 logo-hover shrink-0"
                 style={{
-                  objectFit: 'contain',
-                  filter: theme === 'dark' ? 'brightness(1.1)' : 'brightness(1)',
+                  filter: theme === 'dark' ? 'brightness(1.15)' : 'brightness(1)',
                 }}
                 onError={(e) => {
-                  e.currentTarget.src = '/tmai-logo.png';
+                  e.currentTarget.src = '/logo.png';
                 }}
               />
               <span className="font-heading font-bold text-sm sm:text-base tracking-wide theme-text-primary">

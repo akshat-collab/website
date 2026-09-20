@@ -1,284 +1,184 @@
 /**
- * Nova ChatBot - TechMasterAI Assistant
- * Home page: Hardcoded responses from knowledge base (no API, instant)
- * Other pages: Uses API with knowledge base fallback
+ * Nova ChatBot — compact, theme-matched (Apple/Tesla tokens)
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
-import { X, Send } from 'lucide-react';
-import { searchKnowledgeBase } from '@/data/knowledgeBase';
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
+import { X, Send, MessageCircle } from "lucide-react";
+import { searchKnowledgeBase } from "@/data/knowledgeBase";
+import { cn } from "@/lib/utils";
 
-// Message interface
 interface Message {
-  from: 'user' | 'bot';
+  from: "user" | "bot";
   text: string;
-  source?: 'knowledge' | 'api' | 'fallback';
+  source?: "knowledge" | "api" | "fallback";
 }
 
-const HARDCODED_FALLBACK = "I'm Nova, your TechMasterAI assistant! Ask me about our company, team (Adarsh Kumar, Akshat Singh), features, vision, or how to join. I know everything about TechMasterAI! 🚀";
+const HARDCODED_FALLBACK =
+  "I'm Nova, your TechMaster assistant! Ask about DSA, Student Corner, CTF, or our team.";
 
 const ChatBot = () => {
   const location = useLocation();
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === "/";
+  const hideOnStudent = location.pathname.startsWith("/student-corner");
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { from: 'bot', text: "Hey there! 👋 I'm Nova, your TechMasterAI assistant!" },
-    { from: 'bot', text: "I know everything about TechMasterAI - our company, team (Adarsh Kumar & Akshat Singh), features, vision, and platform. Ask me anything! 🚀" }
+    { from: "bot", text: "Hi — I'm Nova. How can I help?" },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+  const [sessionId] = useState(
+    () => `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const lastRequestTimeRef = useRef<number>(0);
+  const lastRequestTimeRef = useRef(0);
 
-  // Open when AI button is clicked from header or coding places
   useEffect(() => {
     const open = () => setIsOpen(true);
-    window.addEventListener('open-chatbot', open);
-    return () => window.removeEventListener('open-chatbot', open);
+    window.addEventListener("open-chatbot", open);
+    return () => window.removeEventListener("open-chatbot", open);
   }, []);
 
-  // Auto-scroll to latest message
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Debounce function to prevent rapid requests
-  const debounce = (func: (...args: unknown[]) => void, delay: number) => {
-    return (...args: unknown[]) => {
-      const now = Date.now();
-      if (now - lastRequestTimeRef.current >= delay) {
-        lastRequestTimeRef.current = now;
-        func(...args);
-      }
-    };
-  };
-
-  // Handle sending message - Hardcoded on home page, API elsewhere
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+    const now = Date.now();
+    if (now - lastRequestTimeRef.current < 400) return;
+    lastRequestTimeRef.current = now;
 
     const userMessage = input.trim();
-    setMessages(prev => [...prev, { from: 'user', text: userMessage }]);
-    setInput('');
+    setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
+    setInput("");
     setIsLoading(true);
 
-    // Home page: Use hardcoded knowledge base only (no API, instant)
     if (isHomePage) {
       const reply = searchKnowledgeBase(userMessage) || HARDCODED_FALLBACK;
-      setMessages(prev => [...prev, { from: 'bot', text: reply, source: 'knowledge' }]);
+      setMessages((prev) => [...prev, { from: "bot", text: reply, source: "knowledge" }]);
       setIsLoading(false);
       return;
     }
 
-    // Other pages: Call API
     try {
       const conversationHistory = messages.slice(-5);
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          sessionId,
-          conversationHistory,
-        }),
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage, sessionId, conversationHistory }),
       });
-
       const data = await response.json();
-
       if (response.ok && data.response) {
-        setMessages(prev => [...prev, { 
-          from: 'bot', 
-          text: data.response,
-          source: data.source || 'api'
-        }]);
+        setMessages((prev) => [
+          ...prev,
+          { from: "bot", text: data.response, source: data.source || "api" },
+        ]);
       } else {
         const fallback = searchKnowledgeBase(userMessage) || HARDCODED_FALLBACK;
-        setMessages(prev => [...prev, { from: 'bot', text: fallback, source: 'fallback' }]);
+        setMessages((prev) => [...prev, { from: "bot", text: fallback, source: "fallback" }]);
       }
     } catch {
       const fallback = searchKnowledgeBase(userMessage) || HARDCODED_FALLBACK;
-      setMessages(prev => [...prev, { from: 'bot', text: fallback, source: 'fallback' }]);
+      setMessages((prev) => [...prev, { from: "bot", text: fallback, source: "fallback" }]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Debounced send handler
-  const debouncedSend = debounce(handleSend, 500);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      debouncedSend();
-    }
-  };
-
-  // Get source label for messages
-  const getSourceLabel = (source?: string) => {
-    switch (source) {
-      case 'knowledge': return '📚 Knowledge Base';
-      case 'api': return '🤖 AI Assistant';
-      case 'fallback': return '💬 Assistant';
-      default: return '🤖 AI Assistant';
-    }
-  };
+  if (hideOnStudent) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-5 right-5 z-50 max-[819px]:bottom-20">
       {isOpen ? (
-        <div className="w-80 h-96 glass-panel rounded-lg flex flex-col neon-border shadow-lg">
-          {/* Header */}
-          <div className="flex items-center justify-between p-3 border-b border-primary/30 bg-gradient-to-r from-primary/10 to-secondary/10">
-            <span className="font-orbitron text-sm neon-text">Nova</span>
+        <div
+          className={cn(
+            "w-[280px] h-[340px] flex flex-col rounded-2xl border shadow-xl overflow-hidden",
+            "bg-background border-border text-foreground"
+          )}
+        >
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
+            <span className="text-xs font-semibold tracking-tight">Nova</span>
             <button
+              type="button"
               onClick={() => setIsOpen(false)}
-              className="text-gray-400 hover:text-primary transition-colors hover:bg-primary/10 rounded p-1"
-              style={{ color: '#9CA3AF' }}
+              className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
+              aria-label="Close chat"
             >
-              <X size={18} />
+              <X size={14} />
             </button>
           </div>
 
-          {/* Quick Action Buttons - Company, Team, Features, Join */}
-          <div className="px-3 py-2 border-b border-primary/30">
-            <div className="flex flex-wrap gap-1">
+          <div className="px-2 py-1.5 border-b border-border flex flex-wrap gap-1">
+            {["About TechMaster", "Student Corner", "DSA help"].map((q) => (
               <button
-                onClick={() => setInput("What is TechMasterAI?")}
-                className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
+                key={q}
+                type="button"
+                onClick={() => setInput(q)}
+                className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground hover:text-foreground hover:bg-muted"
               >
-                About
+                {q}
               </button>
-              <button
-                onClick={() => setInput("Who is the team?")}
-                className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
-              >
-                Team
-              </button>
-              <button
-                onClick={() => setInput("What can I do on the platform?")}
-                className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
-              >
-                Features
-              </button>
-              <button
-                onClick={() => setInput("How can I join?")}
-                className="text-xs px-2 py-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-colors"
-              >
-                Join Us
-              </button>
-            </div>
+            ))}
           </div>
 
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          <div className="flex-1 overflow-y-auto p-2.5 space-y-2">
             {messages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.from === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={i} className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[80%] px-3 py-2 rounded-lg text-sm break-words ${
-                    msg.from === 'user'
-                      ? 'bg-primary/20 border border-primary/50 text-primary'
-                      : 'bg-secondary/20 border border-secondary/50 text-secondary'
-                  }`}
+                  className={cn(
+                    "max-w-[85%] px-2.5 py-1.5 rounded-xl text-[12px] leading-snug break-words",
+                    msg.from === "user"
+                      ? "bg-foreground text-background"
+                      : "bg-muted text-foreground"
+                  )}
                 >
                   {msg.text}
-                  {/* Non-intrusive source indicator */}
-                  {msg.from === 'bot' && msg.source && (
-                    <div className="text-xs opacity-40 mt-1">
-                      {getSourceLabel(msg.source)}
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
-
-            {/* Loading Indicator */}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-secondary/20 border border-secondary/50 px-3 py-2 rounded-lg text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-secondary/80 rounded-full" />
-                      <div className="w-2 h-2 bg-secondary/60 rounded-full" />
-                      <div className="w-2 h-2 bg-secondary/40 rounded-full" />
-                    </div>
-                    <span className="text-secondary text-xs">Nova is thinking...</span>
-                  </div>
-                </div>
-              </div>
+              <p className="text-[11px] text-muted-foreground px-1">Nova is typing…</p>
             )}
-
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className="p-3 border-t border-primary/30 bg-gradient-to-r from-primary/5 to-secondary/5">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask me anything..."
-                disabled={isLoading}
-                className="flex-1 cyber-input px-3 py-2 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed bg-foreground/5 border border-primary/30 focus:border-primary/60 focus:outline-none transition-colors"
-              />
-              <button
-                onClick={debouncedSend}
-                disabled={isLoading || !input.trim()}
-                className="p-2 bg-primary/20 border border-primary rounded hover:bg-primary/40 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Send size={16} className="text-primary" />
-              </button>
-            </div>
+          <div className="p-2 border-t border-border flex gap-1.5">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Message…"
+              disabled={isLoading}
+              className="flex-1 text-[12px] px-2.5 py-1.5 rounded-full bg-muted/50 border border-border focus:outline-none focus:ring-1 focus:ring-foreground/30 disabled:opacity-50"
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              className="h-8 w-8 rounded-full bg-foreground text-background flex items-center justify-center disabled:opacity-40"
+              aria-label="Send"
+            >
+              <Send size={12} />
+            </button>
           </div>
         </div>
       ) : (
-        <div className="relative">
-          {/* Main button - static, smooth hover only */}
-          <button
-            onClick={() => setIsOpen(true)}
-            className="relative w-20 h-20 rounded-full border-2 border-primary/70 flex items-center justify-center hover:scale-105 hover:border-primary transition-transform duration-200 p-2 shadow-lg backdrop-blur-sm"
-            style={{ 
-              background: 'radial-gradient(circle at 30% 30%, rgba(0, 194, 255, 0.5), rgba(0, 194, 255, 0.25), rgba(63, 188, 229, 0.3))',
-              boxShadow: '0 0 20px rgba(0, 194, 255, 0.3)'
-            }}
-          >
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white/30 shadow-inner">
-              <img 
-                src="/loading.gif" 
-                alt="Open Chat" 
-                className="w-full h-full object-cover"
-                style={{ 
-                  imageRendering: 'auto',
-                  objectFit: 'cover',
-                  filter: 'brightness(1.1) contrast(1.1) saturate(1.1)'
-                }}
-                onError={(e) => {
-                  // Fallback to chat icon if GIF fails
-                  e.currentTarget.style.display = 'none';
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) {
-                    parent.innerHTML = `
-                      <div class="w-full h-full rounded-full bg-primary/30 border-2 border-primary/60 flex items-center justify-center">
-                        <svg class="text-white" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                        </svg>
-                      </div>
-                    `;
-                  }
-                }}
-              />
-            </div>
-          </button>
-          
-          {/* Notification dot - static */}
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center shadow">
-            <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="h-11 w-11 rounded-full border border-border bg-foreground text-background shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+          aria-label="Open Nova chat"
+        >
+          <MessageCircle size={18} />
+        </button>
       )}
     </div>
   );

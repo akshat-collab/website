@@ -9,13 +9,16 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function getSystemTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark';
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem('techmasterai_theme');
-    if (stored === 'light' || stored === 'dark') {
-      return stored as Theme;
-    }
-    return 'dark';
+    if (stored === 'light' || stored === 'dark') return stored;
+    return getSystemTheme();
   });
 
   const setTheme = (t: Theme) => {
@@ -33,6 +36,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     localStorage.setItem('techmasterai_theme', theme);
   }, [theme]);
+
+  // Follow system only when user hasn't explicitly chosen
+  useEffect(() => {
+    const stored = localStorage.getItem('techmasterai_theme');
+    if (stored === 'light' || stored === 'dark') return;
+
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => setThemeState(getSystemTheme());
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>

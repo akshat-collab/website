@@ -76,6 +76,16 @@ const TypeForgeSpells = lazy(() => import("./pages/typeforge/TypeForgeSpells"));
 const TypeForgeFun = lazy(() => import("./pages/typeforge/TypeForgeFun"));
 const TypeForgeLiveCoding = lazy(() => import("./pages/typeforge/TypeForgeLiveCoding"));
 
+// Student Corner
+const StudentCornerLayout = lazy(() => import("./layouts/StudentCornerLayout"));
+const StudentCornerHome = lazy(() => import("./pages/student/StudentCornerHome"));
+const EmailWriter = lazy(() => import("./pages/student/EmailWriter"));
+const CollegeFinder = lazy(() => import("./pages/student/CollegeFinder"));
+const CollegeCompare = lazy(() => import("./pages/student/CollegeCompare"));
+const CutoffExplorer = lazy(() => import("./pages/student/CutoffExplorer"));
+const ResumeChecker = lazy(() => import("./pages/student/ResumeChecker"));
+const ResumeEditor = lazy(() => import("./pages/student/ResumeEditor"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -141,6 +151,16 @@ const App = () => (
                 <Route path="level/:levelId" element={<DsLevel />} />
                 <Route path="level/:levelId/topic/:topicId" element={<DsTopic />} />
                 <Route path="level/:levelId/topic/:topicId/exercise/:exerciseId" element={<DsExercise />} />
+              </Route>
+              {/* Student Corner */}
+              <Route path="/student-corner" element={<StudentCornerLayout />}>
+                <Route index element={<StudentCornerHome />} />
+                <Route path="email-writer" element={<EmailWriter />} />
+                <Route path="college-finder" element={<CollegeFinder />} />
+                <Route path="college-compare" element={<CollegeCompare />} />
+                <Route path="cutoffs" element={<CutoffExplorer />} />
+                <Route path="resume-checker" element={<ResumeChecker />} />
+                <Route path="resume-editor" element={<ResumeEditor />} />
               </Route>
               <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
