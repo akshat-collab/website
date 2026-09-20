@@ -26,21 +26,49 @@ const Header = memo(() => {
     const checkAuth = () => {
       const adminStatus = localStorage.getItem('techmasterai_admin') === 'true';
       setIsAdmin(adminStatus);
-      
+
       const userStr = localStorage.getItem('techmasterai_user');
       if (userStr) {
         try {
           setCurrentUser(JSON.parse(userStr));
+          return;
         } catch {
-          setCurrentUser(null);
+          /* fall through */
         }
-      } else {
-        setCurrentUser(null);
       }
+      try {
+        const sessionRaw = localStorage.getItem('dsa_local_session');
+        if (sessionRaw) {
+          const session = JSON.parse(sessionRaw) as {
+            username?: string;
+            email?: string;
+            profilePhoto?: string;
+          };
+          if (session?.email || session?.username) {
+            const synced = {
+              name: session.username || session.email?.split('@')[0] || 'User',
+              email: session.email || '',
+              photo: session.profilePhoto,
+            };
+            localStorage.setItem('techmasterai_user', JSON.stringify(synced));
+            setCurrentUser(synced);
+            return;
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      setCurrentUser(null);
     };
     checkAuth();
     window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
+    window.addEventListener('techmasterai-auth-changed', checkAuth);
+    window.addEventListener('focus', checkAuth);
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      window.removeEventListener('techmasterai-auth-changed', checkAuth);
+      window.removeEventListener('focus', checkAuth);
+    };
   }, [location]);
 
   // Scroll to top on route change
@@ -68,8 +96,10 @@ const Header = memo(() => {
   const handleLogout = () => {
     localStorage.removeItem('techmasterai_admin');
     localStorage.removeItem('techmasterai_user');
+    localStorage.removeItem('dsa_local_session');
     setIsAdmin(false);
     setCurrentUser(null);
+    window.dispatchEvent(new Event('techmasterai-auth-changed'));
     toast.success('Logged out successfully');
     window.location.href = '/';
   };

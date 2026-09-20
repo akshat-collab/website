@@ -59,12 +59,15 @@ export function getSession(): SessionProfile | null {
 function setMainSiteUser(session: SessionProfile | null): void {
   if (!session) {
     localStorage.removeItem("techmasterai_user");
-    return;
+  } else {
+    localStorage.setItem(
+      "techmasterai_user",
+      JSON.stringify({ name: session.username, email: session.email, photo: session.profilePhoto })
+    );
   }
-  localStorage.setItem(
-    "techmasterai_user",
-    JSON.stringify({ name: session.username, email: session.email, photo: session.profilePhoto })
-  );
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("techmasterai-auth-changed"));
+  }
 }
 
 export function login(email: string, password: string): { success: boolean; error?: string } {

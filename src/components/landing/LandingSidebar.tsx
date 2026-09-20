@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
   IconHome,
@@ -12,8 +13,10 @@ import {
   IconCollapse,
   IconExpand,
 } from "./icons";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import * as localAuth from "@/lib/localAuth";
+import { toast } from "sonner";
 
 const NAV = [
   { id: "home", label: "Home", icon: IconHome },
@@ -31,6 +34,35 @@ interface LandingSidebarProps {
   onCollapsedChange: (collapsed: boolean) => void;
 }
 
+type SidebarUser = { name: string; email: string; photo?: string } | null;
+
+function readUser(): SidebarUser {
+  try {
+    const raw = localStorage.getItem("techmasterai_user");
+    if (raw) {
+      const parsed = JSON.parse(raw) as { name?: string; email?: string; photo?: string };
+      if (parsed?.name || parsed?.email) {
+        return {
+          name: parsed.name || parsed.email?.split("@")[0] || "User",
+          email: parsed.email || "",
+          photo: parsed.photo,
+        };
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  const session = localAuth.getSession();
+  if (session) {
+    return {
+      name: session.username || session.email.split("@")[0] || "User",
+      email: session.email,
+      photo: session.profilePhoto || undefined,
+    };
+  }
+  return null;
+}
+
 export function LandingSidebar({
   activeSection,
   onNavigate,
@@ -38,7 +70,30 @@ export function LandingSidebar({
   onCollapsedChange,
 }: LandingSidebarProps) {
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
   const logoSrc = theme === "dark" ? "/logo.png" : "/tmai-logo-dark.png";
+  const [user, setUser] = useState<SidebarUser>(() => readUser());
+
+  useEffect(() => {
+    const sync = () => setUser(readUser());
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener("techmasterai-auth-changed", sync);
+    window.addEventListener("focus", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("techmasterai-auth-changed", sync);
+      window.removeEventListener("focus", sync);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localAuth.logout();
+    localStorage.removeItem("techmasterai_admin");
+    setUser(null);
+    toast.success("Logged out");
+    navigate("/");
+  };
 
   const navButton = (item: (typeof NAV)[number], compact?: boolean) => {
     const Icon = item.icon;
@@ -118,17 +173,53 @@ export function LandingSidebar({
 
         <div className="px-2 pb-5 space-y-1 border-t" style={{ borderColor: "var(--tm-border)" }}>
           <div className="pt-3 space-y-1">
-            <Link
-              to="/login"
-              title="Sign in"
-              className={cn(
-                "flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm text-[var(--tm-muted)] hover:text-[var(--tm-text)] hover:bg-[var(--tm-text)]/5 transition-colors",
-                collapsed && "justify-center px-2"
-              )}
-            >
-              <IconSignIn size={20} />
-              {!collapsed && <span>Sign in</span>}
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  to="/profile"
+                  title={user.name}
+                  className={cn(
+                    "flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm font-medium text-[var(--tm-text)] hover:bg-[var(--tm-text)]/5 transition-colors",
+                    collapsed && "justify-center px-2"
+                  )}
+                >
+                  {user.photo ? (
+                    <img
+                      src={user.photo}
+                      alt=""
+                      className="h-5 w-5 rounded-full object-cover shrink-0"
+                    />
+                  ) : (
+                    <User className="h-5 w-5 shrink-0" />
+                  )}
+                  {!collapsed && <span className="truncate">{user.name}</span>}
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  title="Logout"
+                  className={cn(
+                    "flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm text-[var(--tm-muted)] hover:text-[var(--tm-text)] hover:bg-[var(--tm-text)]/5 transition-colors",
+                    collapsed && "justify-center px-2"
+                  )}
+                >
+                  <LogOut className="h-5 w-5 shrink-0" />
+                  {!collapsed && <span>Logout</span>}
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                title="Sign in"
+                className={cn(
+                  "flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-sm text-[var(--tm-muted)] hover:text-[var(--tm-text)] hover:bg-[var(--tm-text)]/5 transition-colors",
+                  collapsed && "justify-center px-2"
+                )}
+              >
+                <IconSignIn size={20} />
+                {!collapsed && <span>Sign in</span>}
+              </Link>
+            )}
 
             <button
               type="button"
@@ -173,6 +264,25 @@ export function LandingSidebar({
       >
         {theme === "dark" ? <IconSun size={18} /> : <IconMoon size={18} />}
       </button>
+
+      {/* Mobile: profile or sign-in shortcut */}
+      <Link
+        to={user ? "/profile" : "/login"}
+        className="fixed top-4 right-16 z-50 flex min-[820px]:hidden h-10 w-10 items-center justify-center rounded-full border backdrop-blur-xl"
+        style={{
+          background: "var(--tm-glass)",
+          borderColor: "var(--tm-border)",
+          color: "var(--tm-text)",
+        }}
+        aria-label={user ? "Profile" : "Sign in"}
+        title={user ? user.name : "Sign in"}
+      >
+        {user?.photo ? (
+          <img src={user.photo} alt="" className="h-6 w-6 rounded-full object-cover" />
+        ) : (
+          <User className="h-4 w-4" />
+        )}
+      </Link>
 
       <nav
         className="fixed bottom-0 inset-x-0 z-50 flex min-[820px]:hidden items-stretch justify-around border-t backdrop-blur-2xl px-1 pb-[env(safe-area-inset-bottom)]"
